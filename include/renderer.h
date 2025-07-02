@@ -112,6 +112,7 @@ void renderTopNav();
 void renderTopNavBarMenu();
 void renderMenuBar();
 void renderFileBar();
+void renderTextEditor();
 
 void renderExplorer();
 void renderFolder(FileNode** folder, int* i, int padX);

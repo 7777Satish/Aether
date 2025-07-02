@@ -11,8 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-char* readFile(const char* path);
-int listFiles(const char* folder);
+char* readFile(char* path);
 void* open_folder_thread();
 char* open_folder_dialog();
 

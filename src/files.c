@@ -117,3 +117,14 @@ void initExplorer(){
 
     closedir(dir);
 }
+
+char* readFile(char* path){
+    FILE* f = fopen(path, "r");
+    fseek(f, 1, SEEK_END);
+    int len = ftell(f);
+    rewind(f);
+    char* content = malloc(len+1);
+    fread(content, 1, len, f);
+    content[len] = '\0';
+    return content;
+}

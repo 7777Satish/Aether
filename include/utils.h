@@ -23,6 +23,13 @@ typedef struct FileNode {
     struct FileNode* prev;
 } FileNode;
 
+typedef struct FileLine {
+    char* content;
+    SDL_Texture* t1;
+    struct FileLine* next;
+    struct FileLine* prev;
+} FileLine;
+
 typedef struct FileBarItem {
     char* name;
     char* path;
@@ -30,6 +37,7 @@ typedef struct FileBarItem {
     SDL_Texture* t1;
     SDL_Rect r1;
     SDL_Rect r2;
+    FileLine* lines;
     struct FileBarItem* next;
     struct FileBarItem* prev;
 } FileBarItem;

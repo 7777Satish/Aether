@@ -434,6 +434,11 @@ void renderFileBar(){
     }
 }
 
+void renderTextEditor(){
+    
+}
+
+
 void renderExplorer(){
 
     MENU_BAR_NODE node = LEFT_MENU[0];

@@ -26,11 +26,60 @@ FileBarItem* createFileBarNode(char* name, char* path){
     node->prev = NULL;
     node->t1 = NULL;
     node->active = 1;
+    node->lines = NULL;
     return node;
 }
 
 void addFileBarNode(char* name, char* path){
     FileBarItem* node = createFileBarNode(name, path);
+
+    char* content = readFile(path);
+    char c = content[0];
+    int i = 0;
+    char* currentLine = malloc(1);
+    currentLine[0] = '\0';
+
+    FileLine* lines = NULL;
+    FileLine* prevLine = NULL;
+    SDL_Color fg = {255, 255, 255, 255};
+    while(c!='\0'){
+        if(c=='\n'){
+
+            FileLine* line = (FileLine*)malloc(sizeof(FileLine));
+            size_t currentLineLen = strlen(currentLine);
+            line->content = malloc(currentLineLen+1);
+            strcpy(line->content, currentLine);
+            line->content[currentLineLen] = '\0';
+            SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, currentLine, fg);
+            line->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+            SDL_FreeSurface(s1);
+            line->next = NULL;
+            line->prev = prevLine;
+            if(!lines){
+                lines = line;
+            } else if(prevLine){
+                prevLine->next = line;
+            }
+            
+            prevLine = line;
+
+
+            free(currentLine);
+            currentLine = malloc(1);
+            currentLine[0] = '\0';
+            i++;
+            c = content[i];
+        }
+
+        size_t len = strlen(currentLine);
+        currentLine = realloc(currentLine, len+2);
+        currentLine[len] = c;
+        currentLine[len+1] = '\0';
+        i++;
+        c = content[i];
+    }
+    // long size = strlen(currentLine);
+    // printf("%s\n%d\n", currentLine, size);
 
     if(!FileBar) FileBar = node;
     else {
@@ -39,12 +88,14 @@ void addFileBarNode(char* name, char* path){
         {
             if(strcmp(ptr->path, path) == 0){
                 ptr->active = 1;
+                ptr->lines = lines;
                 return;
             }
             ptr = ptr->next;
         }
         if(strcmp(ptr->path, path) == 0){
             ptr->active = 1;
+            ptr->lines = lines;
             return;
         }
         ptr->next = node;

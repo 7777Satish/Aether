@@ -198,7 +198,8 @@ int main(){
 
         renderTopNav();
        
-        renderMenuBar();        
+        renderMenuBar();
+        renderTextEditor();
 
         // Drawing Logos
         SDL_RenderCopy(renderer, logoTexture, NULL, &logoRect);
