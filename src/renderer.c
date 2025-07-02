@@ -515,36 +515,58 @@ void renderTextEditor()
         return;
 
     int y = 0;
-    SDL_Color fg = {255, 255, 255, 255};
+    // SDL_Color fg = {255, 255, 255, 255};
     while (line)
     {
 
-        if (line->content[0] == '\0')
+        if (line->word == NULL)
         {
             y++;
             line = line->next;
             continue;
         }
-        if (!line->t1)
+        // if (!line->t1)
+        // {
+        //     SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, line->content, fg);
+        //     line->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+        //     SDL_FreeSurface(s1);
+        // }
+
+        Token* word = line->word;
+        int x = 0;
+        while (word)
         {
-            SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, line->content, fg);
-            line->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-            SDL_FreeSurface(s1);
+            
+            // printf("%s",word->content);
+            int w = 0,h = 0;
+            SDL_QueryTexture(word->t1, NULL, NULL, &w, &h);
+            SDL_Rect r1 = {
+                FILEBAR_bg_rect.x + 4 + EDITOR_SCROLL_X + x,
+                y * h + FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + EDITOR_SCROLL_Y,
+                w,
+                h
+            };
+
+            SDL_RenderCopy(renderer, word->t1, NULL, &r1);
+            x+=w;
+            word = word->next;
         }
+        
+        // printf("\n");
+        // int w, h;
+        // SDL_QueryTexture(line->t1, NULL, NULL, &w, &h);
 
-        int w, h;
-        SDL_QueryTexture(line->t1, NULL, NULL, &w, &h);
+        // SDL_Rect r1 = {
+        //     FILEBAR_bg_rect.x + 4 + EDITOR_SCROLL_X,
+        //     y * h + FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + EDITOR_SCROLL_Y,
+        //     w, h};
 
-        SDL_Rect r1 = {
-            FILEBAR_bg_rect.x + 4 + EDITOR_SCROLL_X,
-            y * h + FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + EDITOR_SCROLL_Y,
-            w, h};
-
-        SDL_RenderCopy(renderer, line->t1, NULL, &r1);
+        // SDL_RenderCopy(renderer, line->t1, NULL, &r1);
 
         y++;
         line = line->next;
     }
+    // printf("\n Newline \n");
 }
 
 void renderExplorer()
@@ -755,11 +777,6 @@ void renderFolder(FileNode **folder, int *i, int padX)
             SDL_FreeSurface(s1);
         }
 
-        FileIcons.r1.x = node->r1.x - 2 - node->r1.h;
-        FileIcons.r1.y = node->r1.y + 2;
-        FileIcons.r1.w = node->r1.h - 4;
-        FileIcons.r1.h = node->r1.h - 4;
-
         SDL_Color color = {239, 239, 239, 255};
         SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
         node->r1.x = padX * 10 + MENU_BAR_W + LEFT_MENU[0].rect.x + s1->h + 2;
@@ -780,6 +797,11 @@ void renderFolder(FileNode **folder, int *i, int padX)
             SDL_RenderFillRect(renderer, &hoverRect);
         }
 
+        FileIcons.r1.x = node->r1.x - 2 - node->r1.h;
+        FileIcons.r1.y = node->r1.y + 2;
+        FileIcons.r1.w = node->r1.h - 4;
+        FileIcons.r1.h = node->r1.h - 4;
+        
         if (node->isDir)
         {
             if (node->opened)

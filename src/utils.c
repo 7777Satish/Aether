@@ -2,6 +2,7 @@
 
 FileBarItem *FileBar = NULL;
 FileBarItem *currentActiveTag = NULL;
+int TotalFileBarLength = 0;
 
 FileNode *createFileNode(char *name, char *path, int isDir)
 {
@@ -51,58 +52,18 @@ void addFileBarNode(char *name, char *path)
     currentActiveTag = node;
 
     char *content = readFile(path);
-    char c = content[0];
-    int i = 0;
-    char *currentLine = malloc(1);
-    currentLine[0] = '\0';
-
-    FileLine *lines = NULL;
-    FileLine *prevLine = NULL;
-    SDL_Color fg = {255, 255, 255, 255};
-
-    while (c != '\0')
-    {
-        if (c == '\n')
-        {
-
-            FileLine *line = (FileLine *)malloc(sizeof(FileLine));
-            size_t currentLineLen = strlen(currentLine);
-            line->content = malloc(currentLineLen + 1);
-            strcpy(line->content, currentLine);
-            line->content[currentLineLen] = '\0';
-            SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentLine, fg);
-            line->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-            SDL_FreeSurface(s1);
-            line->next = NULL;
-            line->prev = prevLine;
-            if (!lines)
-            {
-                lines = line;
-            }
-            else if (prevLine)
-            {
-                prevLine->next = line;
-            }
-
-            prevLine = line;
-
-            free(currentLine);
-            currentLine = malloc(1);
-            currentLine[0] = '\0';
-            i++;
-            c = content[i];
-            continue;
-        }
-
-        size_t len = strlen(currentLine);
-        currentLine = realloc(currentLine, len + 2);
-        currentLine[len] = c;
-        currentLine[len + 1] = '\0';
-        i++;
-        c = content[i];
-    }
-
+    
+    FileLine* lines = parseText(content);
     node->lines = lines;
+
+    if (!node->t1)
+    {
+        SDL_Color color = {239, 239, 239, 255};
+        SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
+        TotalFileBarLength += s1->w + 40;
+        node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+        SDL_FreeSurface(s1);
+    }
 
     if (!FileBar)
     {
@@ -137,6 +98,8 @@ void addFileBarNode(char *name, char *path)
         ptr->next = node;
         node->prev = ptr;
     }
+
+
 }
 
 void handleExplorerItemsHover(FileNode **folder, int x, int y)

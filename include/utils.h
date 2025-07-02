@@ -1,10 +1,11 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "renderer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "renderer.h"
+#include "parser.h"
 
 typedef struct FileNode
 {
@@ -24,16 +25,9 @@ typedef struct FileNode
     struct FileNode *prev;
 } FileNode;
 
-typedef struct FileLine
-{
-    char *content;
-    SDL_Texture *t1;
-    struct FileLine *next;
-    struct FileLine *prev;
-} FileLine;
+typedef struct FileLine FileLine;
 
-typedef struct FileBarItem
-{
+typedef struct FileBarItem{
     char *name;
     char *path;
     int active;
@@ -47,6 +41,7 @@ typedef struct FileBarItem
 
 extern FileBarItem *FileBar;
 extern FileBarItem *currentActiveTag;
+extern int TotalFileBarLength;
 
 FileNode *createFileNode(char *name, char *path, int isDir);
 FileBarItem *createFileBarNode(char *name, char *path);

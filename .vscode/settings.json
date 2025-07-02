@@ -10,6 +10,7 @@
         "pthread.h": "c",
         "renderer.h": "c",
         "files.h": "c",
-        "events.h": "c"
+        "events.h": "c",
+        "parcer.h": "c"
     }
 }

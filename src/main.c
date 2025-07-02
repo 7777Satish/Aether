@@ -4,6 +4,7 @@
 #include "../include/renderer.h"
 #include "files.h"
 #include "events.h"
+#include "parser.h"
 
 void renderFile();
 char *open_folder_dialog();

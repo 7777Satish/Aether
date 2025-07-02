@@ -7,34 +7,37 @@
 #include <SDL2/SDL_ttf.h>
 #include "files.h"
 
-typedef struct{
+typedef struct
+{
     char name[10];
     char list[10][20];
     int isActive;
     int clicked;
-    SDL_Texture* texture;
+    SDL_Texture *texture;
     SDL_Rect rect;
 } TOPNAV_MENU_NODE;
 
-typedef struct{
+typedef struct
+{
     char name[15];
     char icon[40];
     char active_icon[40];
     int isActive;
     int clicked;
-    SDL_Texture* texture;
-    SDL_Texture* active_texture;
-    SDL_Texture* text_texture;
+    SDL_Texture *texture;
+    SDL_Texture *active_texture;
+    SDL_Texture *text_texture;
     SDL_Rect rect;
     SDL_Rect text_rect;
 } MENU_BAR_NODE;
 
-typedef struct{
-    SDL_Texture* t1;
-    SDL_Texture* t2;
-    SDL_Texture* t3;
-    SDL_Texture* t4;
-    SDL_Texture* t5;
+typedef struct
+{
+    SDL_Texture *t1;
+    SDL_Texture *t2;
+    SDL_Texture *t3;
+    SDL_Texture *t4;
+    SDL_Texture *t5;
     SDL_Rect r1;
     SDL_Rect r2;
     SDL_Rect r3;
@@ -42,14 +45,14 @@ typedef struct{
     SDL_Rect r5;
 } ELEMENT;
 
-typedef struct {
+typedef struct
+{
     char txt1[30];
     char txt2[30];
     char txt3[30];
     char txt4[30];
     char txt5[310];
 } Search_TEXTBOXES;
-
 
 typedef struct FileNode FileNode;
 
@@ -65,10 +68,8 @@ extern Search_TEXTBOXES SearchMenu;
 extern ELEMENT Github;
 extern ELEMENT Extentions;
 
-
-
-extern SDL_Window* window;
-extern SDL_Renderer* renderer;
+extern SDL_Window *window;
+extern SDL_Renderer *renderer;
 
 extern int WINDOW_W;
 extern int WINDOW_H;
@@ -101,10 +102,10 @@ extern int EDITOR_PADDINGX;
 extern int EDITOR_PADDINGY;
 
 // Fonts
-extern TTF_Font* poppins_regular;
-extern TTF_Font* poppins_bold; 
-extern TTF_Font* font2;
-extern TTF_Font* jetbrains_regular;
+extern TTF_Font *poppins_regular;
+extern TTF_Font *poppins_bold;
+extern TTF_Font *font2;
+extern TTF_Font *jetbrains_regular;
 
 // Creating Top Nav and Left Menu
 extern SDL_Rect TOPNAV_bg_rect;
@@ -118,21 +119,19 @@ extern int FILEMENU_SCROLL_X;
 extern int EDITOR_SCROLL_X;
 extern int EDITOR_SCROLL_Y;
 
-
 /* ===== Initialising Logos ===== */
 
-extern  SDL_Surface* logoSurface2;
-extern  SDL_Texture* logoTexture2;
-extern  int logo2AW, logo2AH;
-extern  int dlw2;
-extern  int dlh2;
-extern  SDL_Rect logoRect2;
+extern SDL_Surface *logoSurface2;
+extern SDL_Texture *logoTexture2;
+extern int logo2AW, logo2AH;
+extern int dlw2;
+extern int dlh2;
+extern SDL_Rect logoRect2;
 
-extern SDL_Surface* logoSurface;
-extern SDL_Texture* logoTexture;
+extern SDL_Surface *logoSurface;
+extern SDL_Texture *logoTexture;
 extern int logoAW, logoAH;
 extern SDL_Rect logoRect;
-
 
 void init();
 
@@ -143,7 +142,7 @@ void renderFileBar();
 void renderTextEditor();
 
 void renderExplorer();
-void renderFolder(FileNode** folder, int* i, int padX);
+void renderFolder(FileNode **folder, int *i, int padX);
 void renderSearch();
 void renderGithub();
 void renderExtentions();
