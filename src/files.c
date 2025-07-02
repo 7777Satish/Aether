@@ -130,3 +130,4 @@ char* readFile(char* path){
     content[len] = '\0';
     return content;
 }
+
