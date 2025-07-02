@@ -1,9 +1,11 @@
 #include "utils.h"
 
-FileBarItem* FileBar = NULL;
+FileBarItem *FileBar = NULL;
+FileBarItem *currentActiveTag = NULL;
 
-FileNode* createFileNode(char* name, char* path, int isDir){
-    FileNode* node = (FileNode*)malloc(sizeof(FileNode));
+FileNode *createFileNode(char *name, char *path, int isDir)
+{
+    FileNode *node = (FileNode *)malloc(sizeof(FileNode));
     node->name = strdup(name);
     node->path = strdup(path);
     node->isDir = isDir;
@@ -18,8 +20,9 @@ FileNode* createFileNode(char* name, char* path, int isDir){
     return node;
 }
 
-FileBarItem* createFileBarNode(char* name, char* path){
-    FileBarItem* node = (FileBarItem*)malloc(sizeof(FileBarItem));
+FileBarItem *createFileBarNode(char *name, char *path)
+{
+    FileBarItem *node = (FileBarItem *)malloc(sizeof(FileBarItem));
     node->name = strdup(name);
     node->path = strdup(path);
     node->next = NULL;
@@ -30,41 +33,58 @@ FileBarItem* createFileBarNode(char* name, char* path){
     return node;
 }
 
-void addFileBarNode(char* name, char* path){
-    FileBarItem* node = createFileBarNode(name, path);
-    node->active = 1;
+void inActiveAllFileNodes()
+{
+    FileBarItem *node = FileBar;
+    while (node)
+    {
+        node->active = 0;
+        node = node->next;
+    }
+}
 
-    char* content = readFile(path);
+void addFileBarNode(char *name, char *path)
+{
+    inActiveAllFileNodes();
+    FileBarItem *node = createFileBarNode(name, path);
+    node->active = 1;
+    currentActiveTag = node;
+
+    char *content = readFile(path);
     char c = content[0];
     int i = 0;
-    char* currentLine = malloc(1);
+    char *currentLine = malloc(1);
     currentLine[0] = '\0';
 
-    FileLine* lines = NULL;
-    FileLine* prevLine = NULL;
+    FileLine *lines = NULL;
+    FileLine *prevLine = NULL;
     SDL_Color fg = {255, 255, 255, 255};
 
-    while(c!='\0'){
-        if(c=='\n'){
+    while (c != '\0')
+    {
+        if (c == '\n')
+        {
 
-            FileLine* line = (FileLine*)malloc(sizeof(FileLine));
+            FileLine *line = (FileLine *)malloc(sizeof(FileLine));
             size_t currentLineLen = strlen(currentLine);
-            line->content = malloc(currentLineLen+1);
+            line->content = malloc(currentLineLen + 1);
             strcpy(line->content, currentLine);
             line->content[currentLineLen] = '\0';
-            SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, currentLine, fg);
+            SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentLine, fg);
             line->t1 = SDL_CreateTextureFromSurface(renderer, s1);
             SDL_FreeSurface(s1);
             line->next = NULL;
             line->prev = prevLine;
-            if(!lines){
+            if (!lines)
+            {
                 lines = line;
-            } else if(prevLine){
+            }
+            else if (prevLine)
+            {
                 prevLine->next = line;
             }
-            
-            prevLine = line;
 
+            prevLine = line;
 
             free(currentLine);
             currentLine = malloc(1);
@@ -75,50 +95,68 @@ void addFileBarNode(char* name, char* path){
         }
 
         size_t len = strlen(currentLine);
-        currentLine = realloc(currentLine, len+2);
+        currentLine = realloc(currentLine, len + 2);
         currentLine[len] = c;
-        currentLine[len+1] = '\0';
+        currentLine[len + 1] = '\0';
         i++;
         c = content[i];
     }
-    
-    if(!FileBar){
+
+    node->lines = lines;
+
+    if (!FileBar)
+    {
         FileBar = node;
-    } else {
-        FileBarItem* ptr = FileBar;
-        while (ptr->next!=NULL)
+    }
+    else
+    {
+        FileBarItem *ptr = FileBar;
+        while (ptr->next != NULL)
         {
-            if(strcmp(ptr->path, path) == 0){
+            if (strcmp(ptr->path, path) == 0)
+            {
                 ptr->active = 1;
+                currentActiveTag = ptr;
                 ptr->lines = lines;
                 return;
-            } else {
+            }
+            else
+            {
                 ptr->active = 0;
             }
             ptr = ptr->next;
         }
-        if(strcmp(ptr->path, path) == 0){
+        if (strcmp(ptr->path, path) == 0)
+        {
             ptr->active = 1;
+            currentActiveTag = ptr;
             ptr->lines = lines;
             return;
         }
+
         ptr->next = node;
         node->prev = ptr;
     }
 }
 
-void handleExplorerItemsHover(FileNode** folder, int x, int y){
-    FileNode* node = (*folder)->child;
-    while (node!=NULL)
+void handleExplorerItemsHover(FileNode **folder, int x, int y)
+{
+    // y+=EXPLORER_SCROLL_Y;
+    FileNode *node = (*folder)->child;
+    while (node != NULL)
     {
 
-        if(x>MENU_BAR_W + MENU_PAD_X && x<MENU_BAR_W + MENU_W - MENU_PAD_X && y>node->r1.y-MENU_PAD_Y/4 && y<node->r1.y+node->r1.h+MENU_PAD_Y/4){
+        if (x > MENU_BAR_W + MENU_PAD_X && x < MENU_BAR_W + MENU_W - MENU_PAD_X && y > node->r1.y - MENU_PAD_Y / 4 && y < node->r1.y + node->r1.h + MENU_PAD_Y / 4)
+        {
             node->hovered = 1;
-        } else {
+        }
+        else
+        {
             node->hovered = 0;
         }
 
-        if(node->isDir && node->child){
+        if (node->isDir && node->child)
+        {
             handleExplorerItemsHover(&node, x, y);
         }
 
@@ -126,23 +164,31 @@ void handleExplorerItemsHover(FileNode** folder, int x, int y){
     }
 }
 
-void handleExplorerItemsClick(FileNode** folder, int x, int y){
-    FileNode* node = (*folder)->child;
-    while (node!=NULL)
+void handleExplorerItemsClick(FileNode **folder, int x, int y)
+{
+    // y+=EXPLORER_SCROLL_Y;
+    FileNode *node = (*folder)->child;
+    while (node != NULL)
     {
-
-        if(x>MENU_BAR_W + MENU_PAD_X && x<MENU_BAR_W + MENU_W - MENU_PAD_X && y>node->r1.y-MENU_PAD_Y/4 && y<node->r1.y+node->r1.h+MENU_PAD_Y/4){
-            if(node->isDir){
+        if (x > MENU_BAR_W + MENU_PAD_X && x < MENU_BAR_W + MENU_W - MENU_PAD_X && y > node->r1.y - MENU_PAD_Y / 4 && y < node->r1.y + node->r1.h + MENU_PAD_Y / 4)
+        {
+            if (node->isDir)
+            {
                 node->opened = !node->opened;
                 node->active = 1;
-            } else {
+            }
+            else
+            {
                 addFileBarNode(node->name, node->path);
             }
-        } else {
+        }
+        else
+        {
             node->active = 0;
         }
 
-        if(node->isDir && node->child && node->opened){
+        if (node->isDir && node->child && node->opened)
+        {
             handleExplorerItemsClick(&node, x, y);
         }
 

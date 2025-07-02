@@ -1,0 +1,27 @@
+# Ignore build artifacts
+/build/
+*.o
+*.out
+*.exe
+
+# Ignore editor settings
+.vscode/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore dependency files
+*.d
+
+# Ignore backup files
+*~
+*.swp
+
+# Ignore compiled libraries
+*.a
+*.so
+*.dll
+
+# Ignore logs
+*.log

@@ -64,6 +64,8 @@ void initExplorer(){
     int i=0;
     while((entry = readdir(dir)) != NULL){
         if(strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+        if(entry->d_name[0] == '.') continue;
+
         // printf("%s ", entry->d_name);
         int type = 0;
         snprintf(fullpath, sizeof(fullpath), "%s/%s", selected_folder, entry->d_name);

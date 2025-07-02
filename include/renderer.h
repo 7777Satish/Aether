@@ -73,6 +73,11 @@ extern SDL_Renderer* renderer;
 extern int WINDOW_W;
 extern int WINDOW_H;
 
+/* ===== Mouse and Keyboard =====*/
+extern int MOUSE_X;
+extern int MOUSE_Y;
+extern int IS_MOUSE_DOWN;
+
 // Initialising Left Menu
 extern int MENU_BAR_W;
 extern int MENU_W;
@@ -99,6 +104,7 @@ extern int EDITOR_PADDINGY;
 extern TTF_Font* poppins_regular;
 extern TTF_Font* poppins_bold; 
 extern TTF_Font* font2;
+extern TTF_Font* jetbrains_regular;
 
 // Creating Top Nav and Left Menu
 extern SDL_Rect TOPNAV_bg_rect;
@@ -106,6 +112,14 @@ extern SDL_Rect MENUBAR_bg_rect;
 extern SDL_Rect MENU_bg_rect;
 extern SDL_Rect FILEBAR_bg_rect;
 
+/* ===== Scrollbars =====*/
+extern int EXPLORER_SCROLL_Y;
+extern int FILEMENU_SCROLL_X;
+extern int EDITOR_SCROLL_X;
+extern int EDITOR_SCROLL_Y;
+
+
+/* ===== Initialising Logos ===== */
 
 extern  SDL_Surface* logoSurface2;
 extern  SDL_Texture* logoTexture2;
@@ -113,6 +127,11 @@ extern  int logo2AW, logo2AH;
 extern  int dlw2;
 extern  int dlh2;
 extern  SDL_Rect logoRect2;
+
+extern SDL_Surface* logoSurface;
+extern SDL_Texture* logoTexture;
+extern int logoAW, logoAH;
+extern SDL_Rect logoRect;
 
 
 void init();

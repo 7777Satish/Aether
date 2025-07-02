@@ -9,6 +9,7 @@
         "utils.h": "c",
         "pthread.h": "c",
         "renderer.h": "c",
-        "files.h": "c"
+        "files.h": "c",
+        "events.h": "c"
     }
 }
