@@ -32,6 +32,7 @@ FileBarItem* createFileBarNode(char* name, char* path){
 
 void addFileBarNode(char* name, char* path){
     FileBarItem* node = createFileBarNode(name, path);
+    node->active = 1;
 
     char* content = readFile(path);
     char c = content[0];
@@ -42,6 +43,7 @@ void addFileBarNode(char* name, char* path){
     FileLine* lines = NULL;
     FileLine* prevLine = NULL;
     SDL_Color fg = {255, 255, 255, 255};
+
     while(c!='\0'){
         if(c=='\n'){
 
@@ -69,6 +71,7 @@ void addFileBarNode(char* name, char* path){
             currentLine[0] = '\0';
             i++;
             c = content[i];
+            continue;
         }
 
         size_t len = strlen(currentLine);
@@ -78,11 +81,10 @@ void addFileBarNode(char* name, char* path){
         i++;
         c = content[i];
     }
-    // long size = strlen(currentLine);
-    // printf("%s\n%d\n", currentLine, size);
-
-    if(!FileBar) FileBar = node;
-    else {
+    
+    if(!FileBar){
+        FileBar = node;
+    } else {
         FileBarItem* ptr = FileBar;
         while (ptr->next!=NULL)
         {
@@ -90,6 +92,8 @@ void addFileBarNode(char* name, char* path){
                 ptr->active = 1;
                 ptr->lines = lines;
                 return;
+            } else {
+                ptr->active = 0;
             }
             ptr = ptr->next;
         }
@@ -138,7 +142,7 @@ void handleExplorerItemsClick(FileNode** folder, int x, int y){
             node->active = 0;
         }
 
-        if(node->isDir && node->child){
+        if(node->isDir && node->child && node->opened){
             handleExplorerItemsClick(&node, x, y);
         }
 

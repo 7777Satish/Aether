@@ -149,6 +149,16 @@ SDL_Rect MENUBAR_bg_rect = {};
 SDL_Rect MENU_bg_rect = {};
 SDL_Rect FILEBAR_bg_rect = {};
 
+
+SDL_Surface* logoSurface2 = NULL;
+SDL_Texture* logoTexture2 = NULL;
+int logo2AW, logo2AH;
+int dlw2 = 300;
+int dlh2;
+SDL_Rect logoRect2;
+
+
+
 void init(){
     
     SDL_Init(SDL_VIDEO_OPENGL);
@@ -166,9 +176,20 @@ void init(){
     poppins_bold = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", TOP_NAV_LOGO_H/1.7);
     font2 = TTF_OpenFont("assets/Montserrat/static/Montserrat-Regular.ttf", TOP_NAV_LOGO_H/1.7 - 1);
 
-
-
     int prevX = MENU_BAR_W + TOPNAV_PADDINGX;
+
+    logoSurface2 = IMG_Load("assets/logo_grayscale.png");
+    logoTexture2 = SDL_CreateTextureFromSurface(renderer, logoSurface2);
+    SDL_FreeSurface(logoSurface2);
+    SDL_QueryTexture(logoTexture2, NULL, NULL, &logo2AW, &logo2AH);
+    dlw2 = 300;
+    dlh2 = (logo2AH+0.0)/logo2AW*dlw2;
+    
+    logoRect2.x = MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W)/2 - dlw2/2;
+    logoRect2.y = TOPNAV_H + (WINDOW_H - TOPNAV_H)/2 - dlh2/2;
+    logoRect2.w = dlw2;
+    logoRect2.h = dlh2;
+
 
     
     // Top Nav Left Buttons
@@ -422,6 +443,11 @@ void renderFileBar(){
         node->r2.h = s1->h;
 
         x+=node->r1.w;
+
+        if(node->active){
+            SDL_SetRenderDrawColor(renderer, 46, 46, 46, 100);
+            SDL_RenderFillRect(renderer, &node->r1);
+        }
     
         SDL_SetRenderDrawColor(renderer, 56, 56, 56, 100);
         SDL_RenderDrawLine(renderer, node->r1.x+node->r1.w, FILEBAR_bg_rect.y, node->r1.x+node->r1.w, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h);
@@ -435,6 +461,51 @@ void renderFileBar(){
 }
 
 void renderTextEditor(){
+    FileBarItem* node = FileBar;
+    while (node!=NULL)
+    {
+        if(node->active) break;
+        node = node->next;
+    }
+
+    if(!node){
+        SDL_RenderCopy(renderer, logoTexture2, NULL, &logoRect2);
+        return;
+    }
+
+    FileLine* line = node->lines;
+    if(!line) return;
+    int y = 0;
+    SDL_Color fg = {255, 255, 255, 255};
+    while (line)
+    {
+
+        if(line->content[0] == '\0'){
+            y++;
+            line = line->next;
+            continue;
+        }
+        if(!line->t1){
+            SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, line->content, fg);
+            line->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+            SDL_FreeSurface(s1);
+        }
+
+        int w,h;
+        SDL_QueryTexture(line->t1, NULL, NULL, &w, &h);
+
+        SDL_Rect r1 = {
+            FILEBAR_bg_rect.x + 4,
+            y*h + FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4,
+            w,h
+        };
+
+        SDL_RenderCopy(renderer, line->t1, NULL, &r1);
+
+        y++;
+        line = line->next;
+    }
+    
     
 }
 
@@ -842,7 +913,6 @@ void renderExtentions(){
         };
         Extentions.r1 = r1; // First Text Box
     }
-
 
     SDL_RenderCopy(renderer, Extentions.t1, NULL, &Extentions.r1);
 }

@@ -106,6 +106,15 @@ extern SDL_Rect MENUBAR_bg_rect;
 extern SDL_Rect MENU_bg_rect;
 extern SDL_Rect FILEBAR_bg_rect;
 
+
+extern  SDL_Surface* logoSurface2;
+extern  SDL_Texture* logoTexture2;
+extern  int logo2AW, logo2AH;
+extern  int dlw2;
+extern  int dlh2;
+extern  SDL_Rect logoRect2;
+
+
 void init();
 
 void renderTopNav();

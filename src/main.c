@@ -30,16 +30,6 @@ int main(){
     int dlw = (logoAW+0.0)/logoAH*dlh;
     SDL_Rect logoRect = {MENU_BAR_W/2 - dlw/2, TOPNAV_H/2 - dlh/2, dlw, dlh};
 
-
-    SDL_Surface* logoSurface2 = IMG_Load("assets/logo_grayscale.png");
-    SDL_Texture* logoTexture2 = SDL_CreateTextureFromSurface(renderer, logoSurface2);
-    SDL_FreeSurface(logoSurface2);
-    int logo2AW, logo2AH;
-    SDL_QueryTexture(logoTexture2, NULL, NULL, &logo2AW, &logo2AH);
-    int dlw2 = 300;
-    int dlh2 = (logo2AH+0.0)/logo2AW*dlw2;
-    SDL_Rect logoRect2 = {MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W)/2 - dlw2/2, TOPNAV_H + (WINDOW_H - TOPNAV_H)/2 - dlh2/2, dlw2, dlh2};
-
     int running = 1;
     SDL_Event event;
     while (running)
@@ -203,11 +193,11 @@ int main(){
 
         // Drawing Logos
         SDL_RenderCopy(renderer, logoTexture, NULL, &logoRect);
-        if(editorState == 0){
-            SDL_RenderCopy(renderer, logoTexture2, NULL, &logoRect2);
-        } else if(editorState == 1){
-            renderFile();
-        }
+        // if(editorState == 0){
+        //     SDL_RenderCopy(renderer, logoTexture2, NULL, &logoRect2);
+        // } else if(editorState == 1){
+        //     renderFile();
+        // }
 
         renderTopNavBarMenu();
         renderFileBar();
