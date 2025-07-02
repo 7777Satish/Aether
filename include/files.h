@@ -18,6 +18,7 @@ char* open_folder_dialog();
 
 typedef struct FileNode FileNode;
 
+
 extern FileNode* Folder;
 extern char selected_folder[1024];
 

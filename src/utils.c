@@ -1,7 +1,6 @@
 #include "utils.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
+FileBarItem* FileBar = NULL;
 
 FileNode* createFileNode(char* name, char* path, int isDir){
     FileNode* node = (FileNode*)malloc(sizeof(FileNode));
@@ -19,10 +18,42 @@ FileNode* createFileNode(char* name, char* path, int isDir){
     return node;
 }
 
+FileBarItem* createFileBarNode(char* name, char* path){
+    FileBarItem* node = (FileBarItem*)malloc(sizeof(FileBarItem));
+    node->name = strdup(name);
+    node->path = strdup(path);
+    node->next = NULL;
+    node->prev = NULL;
+    node->t1 = NULL;
+    node->active = 1;
+    return node;
+}
+
+void addFileBarNode(char* name, char* path){
+    FileBarItem* node = createFileBarNode(name, path);
+
+    if(!FileBar) FileBar = node;
+    else {
+        FileBarItem* ptr = FileBar;
+        while (ptr->next!=NULL)
+        {
+            if(strcmp(ptr->path, path) == 0){
+                ptr->active = 1;
+                return;
+            }
+            ptr = ptr->next;
+        }
+        if(strcmp(ptr->path, path) == 0){
+            ptr->active = 1;
+            return;
+        }
+        ptr->next = node;
+        node->prev = ptr;
+    }
+}
 
 void handleExplorerItemsHover(FileNode** folder, int x, int y){
     FileNode* node = (*folder)->child;
-    int i = 0;
     while (node!=NULL)
     {
 
@@ -37,14 +68,11 @@ void handleExplorerItemsHover(FileNode** folder, int x, int y){
         }
 
         node = node->next;
-        i=+1;
     }
 }
 
-
 void handleExplorerItemsClick(FileNode** folder, int x, int y){
     FileNode* node = (*folder)->child;
-    int i=0;
     while (node!=NULL)
     {
 
@@ -52,6 +80,8 @@ void handleExplorerItemsClick(FileNode** folder, int x, int y){
             if(node->isDir){
                 node->opened = !node->opened;
                 node->active = 1;
+            } else {
+                addFileBarNode(node->name, node->path);
             }
         } else {
             node->active = 0;
@@ -62,6 +92,5 @@ void handleExplorerItemsClick(FileNode** folder, int x, int y){
         }
 
         node = node->next;
-        i+=1;
     }
 }

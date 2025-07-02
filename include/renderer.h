@@ -7,7 +7,6 @@
 #include <SDL2/SDL_ttf.h>
 #include "files.h"
 
-
 typedef struct{
     char name[10];
     char list[10][20];
@@ -51,6 +50,8 @@ typedef struct {
     char txt5[310];
 } Search_TEXTBOXES;
 
+
+typedef struct FileNode FileNode;
 
 extern TOPNAV_MENU_NODE TOPNAV_MENU[5];
 
@@ -103,12 +104,14 @@ extern TTF_Font* font2;
 extern SDL_Rect TOPNAV_bg_rect;
 extern SDL_Rect MENUBAR_bg_rect;
 extern SDL_Rect MENU_bg_rect;
+extern SDL_Rect FILEBAR_bg_rect;
 
 void init();
 
 void renderTopNav();
 void renderTopNavBarMenu();
 void renderMenuBar();
+void renderFileBar();
 
 void renderExplorer();
 void renderFolder(FileNode** folder, int* i, int padX);

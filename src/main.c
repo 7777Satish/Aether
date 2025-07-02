@@ -113,13 +113,16 @@ int main(){
                                 if(showMenu == 0){
                                     showMenu = 1;
                                     logoRect2.x = MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W)/2 - dlw2/2;
+                                    FILEBAR_bg_rect.x = MENU_BAR_W + MENU_W + 1;
                                 }
                                 else{
                                     showMenu = 0;
                                     logoRect2.x = MENU_BAR_W + (WINDOW_W-MENU_BAR_W)/2 - dlw2/2;
+                                    FILEBAR_bg_rect.x = MENU_BAR_W + 1;
                                 }
                             } else {
                                 showMenu = 1;
+                                FILEBAR_bg_rect.x = MENU_BAR_W + MENU_W;
                                 logoRect2.x = MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W)/2 - dlw2/2;
                             }
                             menu_state = i;
@@ -206,6 +209,7 @@ int main(){
         }
 
         renderTopNavBarMenu();
+        renderFileBar();
 
         SDL_RenderPresent(renderer);
         SDL_Delay(1000/60);

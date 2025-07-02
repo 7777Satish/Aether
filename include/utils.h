@@ -2,6 +2,9 @@
 #define UTILS_H
 
 #include "renderer.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct FileNode {
     char* name;
@@ -26,12 +29,17 @@ typedef struct FileBarItem {
     int active;
     SDL_Texture* t1;
     SDL_Rect r1;
-    SDL_Rect r1;
+    SDL_Rect r2;
     struct FileBarItem* next;
     struct FileBarItem* prev;
 } FileBarItem;
 
+extern FileBarItem* FileBar;
+
 FileNode* createFileNode(char* name, char* path, int isDir);
+FileBarItem* createFileBarNode(char* name, char* path);
+
+void addFileBarNode(char* name, char* path);
 void handleExplorerItemsHover(FileNode** folder, int x, int y);
 void handleExplorerItemsClick(FileNode** folder, int x, int y);
 

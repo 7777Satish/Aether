@@ -147,6 +147,7 @@ TTF_Font* font2 = NULL;
 SDL_Rect TOPNAV_bg_rect = {};
 SDL_Rect MENUBAR_bg_rect = {};
 SDL_Rect MENU_bg_rect = {};
+SDL_Rect FILEBAR_bg_rect = {};
 
 void init(){
     
@@ -274,7 +275,7 @@ void init(){
     TOPNAV_bg_rect.x = 0;
     TOPNAV_bg_rect.y = 0;
     TOPNAV_bg_rect.w = WINDOW_W;
-    TOPNAV_bg_rect.h = WINDOW_H;
+    TOPNAV_bg_rect.h = TOPNAV_H;
 
     MENUBAR_bg_rect.x = 0;
     MENUBAR_bg_rect.y = TOPNAV_H;
@@ -286,6 +287,11 @@ void init(){
     MENU_bg_rect.w = MENU_W;
     MENU_bg_rect.h = WINDOW_H;
 
+    if(showMenu) FILEBAR_bg_rect.x = MENU_BAR_W + MENU_W + 1;
+    else FILEBAR_bg_rect.x = MENU_BAR_W + 1;
+    FILEBAR_bg_rect.y = TOPNAV_H + 1;
+    FILEBAR_bg_rect.w = WINDOW_W;
+    FILEBAR_bg_rect.h = TOPNAV_H;
     
 }
 
@@ -384,6 +390,49 @@ void renderMenuBar(){
 
 }
 
+void renderFileBar(){
+    if(!FileBar) return;
+    
+    SDL_SetRenderDrawColor(renderer, 23, 23, 23, 255);
+    SDL_RenderFillRect(renderer, &FILEBAR_bg_rect);
+    
+    SDL_SetRenderDrawColor(renderer, 56, 56, 56, 100);
+    SDL_RenderDrawLine(renderer, FILEBAR_bg_rect.x, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, WINDOW_W, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h);
+    SDL_SetRenderDrawColor(renderer, 56, 56, 56, 100);
+
+    FileBarItem* node = FileBar;
+    int i=0, x=FILEBAR_bg_rect.x;
+
+    while (node!=NULL)
+    {
+        SDL_Color color = {239, 239, 239, 255};
+        SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
+        if(!node->t1){
+            node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+        }
+        
+        node->r1.x = x;
+        node->r1.y = FILEBAR_bg_rect.y;
+        node->r1.w = s1->w + 40;
+        node->r1.h = FILEBAR_bg_rect.h;
+
+        node->r2.x = x+node->r1.w/2-s1->w/2;
+        node->r2.y = FILEBAR_bg_rect.y+FILEBAR_bg_rect.h/2-s1->h/2;
+        node->r2.w = s1->w;
+        node->r2.h = s1->h;
+
+        x+=node->r1.w;
+    
+        SDL_SetRenderDrawColor(renderer, 56, 56, 56, 100);
+        SDL_RenderDrawLine(renderer, node->r1.x+node->r1.w, FILEBAR_bg_rect.y, node->r1.x+node->r1.w, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h);
+    
+        SDL_RenderCopy(renderer, node->t1, NULL, &node->r2);
+
+        SDL_FreeSurface(s1);
+        node = node->next;
+        i+=1;
+    }
+}
 
 void renderExplorer(){
 
@@ -507,7 +556,6 @@ void renderFolder(FileNode** folder, int* i, int padX){
                 struct dirent* entry;
                 char fullpath[2048];
                 struct stat st;
-                int i=0;
                 
                 FileNode* head = NULL;
                 while((entry = readdir(dir)) != NULL){
@@ -534,18 +582,6 @@ void renderFolder(FileNode** folder, int* i, int padX){
                     node->next = head;
                     if(head) head->prev = node;
                     
-                    // SDL_Color color = {255, 255, 255, 255};
-                    // SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
-                    
-
-                    // node->r1.x = MENU_BAR_W + LEFT_MENU[0].rect.x + s1->h + 2;
-                    // node->r1.w = s1->w;
-                    // node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h*i + MENU_PAD_Y/2*i;
-                    // node->r1.h = s1->h;
-
-                    // SDL_FreeSurface(s1);
-                    
-                    // i+=1;
                     head = node;
                 }
 
