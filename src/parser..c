@@ -295,7 +295,6 @@ FileLine* parseText(char* content){
 
         if (c == '\n')
         {
-
             Token* t = NULL;
             if(!isInComment){
                 t = createToken(currentWord, 0, white);

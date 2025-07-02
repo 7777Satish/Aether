@@ -1,4 +1,5 @@
 # Ignore build artifacts
+/build
 /build/
 *.o
 *.out
