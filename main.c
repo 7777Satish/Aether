@@ -54,6 +54,14 @@ typedef struct{
     SDL_Rect r5;
 } ELEMENT;
 
+typedef struct {
+    char txt1[30];
+    char txt2[30];
+    char txt3[30];
+    char txt4[30];
+    char txt5[310];
+} Search_TEXTBOXES;
+
 int WINDOW_W = 1200;
 int WINDOW_H = 700;
 // int WINDOW_W = 1200*2.5/2;
@@ -162,14 +170,59 @@ MENU_BAR_NODE LEFT_MENU[4] = {
 
 ELEMENT Explorer = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 ELEMENT Search = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
+
+Search_TEXTBOXES SearchMenu = {
+    "Search",
+    "Replace",
+    "",
+    "",
+    ""
+};
+
 ELEMENT Github = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 ELEMENT Extentions = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
+
+// File Management
+char filesrc[50] = "/home/greatme/Desktop/sample/text.txt";
+char *fileContent;
+
+char* readFile(const char* filesrc) {
+    FILE *f = fopen(filesrc, "r");
+    if (!f) {
+        perror("Failed to open file");
+        return NULL;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    rewind(f);
+
+    char* fileContent = malloc(size + 1);  // +1 for '\0'
+    if (!fileContent) {
+        fclose(f);
+        fprintf(stderr, "Memory allocation failed\n");
+        return NULL;
+    }
+
+    fread(fileContent, 1, size, f);
+    fileContent[size] = '\0'; // Null-terminate the string
+
+    fclose(f);
+    return fileContent;
+}
 
 // ======== LEFT MENU EXPLORER ========
 
 int editorState = 0;
 
 int main(){
+
+    fileContent = readFile(filesrc);
+    if (fileContent) {
+        printf("%s", fileContent);
+        free(fileContent);
+    }
+
     SDL_Init(SDL_VIDEO_OPENGL);
     TTF_Init();
     IMG_Init(0);
@@ -205,13 +258,14 @@ int main(){
 
 
 
-    // Initialising Fonts
+    /* ===== Initialising Fonts ===== */
     poppins_regular = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", TOP_NAV_LOGO_H/1.7);
     poppins_bold = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", TOP_NAV_LOGO_H/1.7);
     font2 = TTF_OpenFont("assets/Montserrat/static/Montserrat-Regular.ttf", TOP_NAV_LOGO_H/1.7 - 1);
 
     int prevX = MENU_BAR_W + TOPNAV_PADDINGX;
 
+    
     // Top Nav Left Buttons
     for (int i = 0; i < 5; i++) {
         TOPNAV_MENU_NODE* node = &TOPNAV_MENU[i];
@@ -445,7 +499,9 @@ int main(){
                     3,
                     node.rect.h + 20
                 };
-                SDL_SetRenderDrawColor(renderer, 50, 50, 130, 255);
+                // SDL_SetRenderDrawColor(renderer, 50, 50, 130, 255);
+                
+                SDL_SetRenderDrawColor(renderer, 106, 90, 205, 255);
                 SDL_RenderFillRect(renderer, &r);
             }
 
@@ -473,6 +529,7 @@ int main(){
 
 
         SDL_RenderPresent(renderer);
+        SDL_Delay(1000/60);
     }
     
 
@@ -570,6 +627,75 @@ void renderExplorer(){
 void renderSearch(){
     MENU_BAR_NODE node = LEFT_MENU[1];
     SDL_RenderCopy(renderer, node.text_texture, NULL, &node.text_rect);
+
+    SDL_Color color = {100, 100, 100};
+
+    // Textures
+    if(!Search.t1){
+        SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, SearchMenu.txt1, color);
+        Search.t1 = SDL_CreateTextureFromSurface(renderer, s1);
+    }
+
+    if(!Search.t2){
+        SDL_Surface* s2 = TTF_RenderText_Blended(poppins_regular, SearchMenu.txt2, color);
+        Search.t2 = SDL_CreateTextureFromSurface(renderer, s2);
+    }
+
+    // Rects
+
+    if(!Search.r1.x){
+        int w,h;
+        SDL_QueryTexture(Search.t1, NULL, NULL, &w, &h);
+        SDL_Rect r1 = {
+            MENU_BAR_W + MENU_PAD_X,
+            node.text_rect.y + node.text_rect.h + MENU_PAD_Y,
+            MENU_W - 2 * MENU_PAD_X,
+            h + 5
+        };
+        Search.r1 = r1;
+    }
+    
+    if(!Search.r2.x){
+        int w,h;
+        SDL_QueryTexture(Search.t1, NULL, NULL, &w, &h);
+        SDL_Rect r2 = {
+            MENU_BAR_W + MENU_PAD_X + 10,
+            node.text_rect.y + node.text_rect.h + MENU_PAD_Y + 2.5,
+            w,
+            h
+        };
+        Search.r2 = r2;
+    }
+
+    if(!Search.r3.x){
+        int w,h;
+        SDL_QueryTexture(Search.t2, NULL, NULL, &w, &h);
+        SDL_Rect r3 = {
+            MENU_BAR_W + MENU_PAD_X,
+            node.text_rect.y + node.text_rect.h + 3.6/2 * MENU_PAD_Y + Search.r1.h,
+            MENU_W - 2 * MENU_PAD_X,
+            h + 5
+        };
+        Search.r3 = r3;
+    }
+    
+    if(!Search.r4.x){
+        int w,h;
+        SDL_QueryTexture(Search.t2, NULL, NULL, &w, &h);
+        SDL_Rect r4 = {
+            MENU_BAR_W + MENU_PAD_X + 10,
+            node.text_rect.y + node.text_rect.h + 3.6/2 * MENU_PAD_Y + 2.5 + Search.r1.h,
+            w,
+            h
+        };
+        Search.r4 = r4;
+    }
+
+    SDL_SetRenderDrawColor(renderer, 6, 6, 6, 255);
+    SDL_RenderFillRect(renderer, &Search.r1);
+    SDL_RenderFillRect(renderer, &Search.r3);
+    SDL_RenderCopy(renderer, Search.t1, NULL, &Search.r2);
+    SDL_RenderCopy(renderer, Search.t2, NULL, &Search.r4);
 }
 
 void renderGithub(){
