@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "renderer.h"
+#include "../include/renderer.h"
 #include "files.h"
 
 void renderFile();
@@ -40,8 +40,6 @@ int main(){
     int dlh2 = (logo2AH+0.0)/logo2AW*dlw2;
     SDL_Rect logoRect2 = {MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W)/2 - dlw2/2, TOPNAV_H + (WINDOW_H - TOPNAV_H)/2 - dlh2/2, dlw2, dlh2};
 
-
-
     int running = 1;
     SDL_Event event;
     while (running)
@@ -56,7 +54,37 @@ int main(){
                 int x = event.motion.x;
                 int y = event.motion.y;
                 
+
+                // Menu Buttons
+                if(x > MENU_BAR_W && x < MENU_BAR_W + MENU_W){
+                    
+                    // Open Folder button in Exploror
+                    if(!IS_TOPNAV_MENU_DOWN && !Folder && menu_state == 0 && Explorer.t3 && x>Explorer.r3.x && x<Explorer.r3.x+Explorer.r3.w && y> Explorer.r3.y && y<Explorer.r3.y+Explorer.r3.h){
+                        printf("Opening folder dialog...\n");
+                        printf("%d\n", IS_TOPNAV_MENU_DOWN);
+                        pthread_t folder_thread;
+                        pthread_create(&folder_thread, NULL, open_folder_thread, NULL);
+                        pthread_detach(folder_thread);  // optional: auto-clean thread
+
+                    }
+
+                    // Files and Folders in Exploror
+                    if(!IS_TOPNAV_MENU_DOWN && Folder){
+                        FileNode* node = Folder->child;
+                        i=0;
+                        while (node!=NULL)
+                        {
+                            node = node->next;
+                            i=+1;
+                        }
+                        
+                    }
+
+                }
+
                 // Top Nav Bar Buttons
+
+                IS_TOPNAV_MENU_DOWN = 0;
 
                 for(i=0; i<(int)(sizeof(TOPNAV_MENU)/sizeof(TOPNAV_MENU[0])); i++){
                     TOPNAV_MENU_NODE *node = &TOPNAV_MENU[i];
@@ -68,6 +96,7 @@ int main(){
                     if(x>r.x && x<r.x + r.w && y>r.y && y<r.y + r.h){
                         if(node->clicked) node->clicked = 0;
                         else node->clicked = 1;
+                        IS_TOPNAV_MENU_DOWN = 1;
                     } else {
                         node->clicked = 0;
                     }
@@ -100,18 +129,6 @@ int main(){
                             }
                             menu_state = i;
                         }
-                    }
-                }
-
-                // Menu Buttons
-                if(x > MENU_BAR_W && x < MENU_BAR_W + MENU_W){
-                    if(menu_state == 0 && Explorer.t3 && x>Explorer.r3.x && x<Explorer.r3.x+Explorer.r3.w && y> Explorer.r3.y && y<Explorer.r3.y+Explorer.r3.h){
-                        printf("Opening folder dialog...\n");
-                        
-                        pthread_t folder_thread;
-                        pthread_create(&folder_thread, NULL, open_folder_thread, NULL);
-                        pthread_detach(folder_thread);  // optional: auto-clean thread
-
                     }
                 }
 
@@ -158,6 +175,30 @@ int main(){
                             node->isActive = 0;
                         }
                     }
+                }
+
+                if(x>MENU_BAR_W && x<MENU_BAR_W + MENU_W){
+
+
+                    // Files and Folders in Exploror
+                    if(Folder){
+                        FileNode* node = Folder->child;
+                        i=0;
+                        while (node!=NULL)
+                        {
+
+                            if(x>MENU_BAR_W + MENU_PAD_X && x<MENU_BAR_W + MENU_W - MENU_PAD_X && y>node->r1.y-MENU_PAD_Y/4 && y<node->r1.y+node->r1.h+MENU_PAD_Y/4){
+                                node->hovered = 1;
+                            } else {
+                                node->hovered = 0;
+                            }
+
+                            node = node->next;
+                            i=+1;
+                        }
+                        
+                    }
+
                 }
                 
             }

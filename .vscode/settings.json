@@ -6,6 +6,9 @@
         "stdlib.h": "c",
         "sdl.h": "c",
         "sdl_ttf.h": "c",
-        "utils.h": "c"
+        "utils.h": "c",
+        "pthread.h": "c",
+        "renderer.h": "c",
+        "files.h": "c"
     }
 }

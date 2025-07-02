@@ -108,7 +108,7 @@ Search_TEXTBOXES SearchMenu = {
 ELEMENT Github = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 ELEMENT Extentions = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 
-
+ELEMENT FileIcons = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 
 SDL_Window* window = NULL;;
 SDL_Renderer* renderer = NULL;
@@ -131,6 +131,7 @@ int TOPNAV_PADDINGY = 6;
 int TOP_NAV_LOGO_H = 33-2*3;
 int TOP_NAV_LOGO_W;
 int TOPNAV_MENU_BUTTON_WIDTH = 50;
+int IS_TOPNAV_MENU_DOWN = 0;
 
 // Initialising Editor
 int EDITORMENU_H = 30;
@@ -153,6 +154,9 @@ void init(){
     TTF_Init();
     IMG_Init(0);
 
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
     window = SDL_CreateWindow("CodeDesk", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -161,7 +165,6 @@ void init(){
     poppins_bold = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", TOP_NAV_LOGO_H/1.7);
     font2 = TTF_OpenFont("assets/Montserrat/static/Montserrat-Regular.ttf", TOP_NAV_LOGO_H/1.7 - 1);
 
-    
 
 
     int prevX = MENU_BAR_W + TOPNAV_PADDINGX;
@@ -246,6 +249,25 @@ void init(){
         SDL_FreeSurface(node_surface);
     }
 
+
+    // Initializing FileIcons
+    SDL_Surface* fi_s1 = IMG_Load("assets/file_icon.png");
+    FileIcons.t1 = SDL_CreateTextureFromSurface(renderer, fi_s1);
+    FileIcons.r1.w = fi_s1->w;
+    FileIcons.r1.h = fi_s1->h;
+    SDL_FreeSurface(fi_s1);
+
+    SDL_Surface* fi_s2 = IMG_Load("assets/chevron_right.png");
+    FileIcons.t2 = SDL_CreateTextureFromSurface(renderer, fi_s2);
+    FileIcons.r2.w = fi_s2->w;
+    FileIcons.r2.h = fi_s2->h;
+    SDL_FreeSurface(fi_s2);
+
+    SDL_Surface* fi_s3 = IMG_Load("assets/chevron_down.png");
+    FileIcons.t3 = SDL_CreateTextureFromSurface(renderer, fi_s3);
+    FileIcons.r3.w = fi_s3->w;
+    FileIcons.r3.h = fi_s3->h;
+    SDL_FreeSurface(fi_s3);
 
 
     // Creating Top Nav and Left Menu
@@ -365,9 +387,21 @@ void renderMenuBar(){
 
 void renderExplorer(){
 
-    // Display the Menu Name
     MENU_BAR_NODE node = LEFT_MENU[0];
-    SDL_RenderCopy(renderer, node.text_texture, NULL, &node.text_rect);
+    
+    // Display the Menu Name
+    if(!Folder){
+        SDL_RenderCopy(renderer, node.text_texture, NULL, &node.text_rect);
+    } else {
+        if(!Folder->t1){
+            SDL_Color color = {155, 155, 155, 255};
+            SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, Folder->name, color);
+            Folder->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+            SDL_FreeSurface(s1);
+        }
+        
+        SDL_RenderCopy(renderer, Folder->t1, NULL, &Folder->r1);
+    }
     
     SDL_Color color = {180, 180, 180, 255};
     
@@ -431,7 +465,7 @@ void renderExplorer(){
         };
         Explorer.r3 = r3; // First Button Container
     }
-
+    
     if(!Explorer.r4.x){
         int w, h;
         SDL_QueryTexture(Explorer.t3, NULL, NULL, &w, &h);
@@ -445,12 +479,64 @@ void renderExplorer(){
     }
 
 
-
+    int i=0;
     SDL_SetRenderDrawColor(renderer, 106, 90, 205, 255);
-    SDL_RenderFillRect(renderer, &Explorer.r3);
-    SDL_RenderCopy(renderer, Explorer.t1, NULL, &Explorer.r1);
-    SDL_RenderCopy(renderer, Explorer.t2, NULL, &Explorer.r2);
-    SDL_RenderCopy(renderer, Explorer.t3, NULL, &Explorer.r4);
+
+    if(!Folder){
+        SDL_RenderFillRect(renderer, &Explorer.r3);
+        SDL_RenderCopy(renderer, Explorer.t1, NULL, &Explorer.r1);
+        SDL_RenderCopy(renderer, Explorer.t2, NULL, &Explorer.r2);
+        SDL_RenderCopy(renderer, Explorer.t3, NULL, &Explorer.r4);
+    } else {
+        FileNode* node = Folder->child;
+
+        while(node!=NULL){
+            SDL_SetRenderDrawColor(renderer, 206, 206, 206, 255);
+            // SDL_RenderFillRect(renderer, &node->r1);
+            
+            if(!node->t1){
+                SDL_Color color = {239, 239, 239, 255};
+                SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
+                node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+                SDL_FreeSurface(s1);
+            }
+
+            FileIcons.r1.x = node->r1.x - 2 - node->r1.h;
+            FileIcons.r1.y = node->r1.y + 2;
+            FileIcons.r1.w = node->r1.h - 4;
+            FileIcons.r1.h = node->r1.h - 4;
+
+            SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
+            node->r1.x = MENU_BAR_W + LEFT_MENU[0].rect.x + s1->h + 2;
+            node->r1.w = s1->w;
+            node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h*i + MENU_PAD_Y/2*i;
+            node->r1.h = s1->h;
+            SDL_FreeSurface(s1);
+            
+            if(node->hovered){
+                SDL_Rect hoverRect = {
+                    MENU_BAR_W + MENU_PAD_X,
+                    node->r1.y,
+                    MENU_W - 2*MENU_PAD_X,
+                    node->r1.h
+                };
+
+                SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
+                SDL_RenderFillRect(renderer, &hoverRect);
+            }
+            
+            if(node->isDir){
+                if(node->opened) SDL_RenderCopy(renderer, FileIcons.t3, NULL, &FileIcons.r1);
+                else SDL_RenderCopy(renderer, FileIcons.t2, NULL, &FileIcons.r1);
+            }
+            else SDL_RenderCopy(renderer, FileIcons.t1, NULL, &FileIcons.r1);
+            
+
+            SDL_RenderCopy(renderer, node->t1, NULL, &node->r1);
+            node = node->next;
+            i+=1;
+        }
+    }
 
 }
 

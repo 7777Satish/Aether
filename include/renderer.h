@@ -5,8 +5,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-
-
+#include "files.h"
 
 
 typedef struct{
@@ -88,6 +87,7 @@ extern int TOPNAV_PADDINGY;
 extern int TOP_NAV_LOGO_H;
 extern int TOP_NAV_LOGO_W;
 extern int TOPNAV_MENU_BUTTON_WIDTH;
+extern int IS_TOPNAV_MENU_DOWN;
 
 // Initialising Editor
 extern int EDITORMENU_H;

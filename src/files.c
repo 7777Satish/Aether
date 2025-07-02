@@ -1,4 +1,4 @@
-#include "files.h"
+#include "../include/files.h"
 
 char selected_folder[1024] = "";
 FileNode* Folder = NULL;
@@ -59,10 +59,61 @@ void initExplorer(){
     }
 
     struct dirent* entry;
+    char fullpath[2048];
+    struct stat st;
+    int i=0;
     while((entry = readdir(dir)) != NULL){
         if(strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
-        printf("\n%s", entry->d_name);
+        // printf("%s ", entry->d_name);
+        int type = 0;
+        snprintf(fullpath, sizeof(fullpath), "%s/%s", selected_folder, entry->d_name);
+        
+        if (stat(fullpath, &st) == 0) {
+            if (S_ISDIR(st.st_mode)) {
+                type = 1;
+            } else if (S_ISREG(st.st_mode)) {
+                type = 0;
+            } else {
+                type = 0;
+            }
+        } else {
+            perror("stat");
+        }
+
+        FileNode* node = createFileNode(entry->d_name, fullpath, type);
+
+        node->opened = 0;
+        node->next = Folder;
+        if(Folder) Folder->prev = node;
+        
+        SDL_Color color = {255, 255, 255, 255};
+        SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
+        
+
+        node->r1.x = MENU_BAR_W + LEFT_MENU[0].rect.x + s1->h + 2;
+        node->r1.w = s1->w;
+        node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h*i + MENU_PAD_Y/2*i;
+        node->r1.h = s1->h;
+
+        SDL_FreeSurface(s1);
+        
+        i+=1;
+        Folder = node;
     }
+
+    FileNode* parent = createFileNode("FOLDER", selected_folder, 1);
+    parent->opened = 1;
+    parent->child = Folder;
+    parent->isDirOpened = 1;
+    Folder = parent;
+    
+    SDL_Color color = {255, 255, 255, 255};
+    SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, parent->name, color);
+
+    parent->r1.x = LEFT_MENU[0].rect.x + MENU_BAR_W;
+    parent->r1.w = s1->w;
+    parent->r1.y = LEFT_MENU[0].rect.y - MENU_PAD_Y;
+    parent->r1.h = s1->h;
 
     closedir(dir);
 }
