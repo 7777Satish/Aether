@@ -1,119 +1,45 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
-
-
-void renderExplorer();
-void renderSearch();
-void renderGithub();
-void renderExtentions();
-
-// Fonts
-TTF_Font* poppins_regular;
-TTF_Font* poppins_bold; 
-TTF_Font* font2;
-
-SDL_Window* window;
-SDL_Renderer* renderer;
-
-typedef struct{
-    char name[10];
-    char list[10][20];
-    int isActive;
-    int clicked;
-    SDL_Texture* texture;
-    SDL_Rect rect;
-} TOPNAV_MENU_NODE;
-
-typedef struct{
-    char name[15];
-    char icon[40];
-    char active_icon[40];
-    int isActive;
-    int clicked;
-    SDL_Texture* texture;
-    SDL_Texture* active_texture;
-    SDL_Texture* text_texture;
-    SDL_Rect rect;
-    SDL_Rect text_rect;
-} MENU_BAR_NODE;
-
-typedef struct{
-    SDL_Texture* t1;
-    SDL_Texture* t2;
-    SDL_Texture* t3;
-    SDL_Texture* t4;
-    SDL_Texture* t5;
-    SDL_Rect r1;
-    SDL_Rect r2;
-    SDL_Rect r3;
-    SDL_Rect r4;
-    SDL_Rect r5;
-} ELEMENT;
-
-typedef struct {
-    char txt1[30];
-    char txt2[30];
-    char txt3[30];
-    char txt4[30];
-    char txt5[310];
-} Search_TEXTBOXES;
-
-int WINDOW_W = 1200;
-int WINDOW_H = 700;
-// int WINDOW_W = 1200*2.5/2;
-// int WINDOW_H = 700*2.5/2;
-
-// Initialising Left Menu
-int MENU_BAR_W = 50;
-int MENU_W = 200;
-int MENU_PAD_X = 10;
-int MENU_PAD_Y = 10;
-int showMenu = 1;
-int menu_state = 0;
-
-// Initialising TOPNAV
-int TOPNAV_H = 33;
-int TOPNAV_PADDINGX = 20;
-int TOPNAV_PADDINGY = 6;
-int TOP_NAV_LOGO_H = 33-2*3;
-int TOP_NAV_LOGO_W;
-int TOPNAV_MENU_BUTTON_WIDTH = 50;
-
+#include "renderer.h"
 
 TOPNAV_MENU_NODE TOPNAV_MENU[5] = {
     {
         "File",
         { "New File", "Open File", "Save", "Save As", "Exit" },
         0,
-        0
+        0,
+        NULL,
+        {0,0,0,0}
     },
     {
         "Edit",
         { "Undo", "Redo", "Cut", "Copy", "Paste" },
         0,
-        0
+        0,
+        NULL,
+        {0,0,0,0}
     },
     {
         "View",
         { "Zoom In", "Zoom Out", "Toggle Sidebar", "Fullscreen", "" },
         0,
-        0
+        0,
+        NULL,
+        {0,0,0,0}
     },
     {
         "Run",
         { "Build", "Run", "Debug", "", "" },
         0,
-        0
+        0,
+        NULL,
+        {0,0,0,0}
     },
     {
         "Help",
         { "Documentation", "Keyboard Shortcuts", "About", "", "" },
         0,
-        0
+        0,
+        NULL,
+        {0,0,0,0}
     }
 };
 
@@ -182,47 +108,47 @@ Search_TEXTBOXES SearchMenu = {
 ELEMENT Github = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 ELEMENT Extentions = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 
-// File Management
-char filesrc[50] = "/home/greatme/Desktop/sample/text.txt";
-char *fileContent;
 
-char* readFile(const char* filesrc) {
-    FILE *f = fopen(filesrc, "r");
-    if (!f) {
-        perror("Failed to open file");
-        return NULL;
-    }
 
-    fseek(f, 0, SEEK_END);
-    long size = ftell(f);
-    rewind(f);
+SDL_Window* window = NULL;;
+SDL_Renderer* renderer = NULL;
 
-    char* fileContent = malloc(size + 1);  // +1 for '\0'
-    if (!fileContent) {
-        fclose(f);
-        fprintf(stderr, "Memory allocation failed\n");
-        return NULL;
-    }
+int WINDOW_W = 1200;
+int WINDOW_H = 700;
 
-    fread(fileContent, 1, size, f);
-    fileContent[size] = '\0'; // Null-terminate the string
+// Initialising Left Menu
+int MENU_BAR_W = 50;
+int MENU_W = 200;
+int MENU_PAD_X = 10;
+int MENU_PAD_Y = 10;
+int showMenu = 1;
+int menu_state = 0;
 
-    fclose(f);
-    return fileContent;
-}
+// Initialising TOPNAV
+int TOPNAV_H = 33;
+int TOPNAV_PADDINGX = 20;
+int TOPNAV_PADDINGY = 6;
+int TOP_NAV_LOGO_H = 33-2*3;
+int TOP_NAV_LOGO_W;
+int TOPNAV_MENU_BUTTON_WIDTH = 50;
 
-// ======== LEFT MENU EXPLORER ========
+// Initialising Editor
+int EDITORMENU_H = 30;
+int EDITOR_PADDINGX = 10;
+int EDITOR_PADDINGY = 10;
 
-int editorState = 0;
+// Fonts
+TTF_Font* poppins_regular = NULL;
+TTF_Font* poppins_bold = NULL; 
+TTF_Font* font2 = NULL;
 
-int main(){
+// Creating Top Nav and Left Menu
+SDL_Rect TOPNAV_bg_rect = {};
+SDL_Rect MENUBAR_bg_rect = {};
+SDL_Rect MENU_bg_rect = {};
 
-    fileContent = readFile(filesrc);
-    if (fileContent) {
-        printf("%s", fileContent);
-        free(fileContent);
-    }
-
+void init(){
+    
     SDL_Init(SDL_VIDEO_OPENGL);
     TTF_Init();
     IMG_Init(0);
@@ -230,38 +156,13 @@ int main(){
     window = SDL_CreateWindow("CodeDesk", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-
-    int i = 0;
-
-    /* ===== Initialising Images ===== */
-    SDL_Surface* logoSurface = IMG_Load("assets/logo.png");
-    SDL_Texture* logoTexture = SDL_CreateTextureFromSurface(renderer, logoSurface);
-    SDL_FreeSurface(logoSurface);
-    int logoAW, logoAH;
-    SDL_QueryTexture(logoTexture, NULL, NULL, &logoAW, &logoAH);
-    TOP_NAV_LOGO_W = (logoAW+0.0)/logoAH*TOP_NAV_LOGO_H;
-    int dlh = TOPNAV_H - 2*TOPNAV_PADDINGY;
-    int dlw = (logoAW+0.0)/logoAH*dlh;
-    SDL_Rect logoRect = {MENU_BAR_W/2 - dlw/2, TOPNAV_H/2 - dlh/2, dlw, dlh};
-
-
-    SDL_Surface* logoSurface2 = IMG_Load("assets/logo_grayscale.png");
-    SDL_Texture* logoTexture2 = SDL_CreateTextureFromSurface(renderer, logoSurface2);
-    SDL_FreeSurface(logoSurface2);
-    int logo2AW, logo2AH;
-    SDL_QueryTexture(logoTexture2, NULL, NULL, &logo2AW, &logo2AH);
-    int dlw2 = 300;
-    int dlh2 = (logo2AH+0.0)/logo2AW*dlw2;
-    SDL_Rect logoRect2 = {MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W)/2 - dlw2/2, TOPNAV_H + (WINDOW_H - TOPNAV_H)/2 - dlh2/2, dlw2, dlh2};
-
-
-
-
-
     /* ===== Initialising Fonts ===== */
     poppins_regular = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", TOP_NAV_LOGO_H/1.7);
     poppins_bold = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", TOP_NAV_LOGO_H/1.7);
     font2 = TTF_OpenFont("assets/Montserrat/static/Montserrat-Regular.ttf", TOP_NAV_LOGO_H/1.7 - 1);
+
+    
+
 
     int prevX = MENU_BAR_W + TOPNAV_PADDINGX;
 
@@ -269,7 +170,7 @@ int main(){
     // Top Nav Left Buttons
     for (int i = 0; i < 5; i++) {
         TOPNAV_MENU_NODE* node = &TOPNAV_MENU[i];
-        SDL_Color color = {155, 155, 155};
+        SDL_Color color = {155, 155, 155, 255};
 
         SDL_Surface* node_surface = TTF_RenderText_Blended(poppins_regular, node->name, color);
         if (!node_surface) {
@@ -299,9 +200,9 @@ int main(){
 
     // Menu Bar Buttons
     int prevY = TOPNAV_H + 20;
-    for (int i = 0; i < sizeof(LEFT_MENU)/sizeof(LEFT_MENU[0]); i++) {
+    for (int i = 0; i < (int)(sizeof(LEFT_MENU)/sizeof(LEFT_MENU[0])); i++) {
         MENU_BAR_NODE* node = &LEFT_MENU[i];
-        SDL_Color color = {155, 155, 155};
+        SDL_Color color = {155, 155, 155, 255};
 
         SDL_Surface* node_surface = IMG_Load(node->icon);
         SDL_Surface* node_active_surface = IMG_Load(node->active_icon);
@@ -347,119 +248,73 @@ int main(){
 
 
 
-
-
     // Creating Top Nav and Left Menu
-    SDL_Rect TOPNAV_bg_rect = {0, 0, WINDOW_W, TOPNAV_H};
-    SDL_Rect MENUBAR_bg_rect = {0, TOPNAV_H, MENU_BAR_W, WINDOW_H};
-    SDL_Rect MENU_bg_rect = {MENU_BAR_W, TOPNAV_H, MENU_W, WINDOW_H};
+    TOPNAV_bg_rect.x = 0;
+    TOPNAV_bg_rect.y = 0;
+    TOPNAV_bg_rect.w = WINDOW_W;
+    TOPNAV_bg_rect.h = WINDOW_H;
 
+    MENUBAR_bg_rect.x = 0;
+    MENUBAR_bg_rect.y = TOPNAV_H;
+    MENUBAR_bg_rect.w = MENU_BAR_W;
+    MENUBAR_bg_rect.h = WINDOW_H;
 
-    int running = 1;
-    SDL_Event event;
-    while (running)
-    {
-        while(SDL_PollEvent(&event)){
-            if(event.type == SDL_QUIT){
-                running = 0;
-            }
+    MENU_bg_rect.x = MENU_BAR_W;
+    MENU_bg_rect.y = TOPNAV_H;
+    MENU_bg_rect.w = MENU_W;
+    MENU_bg_rect.h = WINDOW_H;
 
-            if(event.type == SDL_MOUSEBUTTONDOWN){
-
-                int x = event.motion.x;
-                int y = event.motion.y;
-
-                // Menu Bar Buttons
-                if(x<MENU_BAR_W+50){
-                    for(i=0;i<sizeof(LEFT_MENU)/sizeof(LEFT_MENU[0]);i++){
-                        MENU_BAR_NODE *node = &LEFT_MENU[i];
-                        
-                        SDL_Rect r;
-                        r.x = 0;
-                        r.w = MENU_BAR_W;
-                        r.y = node->rect.y - 10;
-                        r.h = node->rect.h + 20;
     
-                        if(x>r.x && x<r.w + r.x && y>r.y && y<r.y + r.h){
-                            if(menu_state == i){
-                                if(showMenu == 0){
-                                    showMenu = 1;
-                                    logoRect2.x = MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W)/2 - dlw2/2;
-                                }
-                                else{
-                                    showMenu = 0;
-                                    logoRect2.x = MENU_BAR_W + (WINDOW_W-MENU_BAR_W)/2 - dlw2/2;
-                                }
-                            } else {
-                                showMenu = 1;
-                                logoRect2.x = MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W)/2 - dlw2/2;
-                            }
-                            menu_state = i;
-                        }
-                    }
-                }
+}
 
-            }
+void renderTopNav(){
+    // ===== Top Nav =====
+    SDL_SetRenderDrawColor(renderer, 23, 23, 23, 255);
+    SDL_RenderFillRect(renderer, &TOPNAV_bg_rect);
 
-            if(event.type == SDL_MOUSEMOTION){
+    SDL_SetRenderDrawColor(renderer, 56, 56, 56, 100);
 
-                int x = event.motion.x;
-                int y = event.motion.y;
-
-                // Top Nav Left Buttons
-                if(y<TOPNAV_H + 50){
-                    for(i=0;i<5;i++){
-                        TOPNAV_MENU_NODE *node = &TOPNAV_MENU[i];
-                        
-                        SDL_Rect r;
-                        r.x = node->rect.x-7.9;
-                        r.w = node->rect.w+16.8;
-                        r.y = node->rect.y;
-                        r.h = node->rect.h;
     
-                        if(x>r.x && x<r.w + r.x && y>r.y && y<r.y + r.h){
-                            node->isActive = 1;
-                        } else if(!node->clicked){
-                            node->isActive = 0;
-                        }
-                    }
-                }
+    int i;
 
-                // Menu Bar Buttons
-                if(x<MENU_BAR_W+50){
-                    for(i=0;i<sizeof(LEFT_MENU)/sizeof(LEFT_MENU[0]);i++){
-                        MENU_BAR_NODE *node = &LEFT_MENU[i];
-                        
-                        SDL_Rect r;
-                        r.x = 0;
-                        r.w = MENU_BAR_W;
-                        r.y = node->rect.y - 10;
-                        r.h = node->rect.h + 20;
-    
-                        if(x>r.x && x<r.w + r.x && y>r.y && y<r.y + r.h){
-                            node->isActive = 1;
-                        } else if(!node->clicked){
-                            node->isActive = 0;
-                        }
-                    }
-                }
-                
-            }
+    // Top Nav Left Buttons
+    for(i=0;i<5;i++){
+        TOPNAV_MENU_NODE node = TOPNAV_MENU[i];
+        if(node.isActive){
+            SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+            SDL_Rect r;
+            r.x = node.rect.x-7.9;
+            r.w = node.rect.w+16.8;
+            r.y = node.rect.y;
+            r.h = node.rect.h;
+            SDL_RenderFillRect(renderer, &r);
         }
+        SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+        SDL_RenderCopy(renderer, node.texture, NULL, &node.rect);
+    }
 
-        SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);
-        SDL_RenderClear(renderer);
+}
 
+void renderTopNavBarMenu(){
+    int i;
+    // Top Nav Left Buttons
+    for(i=0;i<5;i++){
+        TOPNAV_MENU_NODE node = TOPNAV_MENU[i];
+        if(node.clicked == 1){
+            SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
+            SDL_Rect r;
+            r.x = node.rect.x-7.9;
+            r.w = 220;
+            r.y = node.rect.y + node.rect.h;
+            r.h = 350;
+            SDL_RenderFillRect(renderer, &r);
+            SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+            SDL_RenderDrawRect(renderer, &r);
+        }
+    }
+}
 
-        /* ===== Draw Home Screen ===== */
-
-
-        // ===== Top Nav =====
-        SDL_SetRenderDrawColor(renderer, 23, 23, 23, 255);
-        SDL_RenderFillRect(renderer, &TOPNAV_bg_rect);
-
-        SDL_SetRenderDrawColor(renderer, 56, 56, 56, 100);
-        
+void renderMenuBar(){
 
         // Left Menu
         SDL_SetRenderDrawColor(renderer, 23, 23, 23, 255);
@@ -472,25 +327,9 @@ int main(){
         SDL_RenderDrawLine(renderer, MENU_BAR_W + MENU_W, TOPNAV_H, MENU_BAR_W + MENU_W, WINDOW_H); // Drawing MENU Border
         SDL_RenderDrawLine(renderer, 0, TOPNAV_H, WINDOW_W, TOPNAV_H); // Drawing TOPNAV Border
 
-
-
-        // Top Nav Left Buttons
-        for(i=0;i<5;i++){
-            TOPNAV_MENU_NODE node = TOPNAV_MENU[i];
-            if(node.isActive){
-                SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
-                SDL_Rect r;
-                r.x = node.rect.x-7.9;
-                r.w = node.rect.w+16.8;
-                r.y = node.rect.y;
-                r.h = node.rect.h;
-                SDL_RenderFillRect(renderer, &r);
-            }
-            SDL_RenderCopy(renderer, node.texture, NULL, &node.rect);
-        }
-
+        int i;
         // Menu Bar Buttons
-        for(i=0;i<sizeof(LEFT_MENU)/sizeof(LEFT_MENU[0]);i++){
+        for(i=0;i<(int)(sizeof(LEFT_MENU)/sizeof(LEFT_MENU[0]));i++){
             MENU_BAR_NODE node = LEFT_MENU[i];
             if(menu_state == i){
                 SDL_Rect r = {
@@ -521,29 +360,18 @@ int main(){
             if(menu_state == 3) renderExtentions();
         }
 
-        // Drawing Logos
-        SDL_RenderCopy(renderer, logoTexture, NULL, &logoRect);
-        if(editorState == 0){
-            SDL_RenderCopy(renderer, logoTexture2, NULL, &logoRect2);
-        }
-
-
-        SDL_RenderPresent(renderer);
-        SDL_Delay(1000/60);
-    }
-    
-
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
 }
 
+
 void renderExplorer(){
+
+    // Display the Menu Name
     MENU_BAR_NODE node = LEFT_MENU[0];
     SDL_RenderCopy(renderer, node.text_texture, NULL, &node.text_rect);
-
-    SDL_Color color = {180, 180, 180};
-
+    
+    SDL_Color color = {180, 180, 180, 255};
+    
+    // Initialize Explorer if not
     // Textures
     if(!Explorer.t1){
         SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, "You have not opened", color);
@@ -557,7 +385,7 @@ void renderExplorer(){
 
 
     if(!Explorer.t3){
-        SDL_Color color = {233, 233, 233};
+        SDL_Color color = {233, 233, 233, 255};
         SDL_Surface* s3 = TTF_RenderText_Blended(font2, "Open Folder", color);
         Explorer.t3 = SDL_CreateTextureFromSurface(renderer, s3);
     }
@@ -616,6 +444,8 @@ void renderExplorer(){
         Explorer.r4 = r4; // First Button Text Container
     }
 
+
+
     SDL_SetRenderDrawColor(renderer, 106, 90, 205, 255);
     SDL_RenderFillRect(renderer, &Explorer.r3);
     SDL_RenderCopy(renderer, Explorer.t1, NULL, &Explorer.r1);
@@ -628,7 +458,7 @@ void renderSearch(){
     MENU_BAR_NODE node = LEFT_MENU[1];
     SDL_RenderCopy(renderer, node.text_texture, NULL, &node.text_rect);
 
-    SDL_Color color = {100, 100, 100};
+    SDL_Color color = {100, 100, 100, 255};
 
     // Textures
     if(!Search.t1){
@@ -702,7 +532,7 @@ void renderGithub(){
     MENU_BAR_NODE node = LEFT_MENU[2];
     SDL_RenderCopy(renderer, node.text_texture, NULL, &node.text_rect);
 
-    SDL_Color color = {180, 180, 180};
+    SDL_Color color = {180, 180, 180, 255};
 
     // Textures
     if(!Github.t1){
@@ -717,7 +547,7 @@ void renderGithub(){
 
 
     if(!Github.t3){
-        SDL_Color color = {233, 233, 233};
+        SDL_Color color = {233, 233, 233, 255};
         SDL_Surface* s3 = TTF_RenderText_Blended(font2, "Cennect Github", color);
         Github.t3 = SDL_CreateTextureFromSurface(renderer, s3);
     }
@@ -788,7 +618,7 @@ void renderExtentions(){
     MENU_BAR_NODE node = LEFT_MENU[3];
     SDL_RenderCopy(renderer, node.text_texture, NULL, &node.text_rect);
 
-    SDL_Color color = {130, 130, 130};
+    SDL_Color color = {130, 130, 130, 255};
 
     // Textures
     if(!Extentions.t1){
