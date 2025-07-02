@@ -20,6 +20,19 @@ typedef struct FileNode {
     struct FileNode* prev;
 } FileNode;
 
+typedef struct FileBarItem {
+    char* name;
+    char* path;
+    int active;
+    SDL_Texture* t1;
+    SDL_Rect r1;
+    SDL_Rect r1;
+    struct FileBarItem* next;
+    struct FileBarItem* prev;
+} FileBarItem;
+
 FileNode* createFileNode(char* name, char* path, int isDir);
+void handleExplorerItemsHover(FileNode** folder, int x, int y);
+void handleExplorerItemsClick(FileNode** folder, int x, int y);
 
 #endif

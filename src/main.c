@@ -70,13 +70,8 @@ int main(){
 
                     // Files and Folders in Exploror
                     if(!IS_TOPNAV_MENU_DOWN && Folder){
-                        FileNode* node = Folder->child;
-                        i=0;
-                        while (node!=NULL)
-                        {
-                            node = node->next;
-                            i=+1;
-                        }
+                        
+                        handleExplorerItemsClick(&Folder, x, y);
                         
                     }
 
@@ -182,20 +177,8 @@ int main(){
 
                     // Files and Folders in Exploror
                     if(Folder){
-                        FileNode* node = Folder->child;
-                        i=0;
-                        while (node!=NULL)
-                        {
-
-                            if(x>MENU_BAR_W + MENU_PAD_X && x<MENU_BAR_W + MENU_W - MENU_PAD_X && y>node->r1.y-MENU_PAD_Y/4 && y<node->r1.y+node->r1.h+MENU_PAD_Y/4){
-                                node->hovered = 1;
-                            } else {
-                                node->hovered = 0;
-                            }
-
-                            node = node->next;
-                            i=+1;
-                        }
+                        
+                        handleExplorerItemsHover(&Folder, x, y);
                         
                     }
 

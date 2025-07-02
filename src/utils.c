@@ -18,3 +18,50 @@ FileNode* createFileNode(char* name, char* path, int isDir){
     node->child = NULL;
     return node;
 }
+
+
+void handleExplorerItemsHover(FileNode** folder, int x, int y){
+    FileNode* node = (*folder)->child;
+    int i = 0;
+    while (node!=NULL)
+    {
+
+        if(x>MENU_BAR_W + MENU_PAD_X && x<MENU_BAR_W + MENU_W - MENU_PAD_X && y>node->r1.y-MENU_PAD_Y/4 && y<node->r1.y+node->r1.h+MENU_PAD_Y/4){
+            node->hovered = 1;
+        } else {
+            node->hovered = 0;
+        }
+
+        if(node->isDir && node->child){
+            handleExplorerItemsHover(&node, x, y);
+        }
+
+        node = node->next;
+        i=+1;
+    }
+}
+
+
+void handleExplorerItemsClick(FileNode** folder, int x, int y){
+    FileNode* node = (*folder)->child;
+    int i=0;
+    while (node!=NULL)
+    {
+
+        if(x>MENU_BAR_W + MENU_PAD_X && x<MENU_BAR_W + MENU_W - MENU_PAD_X && y>node->r1.y-MENU_PAD_Y/4 && y<node->r1.y+node->r1.h+MENU_PAD_Y/4){
+            if(node->isDir){
+                node->opened = !node->opened;
+                node->active = 1;
+            }
+        } else {
+            node->active = 0;
+        }
+
+        if(node->isDir && node->child){
+            handleExplorerItemsClick(&node, x, y);
+        }
+
+        node = node->next;
+        i+=1;
+    }
+}

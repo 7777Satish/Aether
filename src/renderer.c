@@ -251,7 +251,7 @@ void init(){
 
 
     // Initializing FileIcons
-    SDL_Surface* fi_s1 = IMG_Load("assets/file_icon.png");
+    SDL_Surface* fi_s1 = IMG_Load("assets/text_icon.png");
     FileIcons.t1 = SDL_CreateTextureFromSurface(renderer, fi_s1);
     FileIcons.r1.w = fi_s1->w;
     FileIcons.r1.h = fi_s1->h;
@@ -488,9 +488,78 @@ void renderExplorer(){
         SDL_RenderCopy(renderer, Explorer.t2, NULL, &Explorer.r2);
         SDL_RenderCopy(renderer, Explorer.t3, NULL, &Explorer.r4);
     } else {
-        FileNode* node = Folder->child;
+        renderFolder(&Folder, &i, 0);
+    }
+
+}
+
+void renderFolder(FileNode** folder, int* i, int padX){
+    
+        if(!(*folder)->child){
+            if(!(*folder)->isDirOpened){
+
+                DIR* dir = opendir((*folder)->path);
+                if(!dir){
+                    perror("opendir");
+                    return;
+                }
+
+                struct dirent* entry;
+                char fullpath[2048];
+                struct stat st;
+                int i=0;
+                
+                FileNode* head = NULL;
+                while((entry = readdir(dir)) != NULL){
+                    if(strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+                    // printf("%s,", entry->d_name);
+                    int type = 0;
+                    snprintf(fullpath, sizeof(fullpath), "%s/%s", (*folder)->path, entry->d_name);
+                    
+                    if (stat(fullpath, &st) == 0) {
+                        if (S_ISDIR(st.st_mode)) {
+                            type = 1;
+                        } else if (S_ISREG(st.st_mode)) {
+                            type = 0;
+                        } else {
+                            type = 0;
+                        }
+                    } else {
+                        perror("stat");
+                    }
+
+                    FileNode* node = createFileNode(entry->d_name, fullpath, type);
+
+                    node->opened = 0;
+                    node->next = head;
+                    if(head) head->prev = node;
+                    
+                    // SDL_Color color = {255, 255, 255, 255};
+                    // SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
+                    
+
+                    // node->r1.x = MENU_BAR_W + LEFT_MENU[0].rect.x + s1->h + 2;
+                    // node->r1.w = s1->w;
+                    // node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h*i + MENU_PAD_Y/2*i;
+                    // node->r1.h = s1->h;
+
+                    // SDL_FreeSurface(s1);
+                    
+                    // i+=1;
+                    head = node;
+                }
+
+                (*folder)->child = head;
+                (*folder)->isDirOpened = 1;
+            } else {
+                return;
+            }
+        }
+
+        FileNode* node = (*folder)->child;
 
         while(node!=NULL){
+            // printf("%s ", node->name);
             SDL_SetRenderDrawColor(renderer, 206, 206, 206, 255);
             // SDL_RenderFillRect(renderer, &node->r1);
             
@@ -506,13 +575,14 @@ void renderExplorer(){
             FileIcons.r1.w = node->r1.h - 4;
             FileIcons.r1.h = node->r1.h - 4;
 
+            SDL_Color color = {239, 239, 239, 255};
             SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
-            node->r1.x = MENU_BAR_W + LEFT_MENU[0].rect.x + s1->h + 2;
+            node->r1.x = padX*10 + MENU_BAR_W + LEFT_MENU[0].rect.x + s1->h + 2;
             node->r1.w = s1->w;
-            node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h*i + MENU_PAD_Y/2*i;
+            node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h*(*i) + MENU_PAD_Y/2*(*i);
             node->r1.h = s1->h;
             SDL_FreeSurface(s1);
-            
+
             if(node->hovered){
                 SDL_Rect hoverRect = {
                     MENU_BAR_W + MENU_PAD_X,
@@ -526,7 +596,14 @@ void renderExplorer(){
             }
             
             if(node->isDir){
-                if(node->opened) SDL_RenderCopy(renderer, FileIcons.t3, NULL, &FileIcons.r1);
+                if(node->opened){
+                    SDL_RenderCopy(renderer, FileIcons.t3, NULL, &FileIcons.r1);
+                    (*i)+=1;
+                    renderFolder(&node, i, padX+1);
+                    SDL_RenderCopy(renderer, node->t1, NULL, &node->r1);
+                    node = node->next;
+                    continue;
+                }
                 else SDL_RenderCopy(renderer, FileIcons.t2, NULL, &FileIcons.r1);
             }
             else SDL_RenderCopy(renderer, FileIcons.t1, NULL, &FileIcons.r1);
@@ -534,10 +611,10 @@ void renderExplorer(){
 
             SDL_RenderCopy(renderer, node->t1, NULL, &node->r1);
             node = node->next;
-            i+=1;
+            (*i)+=1;
         }
-    }
-
+        
+        
 }
 
 void renderSearch(){

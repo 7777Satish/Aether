@@ -111,6 +111,7 @@ void renderTopNavBarMenu();
 void renderMenuBar();
 
 void renderExplorer();
+void renderFolder(FileNode** folder, int* i, int padX);
 void renderSearch();
 void renderGithub();
 void renderExtentions();
