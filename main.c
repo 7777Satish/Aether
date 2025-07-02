@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
@@ -10,6 +11,13 @@ void renderSearch();
 void renderGithub();
 void renderExtentions();
 
+// Fonts
+TTF_Font* poppins_regular;
+TTF_Font* poppins_bold; 
+TTF_Font* font2;
+
+SDL_Window* window;
+SDL_Renderer* renderer;
 
 typedef struct{
     char name[10];
@@ -33,6 +41,18 @@ typedef struct{
     SDL_Rect text_rect;
 } MENU_BAR_NODE;
 
+typedef struct{
+    SDL_Texture* t1;
+    SDL_Texture* t2;
+    SDL_Texture* t3;
+    SDL_Texture* t4;
+    SDL_Texture* t5;
+    SDL_Rect r1;
+    SDL_Rect r2;
+    SDL_Rect r3;
+    SDL_Rect r4;
+    SDL_Rect r5;
+} ELEMENT;
 
 int WINDOW_W = 1200;
 int WINDOW_H = 700;
@@ -54,6 +74,7 @@ int TOPNAV_PADDINGY = 6;
 int TOP_NAV_LOGO_H = 33-2*3;
 int TOP_NAV_LOGO_W;
 int TOPNAV_MENU_BUTTON_WIDTH = 50;
+
 
 TOPNAV_MENU_NODE TOPNAV_MENU[5] = {
     {
@@ -139,10 +160,12 @@ MENU_BAR_NODE LEFT_MENU[4] = {
     }
 };
 
+ELEMENT Explorer = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
+ELEMENT Search = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
+ELEMENT Github = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
+ELEMENT Extentions = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 
-
-SDL_Window* window;
-SDL_Renderer* renderer;
+// ======== LEFT MENU EXPLORER ========
 
 int editorState = 0;
 
@@ -183,8 +206,9 @@ int main(){
 
 
     // Initialising Fonts
-    TTF_Font* font1 = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", TOP_NAV_LOGO_H/1.7);
-    TTF_Font* font2 = TTF_OpenFont("assets/Montserrat/static/Montserrat-Regular.ttf", TOP_NAV_LOGO_H/1.7);
+    poppins_regular = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", TOP_NAV_LOGO_H/1.7);
+    poppins_bold = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", TOP_NAV_LOGO_H/1.7);
+    font2 = TTF_OpenFont("assets/Montserrat/static/Montserrat-Regular.ttf", TOP_NAV_LOGO_H/1.7 - 1);
 
     int prevX = MENU_BAR_W + TOPNAV_PADDINGX;
 
@@ -193,7 +217,7 @@ int main(){
         TOPNAV_MENU_NODE* node = &TOPNAV_MENU[i];
         SDL_Color color = {155, 155, 155};
 
-        SDL_Surface* node_surface = TTF_RenderText_Blended(font1, node->name, color);
+        SDL_Surface* node_surface = TTF_RenderText_Blended(poppins_regular, node->name, color);
         if (!node_surface) {
             fprintf(stderr, "Failed to render text: %s\n", TTF_GetError());
             continue;
@@ -227,7 +251,7 @@ int main(){
 
         SDL_Surface* node_surface = IMG_Load(node->icon);
         SDL_Surface* node_active_surface = IMG_Load(node->active_icon);
-        SDL_Surface* node_text_surface = TTF_RenderText_Blended(font1, node->name, color);
+        SDL_Surface* node_text_surface = TTF_RenderText_Blended(poppins_regular, node->name, color);
         if (!node_surface || !node_active_surface || !node_text_surface) {
             fprintf(stderr, "Failed to render text: %s\n", TTF_GetError());
             continue;
@@ -434,10 +458,12 @@ int main(){
         }
 
         // ===== Drawing Left Menu Components =====
-        if(menu_state == 0) renderExplorer();
-        if(menu_state == 1) renderSearch();
-        if(menu_state == 2) renderGithub();
-        if(menu_state == 3) renderExtentions();
+        if(showMenu){
+            if(menu_state == 0) renderExplorer();
+            if(menu_state == 1) renderSearch();
+            if(menu_state == 2) renderGithub();
+            if(menu_state == 3) renderExtentions();
+        }
 
         // Drawing Logos
         SDL_RenderCopy(renderer, logoTexture, NULL, &logoRect);
@@ -458,6 +484,87 @@ int main(){
 void renderExplorer(){
     MENU_BAR_NODE node = LEFT_MENU[0];
     SDL_RenderCopy(renderer, node.text_texture, NULL, &node.text_rect);
+
+    SDL_Color color = {180, 180, 180};
+
+    // Textures
+    if(!Explorer.t1){
+        SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, "You have not opened", color);
+        Explorer.t1 = SDL_CreateTextureFromSurface(renderer, s1);
+    }
+
+    if(!Explorer.t2){
+        SDL_Surface* s2 = TTF_RenderText_Blended(poppins_regular, "any folder yet", color);
+        Explorer.t2 = SDL_CreateTextureFromSurface(renderer, s2);
+    }
+
+
+    if(!Explorer.t3){
+        SDL_Color color = {233, 233, 233};
+        SDL_Surface* s3 = TTF_RenderText_Blended(font2, "Open Folder", color);
+        Explorer.t3 = SDL_CreateTextureFromSurface(renderer, s3);
+    }
+
+    // if(!Explorer.t4){
+    //     SDL_Surface* s4 = TTF_RenderText_Blended(poppins_regular, "Open Recent", color);
+    //     Explorer.t4 = SDL_CreateTextureFromSurface(renderer, s4);
+    // }
+
+    // Rects
+    if(!Explorer.r1.x){
+        int w, h;
+        SDL_QueryTexture(Explorer.t1, NULL, NULL, &w, &h);
+        SDL_Rect r1 = {
+            MENU_BAR_W + MENU_PAD_X,
+            node.text_rect.y + node.text_rect.h + MENU_PAD_Y,
+            w,
+            h
+        };
+        Explorer.r1 = r1; // First Text Box
+    }
+
+    if(!Explorer.r2.x){
+        int w, h;
+        SDL_QueryTexture(Explorer.t2, NULL, NULL, &w, &h);
+        SDL_Rect r2 = {
+            MENU_BAR_W + MENU_PAD_X,
+            node.text_rect.y + node.text_rect.h + MENU_PAD_Y + Explorer.r1.h,
+            w,
+            h
+        };
+        Explorer.r2 = r2; // Second Text Box
+    }
+
+    if(!Explorer.r3.x){
+        int w, h;
+        SDL_QueryTexture(Explorer.t1, NULL, NULL, &w, &h);
+        SDL_Rect r3 = {
+            MENU_BAR_W + MENU_PAD_X,
+            node.text_rect.y + node.text_rect.h + 3*MENU_PAD_Y + Explorer.r1.h + Explorer.r2.h - 2.5,
+            MENU_W - 2 * MENU_PAD_Y,
+            h + 5
+        };
+        Explorer.r3 = r3; // First Button Container
+    }
+
+    if(!Explorer.r4.x){
+        int w, h;
+        SDL_QueryTexture(Explorer.t3, NULL, NULL, &w, &h);
+        SDL_Rect r4 = {
+            MENU_BAR_W + MENU_W/2 - w/2,
+            node.text_rect.y + node.text_rect.h + 3*MENU_PAD_Y + Explorer.r1.h + Explorer.r2.h,
+            w,
+            h
+        };
+        Explorer.r4 = r4; // First Button Text Container
+    }
+
+    SDL_SetRenderDrawColor(renderer, 106, 90, 205, 255);
+    SDL_RenderFillRect(renderer, &Explorer.r3);
+    SDL_RenderCopy(renderer, Explorer.t1, NULL, &Explorer.r1);
+    SDL_RenderCopy(renderer, Explorer.t2, NULL, &Explorer.r2);
+    SDL_RenderCopy(renderer, Explorer.t3, NULL, &Explorer.r4);
+
 }
 
 void renderSearch(){
@@ -468,9 +575,114 @@ void renderSearch(){
 void renderGithub(){
     MENU_BAR_NODE node = LEFT_MENU[2];
     SDL_RenderCopy(renderer, node.text_texture, NULL, &node.text_rect);
+
+    SDL_Color color = {180, 180, 180};
+
+    // Textures
+    if(!Github.t1){
+        SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, "Import From a GitHub", color);
+        Github.t1 = SDL_CreateTextureFromSurface(renderer, s1);
+    }
+
+    if(!Github.t2){
+        SDL_Surface* s2 = TTF_RenderText_Blended(poppins_regular, "Repository", color);
+        Github.t2 = SDL_CreateTextureFromSurface(renderer, s2);
+    }
+
+
+    if(!Github.t3){
+        SDL_Color color = {233, 233, 233};
+        SDL_Surface* s3 = TTF_RenderText_Blended(font2, "Cennect Github", color);
+        Github.t3 = SDL_CreateTextureFromSurface(renderer, s3);
+    }
+
+    // if(!Github.t4){
+    //     SDL_Surface* s4 = TTF_RenderText_Blended(poppins_regular, "Open Recent", color);
+    //     Github.t4 = SDL_CreateTextureFromSurface(renderer, s4);
+    // }
+
+    // Rects
+    if(!Github.r1.x){
+        int w, h;
+        SDL_QueryTexture(Github.t1, NULL, NULL, &w, &h);
+        SDL_Rect r1 = {
+            MENU_BAR_W + MENU_PAD_X,
+            node.text_rect.y + node.text_rect.h + MENU_PAD_Y,
+            w,
+            h
+        };
+        Github.r1 = r1; // First Text Box
+    }
+
+    if(!Github.r2.x){
+        int w, h;
+        SDL_QueryTexture(Github.t2, NULL, NULL, &w, &h);
+        SDL_Rect r2 = {
+            MENU_BAR_W + MENU_PAD_X,
+            node.text_rect.y + node.text_rect.h + MENU_PAD_Y + Github.r1.h,
+            w,
+            h
+        };
+        Github.r2 = r2; // Second Text Box
+    }
+
+    if(!Github.r3.x){
+        int w, h;
+        SDL_QueryTexture(Github.t1, NULL, NULL, &w, &h);
+        SDL_Rect r3 = {
+            MENU_BAR_W + MENU_PAD_X,
+            node.text_rect.y + node.text_rect.h + 3*MENU_PAD_Y + Github.r1.h + Github.r2.h - 2.5,
+            MENU_W - 2 * MENU_PAD_Y,
+            h + 5
+        };
+        Github.r3 = r3; // First Button Container
+    }
+
+    if(!Github.r4.x){
+        int w, h;
+        SDL_QueryTexture(Github.t3, NULL, NULL, &w, &h);
+        SDL_Rect r4 = {
+            MENU_BAR_W + MENU_W/2 - w/2,
+            node.text_rect.y + node.text_rect.h + 3*MENU_PAD_Y + Github.r1.h + Github.r2.h,
+            w,
+            h
+        };
+        Github.r4 = r4; // First Button Text Container
+    }
+
+    SDL_SetRenderDrawColor(renderer, 106, 90, 205, 255);
+    SDL_RenderFillRect(renderer, &Github.r3);
+    SDL_RenderCopy(renderer, Github.t1, NULL, &Github.r1);
+    SDL_RenderCopy(renderer, Github.t2, NULL, &Github.r2);
+    SDL_RenderCopy(renderer, Github.t3, NULL, &Github.r4);
+
 }
 
 void renderExtentions(){
     MENU_BAR_NODE node = LEFT_MENU[3];
     SDL_RenderCopy(renderer, node.text_texture, NULL, &node.text_rect);
+
+    SDL_Color color = {130, 130, 130};
+
+    // Textures
+    if(!Extentions.t1){
+        SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, "Feature Coming Soon", color);
+        Extentions.t1 = SDL_CreateTextureFromSurface(renderer, s1);
+    }
+
+    // Rects
+    if(!Extentions.r1.x){
+        int w, h;
+        SDL_QueryTexture(Extentions.t1, NULL, NULL, &w, &h);
+        SDL_Rect r1 = {
+            MENU_BAR_W + MENU_PAD_X,
+            node.text_rect.y + node.text_rect.h + MENU_PAD_Y,
+            w,
+            h
+        };
+        Extentions.r1 = r1; // First Text Box
+    }
+
+
+    SDL_RenderCopy(renderer, Extentions.t1, NULL, &Extentions.r1);
 }
