@@ -495,12 +495,6 @@ void renderFileBar()
 
 void renderTextEditor()
 {
-    // FileBarItem* node = FileBar;
-    // while (node!=NULL)
-    // {
-    //     if(node->active) break;
-    //     node = node->next;
-    // }
 
     FileBarItem *node = currentActiveTag;
 
@@ -525,48 +519,28 @@ void renderTextEditor()
             line = line->next;
             continue;
         }
-        // if (!line->t1)
-        // {
-        //     SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, line->content, fg);
-        //     line->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        //     SDL_FreeSurface(s1);
-        // }
-
-        Token* word = line->word;
+        Token *word = line->word;
         int x = 0;
         while (word)
         {
-            
+
             // printf("%s",word->content);
-            int w = 0,h = 0;
+            int w = 0, h = 0;
             SDL_QueryTexture(word->t1, NULL, NULL, &w, &h);
             SDL_Rect r1 = {
-                FILEBAR_bg_rect.x + 4 + EDITOR_SCROLL_X + x,
-                y * h + FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + EDITOR_SCROLL_Y,
+                FILEBAR_bg_rect.x + 4 + currentActiveTag->EDITOR_SCROLL_X + x,
+                y * h + FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + currentActiveTag->EDITOR_SCROLL_Y,
                 w,
-                h
-            };
+                h};
 
             SDL_RenderCopy(renderer, word->t1, NULL, &r1);
-            x+=w;
+            x += w;
             word = word->next;
         }
-        
-        // printf("\n");
-        // int w, h;
-        // SDL_QueryTexture(line->t1, NULL, NULL, &w, &h);
-
-        // SDL_Rect r1 = {
-        //     FILEBAR_bg_rect.x + 4 + EDITOR_SCROLL_X,
-        //     y * h + FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + EDITOR_SCROLL_Y,
-        //     w, h};
-
-        // SDL_RenderCopy(renderer, line->t1, NULL, &r1);
 
         y++;
         line = line->next;
     }
-    // printf("\n Newline \n");
 }
 
 void renderExplorer()
@@ -801,7 +775,7 @@ void renderFolder(FileNode **folder, int *i, int padX)
         FileIcons.r1.y = node->r1.y + 2;
         FileIcons.r1.w = node->r1.h - 4;
         FileIcons.r1.h = node->r1.h - 4;
-        
+
         if (node->isDir)
         {
             if (node->opened)

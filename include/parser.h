@@ -32,6 +32,7 @@ typedef struct Token {
     TokenType type;
     struct Token* next;
     struct Token* prev;
+    int len;
 } Token;
 
 typedef struct FileLine

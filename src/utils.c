@@ -31,6 +31,13 @@ FileBarItem *createFileBarNode(char *name, char *path)
     node->t1 = NULL;
     node->active = 1;
     node->lines = NULL;
+    node->cursorX = 0;
+    node->cursorY = 0;
+    node->EDITOR_SCROLL_X = 0;
+    node->EDITOR_SCROLL_Y = 0;
+    node->currentLine = NULL;
+    node->currentWord = NULL;
+    node->startIndex = 0;
     return node;
 }
 
@@ -52,9 +59,11 @@ void addFileBarNode(char *name, char *path)
     currentActiveTag = node;
 
     char *content = readFile(path);
-    
-    FileLine* lines = parseText(content);
+
+    FileLine *lines = parseText(content);
     node->lines = lines;
+    node->currentLine = lines;
+    if(lines) node->currentWord = lines->word;
 
     if (!node->t1)
     {
@@ -98,8 +107,6 @@ void addFileBarNode(char *name, char *path)
         ptr->next = node;
         node->prev = ptr;
     }
-
-
 }
 
 void handleExplorerItemsHover(FileNode **folder, int x, int y)

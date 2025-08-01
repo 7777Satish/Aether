@@ -217,6 +217,21 @@ int main()
                     handleMouseScroll(event.wheel.x, event.wheel.y);
                 }
             }
+        
+        
+            if(event.type == SDL_KEYDOWN){
+                int key = event.key.keysym.sym;
+                
+                if(key == SDLK_BACKSPACE){
+                    leftDeleteChar();
+                }
+
+                if(key == SDLK_RETURN) createNewline();
+            }
+
+            if(event.type == SDL_TEXTINPUT){
+                if(currentActiveTag) insertChar(event.text.text[0]);
+            }
         }
 
         SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);

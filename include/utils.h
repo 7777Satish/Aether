@@ -27,6 +27,8 @@ typedef struct FileNode
 
 typedef struct FileLine FileLine;
 
+typedef struct Token Token;
+
 typedef struct FileBarItem{
     char *name;
     char *path;
@@ -35,6 +37,15 @@ typedef struct FileBarItem{
     SDL_Rect r1;
     SDL_Rect r2;
     FileLine *lines;
+
+    int EDITOR_SCROLL_X;
+    int EDITOR_SCROLL_Y;
+    Token* currentWord;
+    FileLine* currentLine;
+    int cursorX;
+    int cursorY;
+
+    int startIndex;
     struct FileBarItem *next;
     struct FileBarItem *prev;
 } FileBarItem;

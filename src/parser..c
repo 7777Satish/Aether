@@ -191,6 +191,7 @@ Token *createToken(char *word, int custom, SDL_Color color)
     t->content[size] = '\0';
     strcpy(t->content, word);
     t->type = type;
+    t->len = size;
     SDL_Color clr;
     if (custom)
     {
@@ -219,6 +220,9 @@ Token *createToken(char *word, int custom, SDL_Color color)
     SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, word, clr);
     t->t1 = SDL_CreateTextureFromSurface(renderer, s1);
     SDL_FreeSurface(s1);
+
+    t->next = NULL;
+    t->prev = NULL;
 
     return t;
 }
@@ -300,11 +304,12 @@ FileLine *parseText(char *content)
             }
         }
 
-        if (!isInString && !isInComment && strlen(currentWord) != 0 && ((c == ' ') || isPunctuation(tempC) || isOperator(tempC)))
+        if (!isInString && !isInComment && ((c == ' ') || isPunctuation(tempC) || isOperator(tempC)))
         {
+
             Token *t = NULL;
 
-            if ((lastToken && strcmp(lastToken->content, " ") == 0) && (lastToken->prev && lastToken->prev->type == TOKEN_TYPE))
+            if ((lastToken && strcmp(lastToken->content, " ") == 0) && (lastToken->prev && lastToken->prev->type == TOKEN_TYPE) && !isPunctuation(tempC))
             {
                 t = createToken(currentWord, 1, (SDL_Color){200, 255, 200, 255});
             }
