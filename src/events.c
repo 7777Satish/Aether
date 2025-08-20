@@ -65,7 +65,7 @@ void handleMouseScroll(int x, int y)
 
 void leftDeleteChar()
 {
-    if (!currentActiveTag && !currentActiveTag->currentWord)
+    if (!currentActiveTag || !currentActiveTag->currentWord)
         return;
 
     if (currentActiveTag->startIndex == 0)
@@ -104,17 +104,47 @@ void leftDeleteChar()
         }
         else
         {
+            if (!currentActiveTag->currentLine->prev)
+                return;
+
+            Token *temp = currentActiveTag->currentLine->prev->word;
+            FileLine *tempLine = currentActiveTag->currentLine;
+
+            if (temp)
+            {
+                while (temp->next)
+                {
+                    temp = temp->next;
+                }
+
+                temp->next = tempLine->word;
+                currentActiveTag->currentWord->prev = temp;
+            }
+            else
+            {
+                tempLine->prev->word = currentActiveTag->currentLine->word;
+            }
+
+            tempLine->prev->next = tempLine->next;
+            tempLine->next->prev = tempLine->prev;
+
+            currentActiveTag->currentLine = tempLine->prev;
+
+            free(tempLine);
+
             return;
         }
     }
+         
     size_t size = strlen(currentActiveTag->currentWord->content);
-    printf("%d\n", currentActiveTag->startIndex);
+    // printf("%d\n", currentActiveTag->startIndex);
     for (int i = currentActiveTag->startIndex - 1; i < (int)size; i++)
     {
         currentActiveTag->currentWord->content[i] = currentActiveTag->currentWord->content[i + 1];
     }
     currentActiveTag->currentWord->content[size - 1] = '\0';
-    if(currentActiveTag->startIndex>0){
+    if (currentActiveTag->startIndex > 0)
+    {
         currentActiveTag->currentWord->len--;
         currentActiveTag->startIndex -= 1;
     }
@@ -276,12 +306,12 @@ void insertChar(char c)
 
         currentActiveTag->currentWord = p;
         currentActiveTag->startIndex = startInd;
-        
+
         printf("%d\n", currentActiveTag->startIndex);
 
-        // free(old->content);
-        // SDL_DestroyTexture(old->t1);
-        // free(old);
+        free(old->content);
+        SDL_DestroyTexture(old->t1);
+        free(old);
     }
     // Render as plain text
     else
