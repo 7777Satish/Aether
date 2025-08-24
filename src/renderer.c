@@ -90,7 +90,7 @@ ELEMENT Extentions = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 ELEMENT FileIcons = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 
 SDL_Window *window = NULL;
-;
+
 SDL_Renderer *renderer = NULL;
 
 int WINDOW_W = 1200;
@@ -122,6 +122,7 @@ int IS_TOPNAV_MENU_DOWN = 0;
 int EDITORMENU_H = 30;
 int EDITOR_PADDINGX = 10;
 int EDITOR_PADDINGY = 10;
+int EDITOR_FONT_SIZE = 0;
 
 // Fonts
 TTF_Font *poppins_regular = NULL;
@@ -152,8 +153,6 @@ SDL_Rect logoRect = {};
 /* ===== Scrollbars =====*/
 int EXPLORER_SCROLL_Y = 0;
 int FILEMENU_SCROLL_X = 0;
-int EDITOR_SCROLL_X = 0;
-int EDITOR_SCROLL_Y = 0;
 
 void init()
 {
@@ -168,11 +167,13 @@ void init()
     window = SDL_CreateWindow("CodeDesk", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+    EDITOR_FONT_SIZE = TOP_NAV_LOGO_H / 1.7;
+
     /* ===== Initialising Fonts ===== */
     poppins_regular = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", TOP_NAV_LOGO_H / 1.7);
     poppins_bold = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", TOP_NAV_LOGO_H / 1.7);
     font2 = TTF_OpenFont("assets/Montserrat/static/Montserrat-Regular.ttf", TOP_NAV_LOGO_H / 1.7 - 1);
-    jetbrains_regular = TTF_OpenFont("assets/JetBrains_Mono./static/JetBrainsMono-Regular.ttf", TOP_NAV_LOGO_H / 1.7);
+    jetbrains_regular = TTF_OpenFont("assets/JetBrains_Mono./static/JetBrainsMono-Regular.ttf", EDITOR_FONT_SIZE);
 
     int prevX = MENU_BAR_W + TOPNAV_PADDINGX;
 
@@ -509,27 +510,43 @@ void renderTextEditor()
         return;
 
     int y = 0;
+
     // SDL_Color fg = {255, 255, 255, 255};
+    int LINE_NUMBER_WIDTH = 70;
     while (line)
     {
 
-        if (line->word == NULL)
+        if (y * EDITOR_FONT_SIZE < -currentActiveTag->EDITOR_SCROLL_Y - 10 || y * EDITOR_FONT_SIZE > -currentActiveTag->EDITOR_SCROLL_Y + WINDOW_H)
         {
             y++;
             line = line->next;
             continue;
         }
+
         Token *word = line->word;
         int x = 0;
+
+        // if(line->word == NULL){
+        //     y++;
+        //     line = line->next;
+        //     continue;
+        // }
+
         while (word)
         {
 
             // printf("%s",word->content);
             int w = 0, h = 0;
             SDL_QueryTexture(word->t1, NULL, NULL, &w, &h);
+            // SDL_Rect r1 = {
+            //     FILEBAR_bg_rect.x + 4 + currentActiveTag->EDITOR_SCROLL_X + x,
+            //     y * h + FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 - currentActiveTag->EDITOR_SCROLL_Y,
+            //     w,
+            //     h};
+
             SDL_Rect r1 = {
-                FILEBAR_bg_rect.x + 4 + currentActiveTag->EDITOR_SCROLL_X + x,
-                y * h + FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + currentActiveTag->EDITOR_SCROLL_Y,
+                LINE_NUMBER_WIDTH + FILEBAR_bg_rect.x + 4 + currentActiveTag->EDITOR_SCROLL_X + x,
+                FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * h,
                 w,
                 h};
 
@@ -538,9 +555,33 @@ void renderTextEditor()
             word = word->next;
         }
 
+        char text[12];
+        sprintf(text, "%d", y + 1);
+        SDL_Surface *lineNoSurface = TTF_RenderText_Blended(jetbrains_regular, text, (SDL_Color){155, 155, 155, 255});
+        SDL_Texture *lineNoTexture = SDL_CreateTextureFromSurface(renderer, lineNoSurface);
+
+        SDL_Rect lineNoRect = {
+            FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH / 2 - lineNoSurface->w / 2,
+            FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * lineNoSurface->h,
+            lineNoSurface->w,
+            lineNoSurface->h};
+
+        SDL_Rect lineNoBgRect = {
+            FILEBAR_bg_rect.x,
+            FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * lineNoSurface->h,
+            LINE_NUMBER_WIDTH,
+            lineNoSurface->h};
+
+        SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);
+        SDL_RenderFillRect(renderer, &lineNoBgRect);
+        SDL_RenderCopy(renderer, lineNoTexture, NULL, &lineNoRect);
+
         y++;
         line = line->next;
     }
+
+    SDL_SetRenderDrawColor(renderer, 37, 37, 37, 255);
+    SDL_RenderDrawLine(renderer, FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH, WINDOW_H);
 }
 
 void renderExplorer()

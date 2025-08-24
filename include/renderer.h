@@ -100,6 +100,7 @@ extern int IS_TOPNAV_MENU_DOWN;
 extern int EDITORMENU_H;
 extern int EDITOR_PADDINGX;
 extern int EDITOR_PADDINGY;
+extern int EDITOR_FONT_SIZE;
 
 // Fonts
 extern TTF_Font *poppins_regular;
@@ -116,8 +117,6 @@ extern SDL_Rect FILEBAR_bg_rect;
 /* ===== Scrollbars =====*/
 extern int EXPLORER_SCROLL_Y;
 extern int FILEMENU_SCROLL_X;
-extern int EDITOR_SCROLL_X;
-extern int EDITOR_SCROLL_Y;
 
 /* ===== Initialising Logos ===== */
 

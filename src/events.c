@@ -81,7 +81,11 @@ void leftDeleteChar()
 
             currentActiveTag->startIndex = size2;
 
-            currentActiveTag->currentWord->prev->content = realloc(currentActiveTag->currentWord->prev->content, len + 1);
+            char *newContent = realloc(currentActiveTag->currentWord->prev->content, len + 1);
+            if (!newContent)
+                return; // out of memory
+            currentActiveTag->currentWord->prev->content = newContent;
+
             for (int i = 0; i < (int)size1; i++)
             {
                 currentActiveTag->currentWord->prev->content[size2 + i] = currentActiveTag->currentWord->content[i];
@@ -126,7 +130,8 @@ void leftDeleteChar()
             }
 
             tempLine->prev->next = tempLine->next;
-            tempLine->next->prev = tempLine->prev;
+            if (tempLine->next)
+                tempLine->next->prev = tempLine->prev;
 
             currentActiveTag->currentLine = tempLine->prev;
 
@@ -135,22 +140,26 @@ void leftDeleteChar()
             return;
         }
     }
-         
+
     size_t size = strlen(currentActiveTag->currentWord->content);
     // printf("%d\n", currentActiveTag->startIndex);
-    for (int i = currentActiveTag->startIndex - 1; i < (int)size; i++)
-    {
-        currentActiveTag->currentWord->content[i] = currentActiveTag->currentWord->content[i + 1];
-    }
-    currentActiveTag->currentWord->content[size - 1] = '\0';
     if (currentActiveTag->startIndex > 0)
     {
+        for (int i = currentActiveTag->startIndex - 1; i < (int)size; i++)
+        {
+            currentActiveTag->currentWord->content[i] = currentActiveTag->currentWord->content[i + 1];
+        }
+        
+        currentActiveTag->currentWord->content[size - 1] = '\0';
+
         currentActiveTag->currentWord->len--;
         currentActiveTag->startIndex -= 1;
     }
     SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, (SDL_Color){255, 255, 255, 255});
     SDL_DestroyTexture(currentActiveTag->currentWord->t1);
     currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+
+    SDL_FreeSurface(s1);
 }
 
 void createNewline()
@@ -307,7 +316,7 @@ void insertChar(char c)
         currentActiveTag->currentWord = p;
         currentActiveTag->startIndex = startInd;
 
-        printf("%d\n", currentActiveTag->startIndex);
+        // printf("%d\n", currentActiveTag->startIndex);
 
         free(old->content);
         SDL_DestroyTexture(old->t1);
