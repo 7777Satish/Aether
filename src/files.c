@@ -92,7 +92,7 @@ void initExplorer(){
         SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
         
 
-        node->r1.x = MENU_BAR_W + LEFT_MENU[0].rect.x + s1->h + 2;
+        node->r1.x = LEFT_MENU[0].rect.x + s1->h + 2;
         node->r1.w = s1->w;
         node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h*i + MENU_PAD_Y/2*i;
         node->r1.h = s1->h;
@@ -112,9 +112,9 @@ void initExplorer(){
     SDL_Color color = {255, 255, 255, 255};
     SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, parent->name, color);
 
-    parent->r1.x = LEFT_MENU[0].rect.x + MENU_BAR_W;
+    parent->r1.x = LEFT_MENU[0].rect.x;
     parent->r1.w = s1->w;
-    parent->r1.y = LEFT_MENU[0].rect.y - MENU_PAD_Y;
+    parent->r1.y = LEFT_MENU[0].rect.y + MENU_BAR_H - MENU_PAD_Y;
     parent->r1.h = s1->h;
 
     closedir(dir);

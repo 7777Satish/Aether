@@ -54,6 +54,11 @@ typedef struct
     char txt5[310];
 } Search_TEXTBOXES;
 
+typedef struct Cursor{
+    int w;
+    int h;
+} Cursor;
+
 typedef struct FileNode FileNode;
 
 extern TOPNAV_MENU_NODE TOPNAV_MENU[5];
@@ -80,7 +85,7 @@ extern int MOUSE_Y;
 extern int IS_MOUSE_DOWN;
 
 // Initialising Left Menu
-extern int MENU_BAR_W;
+extern int MENU_BAR_H;
 extern int MENU_W;
 extern int MENU_PAD_X;
 extern int MENU_PAD_Y;
@@ -131,6 +136,8 @@ extern SDL_Surface *logoSurface;
 extern SDL_Texture *logoTexture;
 extern int logoAW, logoAH;
 extern SDL_Rect logoRect;
+
+extern Cursor* cursor;
 
 void init();
 

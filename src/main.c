@@ -16,10 +16,19 @@ int editorState = 0;
 
 int main()
 {
-
     init();
 
     int i = 0;
+
+
+    SDL_Surface* bgImageSurface = IMG_Load("assets/bgImage.png");
+    SDL_Texture* bgImage = SDL_CreateTextureFromSurface(renderer, bgImageSurface);
+    SDL_Rect bgRect = {
+        MENU_W,
+        0,
+        (bgImageSurface->w+0.0)/bgImageSurface->h * WINDOW_H,
+        WINDOW_H
+    };
 
     int running = 1;
     SDL_Event event;
@@ -43,7 +52,7 @@ int main()
                 IS_MOUSE_DOWN = 1;
 
                 // Menu Buttons
-                if (x > MENU_BAR_W && x < MENU_BAR_W + MENU_W)
+                if (x > 0 && x < MENU_W)
                 {
 
                     // Open Folder button in Exploror
@@ -91,15 +100,15 @@ int main()
                 }
 
                 // Menu Bar Buttons
-                if (x < MENU_BAR_W + 50)
+                if (x < MENU_W)
                 {
                     for (i = 0; i < (int)(sizeof(LEFT_MENU) / sizeof(LEFT_MENU[0])); i++)
                     {
                         MENU_BAR_NODE *node = &LEFT_MENU[i];
 
                         SDL_Rect r;
-                        r.x = 0;
-                        r.w = MENU_BAR_W;
+                        r.x = node->rect.x;
+                        r.w = node->rect.w;
                         r.y = node->rect.y - 10;
                         r.h = node->rect.h + 20;
 
@@ -110,21 +119,21 @@ int main()
                                 if (showMenu == 0)
                                 {
                                     showMenu = 1;
-                                    logoRect2.x = MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W) / 2 - dlw2 / 2;
-                                    FILEBAR_bg_rect.x = MENU_BAR_W + MENU_W + 1;
+                                    logoRect2.x =  MENU_W + (WINDOW_W - MENU_W) / 2 - dlw2 / 2;
+                                    FILEBAR_bg_rect.x = MENU_W + 1;
                                 }
                                 else
                                 {
                                     showMenu = 0;
-                                    logoRect2.x = MENU_BAR_W + (WINDOW_W - MENU_BAR_W) / 2 - dlw2 / 2;
-                                    FILEBAR_bg_rect.x = MENU_BAR_W + 1;
+                                    logoRect2.x = (WINDOW_W) / 2 - dlw2 / 2;
+                                    FILEBAR_bg_rect.x = 1;
                                 }
                             }
                             else
                             {
                                 showMenu = 1;
-                                FILEBAR_bg_rect.x = MENU_BAR_W + MENU_W;
-                                logoRect2.x = MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W) / 2 - dlw2 / 2;
+                                FILEBAR_bg_rect.x = MENU_W;
+                                logoRect2.x = MENU_W + (WINDOW_W - MENU_W) / 2 - dlw2 / 2;
                             }
                             menu_state = i;
                         }
@@ -171,15 +180,15 @@ int main()
                 }
 
                 // Menu Bar Buttons
-                if (x < MENU_BAR_W + 50)
+                if (x < MENU_W)
                 {
                     for (i = 0; i < (int)(sizeof(LEFT_MENU) / sizeof(LEFT_MENU[0])); i++)
                     {
                         MENU_BAR_NODE *node = &LEFT_MENU[i];
 
                         SDL_Rect r;
-                        r.x = 0;
-                        r.w = MENU_BAR_W;
+                        r.x = node->rect.x;
+                        r.w = node->rect.w;
                         r.y = node->rect.y - 10;
                         r.h = node->rect.h + 20;
 
@@ -194,7 +203,7 @@ int main()
                     }
                 }
 
-                if (x > MENU_BAR_W && x < MENU_BAR_W + MENU_W)
+                if (x > 0 && x < MENU_W)
                 {
 
                     // Files and Folders in Exploror
@@ -222,10 +231,9 @@ int main()
             if(event.type == SDL_KEYDOWN){
                 int key = event.key.keysym.sym;
                 
-                if(key == SDLK_BACKSPACE){
-                    leftDeleteChar();
-                }
-
+                if(key == SDLK_BACKSPACE) leftDeleteChar();
+                if(key == SDLK_LEFT) moveCursorLeft();
+                if(key == SDLK_RIGHT) moveCursorRight();
                 if(key == SDLK_RETURN) createNewline();
             }
 
@@ -234,8 +242,14 @@ int main()
             }
         }
 
+        
         SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);
         SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 17, 17, 17, 170);
+        
+        // SDL_RenderCopy(renderer, bgImage, NULL, &bgRect);
+        SDL_RenderFillRect(renderer, &bgRect);
+        
 
         /* ===== Draw Home Screen ===== */
 

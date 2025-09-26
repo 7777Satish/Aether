@@ -116,7 +116,7 @@ void handleExplorerItemsHover(FileNode **folder, int x, int y)
     while (node != NULL)
     {
 
-        if (x > MENU_BAR_W + MENU_PAD_X && x < MENU_BAR_W + MENU_W - MENU_PAD_X && y > node->r1.y - MENU_PAD_Y / 4 && y < node->r1.y + node->r1.h + MENU_PAD_Y / 4)
+        if (x > MENU_PAD_X && x < MENU_W - MENU_PAD_X && y > node->r1.y - MENU_PAD_Y / 4 && y < node->r1.y + node->r1.h + MENU_PAD_Y / 4)
         {
             node->hovered = 1;
         }
@@ -140,7 +140,7 @@ void handleExplorerItemsClick(FileNode **folder, int x, int y)
     FileNode *node = (*folder)->child;
     while (node != NULL)
     {
-        if (x > MENU_BAR_W + MENU_PAD_X && x < MENU_BAR_W + MENU_W - MENU_PAD_X && y > node->r1.y - MENU_PAD_Y / 4 && y < node->r1.y + node->r1.h + MENU_PAD_Y / 4)
+        if (x > MENU_PAD_X && x < MENU_W - MENU_PAD_X && y > node->r1.y - MENU_PAD_Y / 4 && y < node->r1.y + node->r1.h + MENU_PAD_Y / 4)
         {
             if (node->isDir)
             {

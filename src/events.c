@@ -6,7 +6,7 @@ void handleMouseScroll(int x, int y)
     int dy = 15;
     int dx = 15;
 
-    if (Folder != NULL && MOUSE_X > MENU_BAR_W && MOUSE_X < MENU_BAR_W + MENU_W && MOUSE_Y > TOPNAV_H)
+    if (Folder != NULL && MOUSE_X > 0 && MOUSE_X < MENU_W && MOUSE_Y > TOPNAV_H)
     {
         if (y > 0)
         {
@@ -19,7 +19,7 @@ void handleMouseScroll(int x, int y)
             EXPLORER_SCROLL_Y -= dy;
         }
     }
-    else if (FileBar != NULL && MOUSE_X > MENU_BAR_W + MENU_W && MOUSE_Y > TOPNAV_H * 2)
+    else if (FileBar != NULL && MOUSE_X > MENU_W && MOUSE_Y > TOPNAV_H * 2)
     {
 
         if (y > 0)
@@ -45,14 +45,14 @@ void handleMouseScroll(int x, int y)
                 currentActiveTag->EDITOR_SCROLL_X = 0;
         }
     }
-    else if (currentActiveTag != NULL && MOUSE_X > MENU_BAR_W + MENU_W && MOUSE_Y > TOPNAV_H && MOUSE_Y < TOPNAV_H * 2)
+    else if (currentActiveTag != NULL && MOUSE_X > MENU_W && MOUSE_Y > TOPNAV_H && MOUSE_Y < TOPNAV_H * 2)
     {
 
         if (x > 0)
         {
             FILEMENU_SCROLL_X -= dx;
-            if (FILEMENU_SCROLL_X < -TotalFileBarLength + WINDOW_W - MENU_BAR_W - MENU_W)
-                FILEMENU_SCROLL_X = -TotalFileBarLength + WINDOW_W - MENU_BAR_W - MENU_W;
+            if (FILEMENU_SCROLL_X < -TotalFileBarLength + WINDOW_W - MENU_W)
+                FILEMENU_SCROLL_X = -TotalFileBarLength + WINDOW_W - MENU_W;
         }
         else if (x < 0)
         {
@@ -61,6 +61,45 @@ void handleMouseScroll(int x, int y)
                 FILEMENU_SCROLL_X = 0;
         }
     }
+}
+
+void moveCursorLeft(){
+    if (!currentActiveTag || !currentActiveTag->currentLine) return;
+    
+    if(currentActiveTag->startIndex == 0){
+        if(currentActiveTag->currentWord->prev){
+            currentActiveTag->currentWord = currentActiveTag->currentWord->prev;
+            currentActiveTag->startIndex = currentActiveTag->currentWord->len-1;
+        } else if(currentActiveTag->currentLine->prev) {
+            Token* word = currentActiveTag->currentLine->prev->word;
+            while (word->next)
+            {
+                word = word->next;
+            }
+            currentActiveTag->currentWord = word;
+            currentActiveTag->startIndex = word->len;
+        }
+        return;
+    }
+
+    currentActiveTag->startIndex--;
+}
+
+void moveCursorRight(){
+    if (!currentActiveTag || !currentActiveTag->currentLine) return;
+    
+    if(currentActiveTag->startIndex == currentActiveTag->currentWord->len){
+        if(currentActiveTag->currentWord->next){
+            currentActiveTag->currentWord = currentActiveTag->currentWord->next;
+            currentActiveTag->startIndex = 1;
+        } else if(currentActiveTag->currentLine->next) {
+            currentActiveTag->currentWord = currentActiveTag->currentLine->next->word;
+            currentActiveTag->startIndex = 0;
+        }
+        return;
+    }
+
+    currentActiveTag->startIndex++;
 }
 
 void leftDeleteChar()
@@ -214,7 +253,7 @@ void createNewline()
 
 void insertChar(char c)
 {
-    if (!currentActiveTag || !currentActiveTag->currentWord)
+    if (!currentActiveTag || !currentActiveTag->currentLine)
         return;
     /*
         if(c==' '){
@@ -250,6 +289,15 @@ void insertChar(char c)
         };
     */
 
+    if(!currentActiveTag->currentWord){
+        char str[1];
+        str[0] = c;
+        FileLine *line1 = parseText(str);
+        currentActiveTag->currentLine->word = line1->word;
+        if(line1->word) currentActiveTag->startIndex = 1;
+        return;
+    }
+    
     size_t size = strlen(currentActiveTag->currentWord->content);
 
     currentActiveTag->currentWord->content = realloc(currentActiveTag->currentWord->content, size + 2);

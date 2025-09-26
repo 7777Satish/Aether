@@ -200,28 +200,45 @@ Token *createToken(char *word, int custom, SDL_Color color)
     }
     else
     {
+        // if (type == TOKEN_TYPE)
+        //     clr = (SDL_Color){198, 120, 221, 255};
+        // else if (type == TOKEN_KEYWORD)
+        //     clr = (SDL_Color){198, 120, 221, 255};
+        // else if (type == TOKEN_IDENTIFIER)
+        //     clr = (SDL_Color){220, 220, 170, 255};
+        // else if (type == TOKEN_OPERATOR)
+        //     clr = (SDL_Color){212, 212, 212, 255};
+        // else if (type == TOKEN_PREPROCESSOR_DERIVATIVE)
+        //     clr = (SDL_Color){155, 155, 255, 255};
+        // else if (type == TOKEN_PUNCTUATION)
+        //     clr = (SDL_Color){128, 200, 255, 255};
+        // else if (type == TOKEN_NUMBER)
+        //     clr = (SDL_Color){181, 206, 168, 255};
+        // else
+        //     clr = (SDL_Color){255, 255, 255, 255};
+
         if (type == TOKEN_TYPE)
-            clr = (SDL_Color){198, 120, 221, 255};
+            clr = (SDL_Color){0, 255, 200, 255}; // Neon aqua (like circuit coolant glow)
         else if (type == TOKEN_KEYWORD)
-            clr = (SDL_Color){198, 120, 221, 255};
+            clr = (SDL_Color){255, 70, 180, 255}; // Neon pink (signature cyberpunk)
         else if (type == TOKEN_IDENTIFIER)
-            clr = (SDL_Color){220, 220, 170, 255};
+            clr = (SDL_Color){140, 255, 100, 255}; // Holographic green (sci-fi HUD vibe)
         else if (type == TOKEN_OPERATOR)
-            clr = (SDL_Color){212, 212, 212, 255};
+            clr = (SDL_Color){255, 255, 160, 255}; // Soft neon yellow (flickering sparks)
         else if (type == TOKEN_PREPROCESSOR_DERIVATIVE)
-            clr = (SDL_Color){155, 155, 255, 255};
+            clr = (SDL_Color){80, 180, 255, 255}; // Electric blue (data-stream vibe)
         else if (type == TOKEN_PUNCTUATION)
-            clr = (SDL_Color){128, 200, 255, 255};
+            clr = (SDL_Color){255, 90, 60, 255}; // Lava orange (fiery contrast)
         else if (type == TOKEN_NUMBER)
-            clr = (SDL_Color){181, 206, 168, 255};
+            clr = (SDL_Color){190, 120, 255, 255}; // Neon violet (otherworldly data glow)
         else
-            clr = (SDL_Color){255, 255, 255, 255};
+            clr = (SDL_Color){220, 220, 240, 255}; // Pale hologram glow (neutral text)
     }
 
     SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, word, clr);
     t->t1 = SDL_CreateTextureFromSurface(renderer, s1);
     SDL_FreeSurface(s1);
-
+    t->color = clr;
     t->next = NULL;
     t->prev = NULL;
 

@@ -30,6 +30,7 @@ typedef struct Token {
     char* content;
     SDL_Texture* t1;
     TokenType type;
+    SDL_Color color;
     struct Token* next;
     struct Token* prev;
     int len;

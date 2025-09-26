@@ -93,7 +93,7 @@ SDL_Window *window = NULL;
 
 SDL_Renderer *renderer = NULL;
 
-int WINDOW_W = 1200;
+int WINDOW_W = 1400;
 int WINDOW_H = 700;
 
 /* ===== Mouse and Keyboard =====*/
@@ -102,8 +102,8 @@ int MOUSE_Y = 0;
 int IS_MOUSE_DOWN = 0;
 
 // Initialising Left Menu
-int MENU_BAR_W = 50;
-int MENU_W = 200;
+int MENU_BAR_H = 50;
+int MENU_W = 250;
 int MENU_PAD_X = 10;
 int MENU_PAD_Y = 10;
 int showMenu = 1;
@@ -123,6 +123,7 @@ int EDITORMENU_H = 30;
 int EDITOR_PADDINGX = 10;
 int EDITOR_PADDINGY = 10;
 int EDITOR_FONT_SIZE = 0;
+Cursor *cursor;
 
 // Fonts
 TTF_Font *poppins_regular = NULL;
@@ -167,6 +168,8 @@ void init()
     window = SDL_CreateWindow("CodeDesk", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
     EDITOR_FONT_SIZE = TOP_NAV_LOGO_H / 1.7;
 
     /* ===== Initialising Fonts ===== */
@@ -175,7 +178,14 @@ void init()
     font2 = TTF_OpenFont("assets/Montserrat/static/Montserrat-Regular.ttf", TOP_NAV_LOGO_H / 1.7 - 1);
     jetbrains_regular = TTF_OpenFont("assets/JetBrains_Mono./static/JetBrainsMono-Regular.ttf", EDITOR_FONT_SIZE);
 
-    int prevX = MENU_BAR_W + TOPNAV_PADDINGX;
+    int prevX = MENU_BAR_H + TOPNAV_PADDINGX;
+
+    /* ===== Initialising Cursor ===== */
+    SDL_Surface *space = TTF_RenderText_Blended(jetbrains_regular, " ", (SDL_Color){0, 0, 0, 255});
+    cursor = (Cursor *)malloc(sizeof(Cursor));
+    cursor->w = space->w;
+    cursor->h = space->h;
+    SDL_FreeSurface(space);
 
     /* ===== Initialising Logos ===== */
 
@@ -186,10 +196,11 @@ void init()
     dlw2 = 300;
     dlh2 = (logo2AH + 0.0) / logo2AW * dlw2;
 
-    logoRect2.x = MENU_BAR_W + MENU_W + (WINDOW_W - MENU_BAR_W - MENU_W) / 2 - dlw2 / 2;
+    logoRect2.x = MENU_W + (WINDOW_W - MENU_W) / 2 - dlw2 / 2;
     logoRect2.y = TOPNAV_H + (WINDOW_H - TOPNAV_H) / 2 - dlh2 / 2;
     logoRect2.w = dlw2;
     logoRect2.h = dlh2;
+    
     /* NavBar Logo Start */
     logoSurface = IMG_Load("assets/logo.png");
     logoTexture = SDL_CreateTextureFromSurface(renderer, logoSurface);
@@ -200,7 +211,7 @@ void init()
     int dlh = TOPNAV_H - 2 * TOPNAV_PADDINGY;
     int dlw = (logoAW + 0.0) / logoAH * dlh;
 
-    logoRect.x = MENU_BAR_W / 2 - dlw / 2;
+    logoRect.x = MENU_BAR_H / 2 - dlw / 2;
     logoRect.y = TOPNAV_H / 2 - dlh / 2;
     logoRect.w = dlw;
     logoRect.h = dlh;
@@ -239,7 +250,7 @@ void init()
     }
 
     // Menu Bar Buttons
-    int prevY = TOPNAV_H + 20;
+    prevX = 0;
     for (int i = 0; i < (int)(sizeof(LEFT_MENU) / sizeof(LEFT_MENU[0])); i++)
     {
         MENU_BAR_NODE *node = &LEFT_MENU[i];
@@ -264,28 +275,31 @@ void init()
             continue;
         }
 
-        int viewW = MENU_BAR_W - 25;
+        int viewW = MENU_BAR_H - 30;
         int viewH = (viewW) * (node_surface->h + 0.0) / node_surface->w;
 
         SDL_Rect rect = {
-            MENU_BAR_W / 2 - viewW / 2,
-            prevY,
+            MENU_BAR_H / 2 - viewW / 2 + prevX,
+            TOPNAV_H + viewH,
             viewW,
             viewH};
         node->rect = rect;
 
         SDL_Rect rect2 = {
-            MENU_BAR_W + MENU_PAD_X,
-            TOPNAV_H + MENU_PAD_Y,
+            MENU_PAD_X,
+            TOPNAV_H + MENU_BAR_H + MENU_PAD_Y,
             node_text_surface->w,
             node_text_surface->h};
 
         node->text_rect = rect2;
 
-        prevY += viewH + 20;
+        prevX += viewW + 20;
 
         SDL_FreeSurface(node_surface);
     }
+
+
+
 
     // Initializing FileIcons
     SDL_Surface *fi_s1 = IMG_Load("assets/text_icon.png");
@@ -314,18 +328,18 @@ void init()
 
     MENUBAR_bg_rect.x = 0;
     MENUBAR_bg_rect.y = TOPNAV_H;
-    MENUBAR_bg_rect.w = MENU_BAR_W;
+    MENUBAR_bg_rect.w = 0;
     MENUBAR_bg_rect.h = WINDOW_H;
 
-    MENU_bg_rect.x = MENU_BAR_W;
+    MENU_bg_rect.x = 0;
     MENU_bg_rect.y = TOPNAV_H;
     MENU_bg_rect.w = MENU_W;
     MENU_bg_rect.h = WINDOW_H;
 
     if (showMenu)
-        FILEBAR_bg_rect.x = MENU_BAR_W + MENU_W + 1;
+        FILEBAR_bg_rect.x = MENU_W + 1;
     else
-        FILEBAR_bg_rect.x = MENU_BAR_W + 1;
+        FILEBAR_bg_rect.x = 1;
     FILEBAR_bg_rect.y = TOPNAV_H + 1;
     FILEBAR_bg_rect.w = WINDOW_W;
     FILEBAR_bg_rect.h = TOPNAV_H;
@@ -389,14 +403,15 @@ void renderMenuBar()
 
     // Left Menu
     SDL_SetRenderDrawColor(renderer, 23, 23, 23, 255);
+
     SDL_RenderFillRect(renderer, &MENUBAR_bg_rect);
     if (showMenu)
         SDL_RenderFillRect(renderer, &MENU_bg_rect);
 
     SDL_SetRenderDrawColor(renderer, 56, 56, 56, 100);
-    SDL_RenderDrawLine(renderer, MENU_BAR_W, TOPNAV_H, MENU_BAR_W, WINDOW_H); // Drawing MENUBAR Border
+    SDL_RenderDrawLine(renderer, 0, TOPNAV_H, 0, WINDOW_H); // Drawing MENUBAR Border
     if (showMenu)
-        SDL_RenderDrawLine(renderer, MENU_BAR_W + MENU_W, TOPNAV_H, MENU_BAR_W + MENU_W, WINDOW_H); // Drawing MENU Border
+        SDL_RenderDrawLine(renderer, MENU_W, TOPNAV_H, MENU_W, WINDOW_H); // Drawing MENU Border
     SDL_RenderDrawLine(renderer, 0, TOPNAV_H, WINDOW_W, TOPNAV_H);                                  // Drawing TOPNAV Border
 
     int i;
@@ -511,10 +526,19 @@ void renderTextEditor()
 
     int y = 0;
 
+    SDL_Rect minimapBgRect = {
+        WINDOW_W - 100,
+        FILEBAR_bg_rect.y + FILEBAR_bg_rect.h,
+        100,
+        WINDOW_H};
+
     // SDL_Color fg = {255, 255, 255, 255};
+
     int LINE_NUMBER_WIDTH = 70;
     while (line)
     {
+        Token *word = line->word;
+        int x = 0;
 
         if (y * EDITOR_FONT_SIZE < -currentActiveTag->EDITOR_SCROLL_Y - 10 || y * EDITOR_FONT_SIZE > -currentActiveTag->EDITOR_SCROLL_Y + WINDOW_H)
         {
@@ -523,26 +547,12 @@ void renderTextEditor()
             continue;
         }
 
-        Token *word = line->word;
-        int x = 0;
-
-        // if(line->word == NULL){
-        //     y++;
-        //     line = line->next;
-        //     continue;
-        // }
-
         while (word)
         {
 
             // printf("%s",word->content);
             int w = 0, h = 0;
             SDL_QueryTexture(word->t1, NULL, NULL, &w, &h);
-            // SDL_Rect r1 = {
-            //     FILEBAR_bg_rect.x + 4 + currentActiveTag->EDITOR_SCROLL_X + x,
-            //     y * h + FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 - currentActiveTag->EDITOR_SCROLL_Y,
-            //     w,
-            //     h};
 
             SDL_Rect r1 = {
                 LINE_NUMBER_WIDTH + FILEBAR_bg_rect.x + 4 + currentActiveTag->EDITOR_SCROLL_X + x,
@@ -550,11 +560,24 @@ void renderTextEditor()
                 w,
                 h};
 
+            if (word == currentActiveTag->currentWord)
+            {
+                int x = r1.x + cursor->w * currentActiveTag->startIndex;
+
+                SDL_Rect cursorRect = {x, r1.y, cursor->w, cursor->h};
+
+                SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+                SDL_RenderFillRect(renderer, &cursorRect);
+            }
+
             SDL_RenderCopy(renderer, word->t1, NULL, &r1);
+            // printf("[%s]", word->content);
             x += w;
             word = word->next;
         }
 
+        // printf("\n");
+        /*===== Draw Line Number =====*/
         char text[12];
         sprintf(text, "%d", y + 1);
         SDL_Surface *lineNoSurface = TTF_RenderText_Blended(jetbrains_regular, text, (SDL_Color){155, 155, 155, 255});
@@ -576,12 +599,63 @@ void renderTextEditor()
         SDL_RenderFillRect(renderer, &lineNoBgRect);
         SDL_RenderCopy(renderer, lineNoTexture, NULL, &lineNoRect);
 
+        SDL_FreeSurface(lineNoSurface);
+        SDL_DestroyTexture(lineNoTexture);
+
         y++;
         line = line->next;
     }
 
+    /* ===== Render Minimap =====*/
+    SDL_SetRenderDrawColor(renderer, 17, 17, 17, 250);
+    SDL_RenderFillRect(renderer, &minimapBgRect);
+
+    line = node->lines;
+    y = 0;
+    while (line)
+    {
+
+        Token *wrd = line->word;
+        int i = 0;
+        while (wrd)
+        {
+            if (strcmp(wrd->content, " ") == 0)
+            {
+                i++;
+                wrd = wrd->next;
+                continue;
+            }
+            SDL_Rect minimapRect = {
+                WINDOW_W - 100 + 4 + i * 1,
+                FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + y * 2,
+                (int)strlen(wrd->content) * 1,
+                1.5};
+            SDL_SetRenderDrawColor(renderer, wrd->color.r, wrd->color.g, wrd->color.b, wrd->color.a);
+            SDL_RenderFillRect(renderer, &minimapRect);
+            i += (int)strlen(wrd->content);
+            wrd = wrd->next;
+        }
+
+        y++;
+        line = line->next;
+    }
+
+    /* ===== Draw Highlight Rect ===== */
+    SDL_Rect highlightRect = {
+        WINDOW_W - 100,
+        FILEBAR_bg_rect.y + FILEBAR_bg_rect.h - (0.0 + currentActiveTag->EDITOR_SCROLL_Y) / cursor->h * 2,
+        100,
+        70};
+
+    SDL_SetRenderDrawColor(renderer, 137, 137, 137, 100);
+    SDL_RenderFillRect(renderer, &highlightRect);
+
+    /*===== Draw Borders =====*/
     SDL_SetRenderDrawColor(renderer, 37, 37, 37, 255);
     SDL_RenderDrawLine(renderer, FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH, WINDOW_H);
+
+    SDL_SetRenderDrawColor(renderer, 57, 57, 57, 255);
+    SDL_RenderDrawLine(renderer, WINDOW_W - 100, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, WINDOW_W - 100, WINDOW_H);
 }
 
 void renderExplorer()
@@ -623,7 +697,7 @@ void renderExplorer()
         int w, h;
         SDL_QueryTexture(Explorer.t1, NULL, NULL, &w, &h);
         SDL_Rect r1 = {
-            MENU_BAR_W + MENU_PAD_X,
+            MENU_PAD_X,
             node.text_rect.y + node.text_rect.h + MENU_PAD_Y,
             w,
             h};
@@ -635,7 +709,7 @@ void renderExplorer()
         int w, h;
         SDL_QueryTexture(Explorer.t2, NULL, NULL, &w, &h);
         SDL_Rect r2 = {
-            MENU_BAR_W + MENU_PAD_X,
+            MENU_PAD_X,
             node.text_rect.y + node.text_rect.h + MENU_PAD_Y + Explorer.r1.h,
             w,
             h};
@@ -647,7 +721,7 @@ void renderExplorer()
         int w, h;
         SDL_QueryTexture(Explorer.t1, NULL, NULL, &w, &h);
         SDL_Rect r3 = {
-            MENU_BAR_W + MENU_PAD_X,
+            MENU_PAD_X,
             node.text_rect.y + node.text_rect.h + 3 * MENU_PAD_Y + Explorer.r1.h + Explorer.r2.h - 2.5,
             MENU_W - 2 * MENU_PAD_Y,
             h + 5};
@@ -659,7 +733,7 @@ void renderExplorer()
         int w, h;
         SDL_QueryTexture(Explorer.t3, NULL, NULL, &w, &h);
         SDL_Rect r4 = {
-            MENU_BAR_W + MENU_W / 2 - w / 2,
+            MENU_W / 2 - w / 2,
             node.text_rect.y + node.text_rect.h + 3 * MENU_PAD_Y + Explorer.r1.h + Explorer.r2.h,
             w,
             h};
@@ -698,20 +772,20 @@ void renderExplorer()
 
         SDL_SetRenderDrawColor(renderer, 23, 23, 23, 255);
         SDL_Rect BG = {
-            MENU_BAR_W + 1,
-            TOPNAV_H,
+            1,
+            TOPNAV_H + MENU_BAR_H,
             MENU_W - 1,
             Folder->r1.h * 2};
         SDL_RenderFillRect(renderer, &BG);
-        SDL_SetRenderDrawColor(renderer, 56, 56, 56, 255);
-        SDL_RenderDrawLine(renderer, BG.x, BG.y, BG.x + BG.w, BG.y);
+        // SDL_SetRenderDrawColor(renderer, 56, 56, 56, 255);
+        // SDL_RenderDrawLine(renderer, BG.x, BG.y, BG.x + BG.w, BG.y);
         SDL_RenderCopy(renderer, Folder->t1, NULL, &Folder->r1);
     }
 }
 
 void renderFolder(FileNode **folder, int *i, int padX)
 {
-
+    
     if (!(*folder)->child)
     {
         if (!(*folder)->isDirOpened)
@@ -794,16 +868,16 @@ void renderFolder(FileNode **folder, int *i, int padX)
 
         SDL_Color color = {239, 239, 239, 255};
         SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
-        node->r1.x = padX * 10 + MENU_BAR_W + LEFT_MENU[0].rect.x + s1->h + 2;
+        node->r1.x = padX * 10 + LEFT_MENU[0].rect.x + s1->h + 2;
         node->r1.w = s1->w;
-        node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h * (*i) + MENU_PAD_Y / 2 * (*i) + EXPLORER_SCROLL_Y;
+        node->r1.y = MENU_BAR_H + LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h * (*i) + MENU_PAD_Y / 2 * (*i) + EXPLORER_SCROLL_Y;
         node->r1.h = s1->h;
         SDL_FreeSurface(s1);
 
         if (node->hovered)
         {
             SDL_Rect hoverRect = {
-                MENU_BAR_W + MENU_PAD_X,
+                MENU_PAD_X,
                 node->r1.y,
                 MENU_W - 2 * MENU_PAD_X,
                 node->r1.h};
@@ -867,7 +941,7 @@ void renderSearch()
         int w, h;
         SDL_QueryTexture(Search.t1, NULL, NULL, &w, &h);
         SDL_Rect r1 = {
-            MENU_BAR_W + MENU_PAD_X,
+            MENU_PAD_X,
             node.text_rect.y + node.text_rect.h + MENU_PAD_Y,
             MENU_W - 2 * MENU_PAD_X,
             h + 5};
@@ -879,7 +953,7 @@ void renderSearch()
         int w, h;
         SDL_QueryTexture(Search.t1, NULL, NULL, &w, &h);
         SDL_Rect r2 = {
-            MENU_BAR_W + MENU_PAD_X + 10,
+            MENU_PAD_X + 10,
             node.text_rect.y + node.text_rect.h + MENU_PAD_Y + 2.5,
             w,
             h};
@@ -891,7 +965,7 @@ void renderSearch()
         int w, h;
         SDL_QueryTexture(Search.t2, NULL, NULL, &w, &h);
         SDL_Rect r3 = {
-            MENU_BAR_W + MENU_PAD_X,
+            MENU_PAD_X,
             node.text_rect.y + node.text_rect.h + 3.6 / 2 * MENU_PAD_Y + Search.r1.h,
             MENU_W - 2 * MENU_PAD_X,
             h + 5};
@@ -903,7 +977,7 @@ void renderSearch()
         int w, h;
         SDL_QueryTexture(Search.t2, NULL, NULL, &w, &h);
         SDL_Rect r4 = {
-            MENU_BAR_W + MENU_PAD_X + 10,
+            MENU_PAD_X + 10,
             node.text_rect.y + node.text_rect.h + 3.6 / 2 * MENU_PAD_Y + 2.5 + Search.r1.h,
             w,
             h};
@@ -955,7 +1029,7 @@ void renderGithub()
         int w, h;
         SDL_QueryTexture(Github.t1, NULL, NULL, &w, &h);
         SDL_Rect r1 = {
-            MENU_BAR_W + MENU_PAD_X,
+            MENU_PAD_X,
             node.text_rect.y + node.text_rect.h + MENU_PAD_Y,
             w,
             h};
@@ -967,7 +1041,7 @@ void renderGithub()
         int w, h;
         SDL_QueryTexture(Github.t2, NULL, NULL, &w, &h);
         SDL_Rect r2 = {
-            MENU_BAR_W + MENU_PAD_X,
+            MENU_PAD_X,
             node.text_rect.y + node.text_rect.h + MENU_PAD_Y + Github.r1.h,
             w,
             h};
@@ -979,7 +1053,7 @@ void renderGithub()
         int w, h;
         SDL_QueryTexture(Github.t1, NULL, NULL, &w, &h);
         SDL_Rect r3 = {
-            MENU_BAR_W + MENU_PAD_X,
+            MENU_PAD_X,
             node.text_rect.y + node.text_rect.h + 3 * MENU_PAD_Y + Github.r1.h + Github.r2.h - 2.5,
             MENU_W - 2 * MENU_PAD_Y,
             h + 5};
@@ -991,7 +1065,7 @@ void renderGithub()
         int w, h;
         SDL_QueryTexture(Github.t3, NULL, NULL, &w, &h);
         SDL_Rect r4 = {
-            MENU_BAR_W + MENU_W / 2 - w / 2,
+            MENU_W / 2 - w / 2,
             node.text_rect.y + node.text_rect.h + 3 * MENU_PAD_Y + Github.r1.h + Github.r2.h,
             w,
             h};
@@ -1025,7 +1099,7 @@ void renderExtentions()
         int w, h;
         SDL_QueryTexture(Extentions.t1, NULL, NULL, &w, &h);
         SDL_Rect r1 = {
-            MENU_BAR_W + MENU_PAD_X,
+            MENU_PAD_X,
             node.text_rect.y + node.text_rect.h + MENU_PAD_Y,
             w,
             h};

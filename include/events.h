@@ -7,6 +7,8 @@
 #include "utils.h"
 
 void handleMouseScroll(int x, int y);
+void moveCursorLeft();
+void moveCursorRight();
 void leftDeleteChar();
 void insertChar(char c);
 void createNewline();
