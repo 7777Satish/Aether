@@ -4,11 +4,35 @@ FileBarItem *FileBar = NULL;
 FileBarItem *currentActiveTag = NULL;
 int TotalFileBarLength = 0;
 
+FileType getFileType(char* filename){
+    char* lastDot = NULL;
+    while (*filename)
+    {
+        if(*filename == '.')
+            lastDot = filename;
+        filename++;
+    }
+    
+    if(!lastDot) return TXT;
+
+    lastDot++;
+
+    if (strcmp(lastDot, "c") == 0) return CLANG;
+    else if (strcmp(lastDot, "h") == 0) return CHEADER;
+    else if (strcmp(lastDot, "html") == 0) return HTML;
+    else if (strcmp(lastDot, "css") == 0) return CSS;
+    else if (strcmp(lastDot, "txt") == 0) return TXT;
+    else if (strcmp(lastDot, "png") == 0 || strcmp(lastDot, "jpg") == 0) return IMG;
+
+    return TXT;
+}
+
 FileNode *createFileNode(char *name, char *path, int isDir)
 {
     FileNode *node = (FileNode *)malloc(sizeof(FileNode));
     node->name = strdup(name);
     node->path = strdup(path);
+    node->type = getFileType(name);
     node->isDir = isDir;
     node->next = NULL;
     node->prev = NULL;
@@ -18,6 +42,7 @@ FileNode *createFileNode(char *name, char *path, int isDir)
     node->hovered = 0;
     node->isDirOpened = 0;
     node->child = NULL;
+
     return node;
 }
 

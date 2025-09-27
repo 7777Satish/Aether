@@ -20,8 +20,8 @@ int main()
 
     int i = 0;
 
-
-    SDL_Surface* bgImageSurface = IMG_Load("assets/bgImage.png");
+    // SDL_Surface* bgImageSurface = IMG_Load("assets/bgImage.png");
+    SDL_Surface* bgImageSurface = IMG_Load("assets/girl.png");
     SDL_Texture* bgImage = SDL_CreateTextureFromSurface(renderer, bgImageSurface);
     SDL_Rect bgRect = {
         MENU_W,
@@ -245,25 +245,29 @@ int main()
         
         SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);
         SDL_RenderClear(renderer);
-        SDL_SetRenderDrawColor(renderer, 17, 17, 17, 170);
+        // SDL_SetRenderDrawColor(renderer, 17, 17, 17, 170);
+        SDL_SetRenderDrawColor(renderer, 17, 17, 17, 200);
         
-        // SDL_RenderCopy(renderer, bgImage, NULL, &bgRect);
-        SDL_RenderFillRect(renderer, &bgRect);
-        
+        if(!FileBar){
+            SDL_RenderCopy(renderer, bgImage, NULL, &bgRect);
+            // SDL_RenderFillRect(renderer, &bgRect);
+        }
 
         /* ===== Draw Home Screen ===== */
-
-        renderTextEditor();
 
         renderFileBar();
 
         renderMenuBar();
         renderTopNav();
         renderTopNavBarMenu();
+        renderTextEditor();
 
         SDL_RenderPresent(renderer);
         SDL_Delay(1000 / 60);
     }
+
+    SDL_FreeSurface(bgImageSurface);
+    SDL_DestroyTexture(bgImage);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

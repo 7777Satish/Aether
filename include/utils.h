@@ -7,6 +7,15 @@
 #include "renderer.h"
 #include "parser.h"
 
+typedef enum {
+    CLANG,
+    CHEADER,
+    HTML,
+    CSS,
+    TXT,
+    IMG,
+} FileType;
+
 typedef struct FileNode
 {
     char *name;
@@ -15,7 +24,7 @@ typedef struct FileNode
     int active;
     int hovered;
     int opened;
-    int fileType;
+    FileType type;
     int isDirOpened;
     SDL_Texture *t1;
     SDL_Rect r1;

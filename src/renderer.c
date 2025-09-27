@@ -88,13 +88,14 @@ ELEMENT Github = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 ELEMENT Extentions = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 
 ELEMENT FileIcons = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
+ELEMENT FileIcons2 = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 
 SDL_Window *window = NULL;
 
 SDL_Renderer *renderer = NULL;
 
 int WINDOW_W = 1400;
-int WINDOW_H = 700;
+int WINDOW_H = 800;
 
 /* ===== Mouse and Keyboard =====*/
 int MOUSE_X = 0;
@@ -110,7 +111,8 @@ int showMenu = 1;
 int menu_state = 0;
 
 // Initialising TOPNAV
-int TOPNAV_H = 33;
+// int TOPNAV_H = 33;
+int TOPNAV_H = 40;
 int TOPNAV_PADDINGX = 20;
 int TOPNAV_PADDINGY = 6;
 int TOP_NAV_LOGO_H = 33 - 2 * 3;
@@ -170,7 +172,8 @@ void init()
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    EDITOR_FONT_SIZE = TOP_NAV_LOGO_H / 1.7;
+    // EDITOR_FONT_SIZE = TOP_NAV_LOGO_H / 1.7;
+    EDITOR_FONT_SIZE = TOP_NAV_LOGO_H / 1.5;
 
     /* ===== Initialising Fonts ===== */
     poppins_regular = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", TOP_NAV_LOGO_H / 1.7);
@@ -200,7 +203,7 @@ void init()
     logoRect2.y = TOPNAV_H + (WINDOW_H - TOPNAV_H) / 2 - dlh2 / 2;
     logoRect2.w = dlw2;
     logoRect2.h = dlh2;
-    
+
     /* NavBar Logo Start */
     logoSurface = IMG_Load("assets/logo.png");
     logoTexture = SDL_CreateTextureFromSurface(renderer, logoSurface);
@@ -298,11 +301,8 @@ void init()
         SDL_FreeSurface(node_surface);
     }
 
-
-
-
     // Initializing FileIcons
-    SDL_Surface *fi_s1 = IMG_Load("assets/text_icon.png");
+    SDL_Surface *fi_s1 = IMG_Load("assets/file_icon2.png");
     FileIcons.t1 = SDL_CreateTextureFromSurface(renderer, fi_s1);
     FileIcons.r1.w = fi_s1->w;
     FileIcons.r1.h = fi_s1->h;
@@ -319,6 +319,30 @@ void init()
     FileIcons.r3.w = fi_s3->w;
     FileIcons.r3.h = fi_s3->h;
     SDL_FreeSurface(fi_s3);
+
+    SDL_Surface *fi_s4= IMG_Load("assets/file_icons/icon_clang.png");
+    FileIcons.t4 = SDL_CreateTextureFromSurface(renderer, fi_s4);
+    FileIcons.r4.w = fi_s4->w;
+    FileIcons.r4.h = fi_s4->h;
+    SDL_FreeSurface(fi_s4);
+
+    SDL_Surface *fi_s5= IMG_Load("assets/file_icons/icon_html.png");
+    FileIcons.t5 = SDL_CreateTextureFromSurface(renderer, fi_s5);
+    FileIcons.r5.w = fi_s5->w;
+    FileIcons.r5.h = fi_s5->h;
+    SDL_FreeSurface(fi_s5);
+
+    SDL_Surface *fi2_s1= IMG_Load("assets/file_icons/icon_css.png");
+    FileIcons2.t1 = SDL_CreateTextureFromSurface(renderer, fi2_s1);
+    FileIcons2.r1.w = fi2_s1->w;
+    FileIcons2.r1.h = fi2_s1->h;
+    SDL_FreeSurface(fi2_s1);
+
+    SDL_Surface *fi2_s2= IMG_Load("assets/file_icons/icon_img.png");
+    FileIcons2.t2 = SDL_CreateTextureFromSurface(renderer, fi2_s2);
+    FileIcons2.r2.w = fi2_s2->w;
+    FileIcons2.r2.h = fi2_s2->h;
+    SDL_FreeSurface(fi2_s2);
 
     // Creating Top Nav and Left Menu
     TOPNAV_bg_rect.x = 0;
@@ -412,7 +436,7 @@ void renderMenuBar()
     SDL_RenderDrawLine(renderer, 0, TOPNAV_H, 0, WINDOW_H); // Drawing MENUBAR Border
     if (showMenu)
         SDL_RenderDrawLine(renderer, MENU_W, TOPNAV_H, MENU_W, WINDOW_H); // Drawing MENU Border
-    SDL_RenderDrawLine(renderer, 0, TOPNAV_H, WINDOW_W, TOPNAV_H);                                  // Drawing TOPNAV Border
+    SDL_RenderDrawLine(renderer, 0, TOPNAV_H, WINDOW_W, TOPNAV_H);        // Drawing TOPNAV Border
 
     int i;
     // Menu Bar Buttons
@@ -516,7 +540,7 @@ void renderTextEditor()
 
     if (!node)
     {
-        SDL_RenderCopy(renderer, logoTexture2, NULL, &logoRect2);
+        // SDL_RenderCopy(renderer, logoTexture2, NULL, &logoRect2);
         return;
     }
 
@@ -630,7 +654,10 @@ void renderTextEditor()
                 FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + y * 2,
                 (int)strlen(wrd->content) * 1,
                 1.5};
-            SDL_SetRenderDrawColor(renderer, wrd->color.r, wrd->color.g, wrd->color.b, wrd->color.a);
+            if(wrd->color.r >= 200 && wrd->color.g >= 200 && wrd->color.b >= 200)
+                SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, wrd->color.r, wrd->color.g, wrd->color.b, wrd->color.a);
             SDL_RenderFillRect(renderer, &minimapRect);
             i += (int)strlen(wrd->content);
             wrd = wrd->next;
@@ -785,7 +812,7 @@ void renderExplorer()
 
 void renderFolder(FileNode **folder, int *i, int padX)
 {
-    
+
     if (!(*folder)->child)
     {
         if (!(*folder)->isDirOpened)
@@ -860,7 +887,8 @@ void renderFolder(FileNode **folder, int *i, int padX)
 
         if (!node->t1)
         {
-            SDL_Color color = {239, 239, 239, 255};
+            // SDL_Color color = {239, 239, 239, 255};
+            SDL_Color color = {200, 200, 200, 255};
             SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
             node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
             SDL_FreeSurface(s1);
@@ -895,7 +923,7 @@ void renderFolder(FileNode **folder, int *i, int padX)
         {
             if (node->opened)
             {
-                SDL_RenderCopy(renderer, FileIcons.t3, NULL, &FileIcons.r1);
+                SDL_RenderCopy(renderer, FileIcons.t3, NULL, &FileIcons.r1); // Display Folder Open Icon
                 (*i) += 1;
                 renderFolder(&node, i, padX + 1);
                 SDL_RenderCopy(renderer, node->t1, NULL, &node->r1);
@@ -903,12 +931,22 @@ void renderFolder(FileNode **folder, int *i, int padX)
                 continue;
             }
             else
-                SDL_RenderCopy(renderer, FileIcons.t2, NULL, &FileIcons.r1);
+                SDL_RenderCopy(renderer, FileIcons.t2, NULL, &FileIcons.r1);// Display Folder Closed Icon
         }
-        else
-            SDL_RenderCopy(renderer, FileIcons.t1, NULL, &FileIcons.r1);
+        else{
+            // Display File Icons
+            SDL_Texture* fileTexture = FileIcons.t1;
+            if(node->type == CLANG) fileTexture = FileIcons.t4;
+            else if(node->type == CHEADER) fileTexture = FileIcons.t4;
+            else if(node->type == HTML) fileTexture = FileIcons.t5;
+            else if(node->type == CSS) fileTexture = FileIcons2.t1;
+            else if(node->type == IMG) fileTexture = FileIcons2.t2;
 
-        SDL_RenderCopy(renderer, node->t1, NULL, &node->r1);
+
+            SDL_RenderCopy(renderer, fileTexture, NULL, &FileIcons.r1);
+        }
+
+        SDL_RenderCopy(renderer, node->t1, NULL, &node->r1); // Display File/Folder name
         node = node->next;
         (*i) += 1;
     }
