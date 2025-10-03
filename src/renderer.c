@@ -625,12 +625,17 @@ void renderTextEditor()
 
         int x = 0;
 
+        if(y * EDITOR_FONT_SIZE < -currentActiveTag->EDITOR_SCROLL_Y){
+            currentActiveTag->visibleLine = line;
+        }
+
         if (y * EDITOR_FONT_SIZE < -currentActiveTag->EDITOR_SCROLL_Y - 10 || y * EDITOR_FONT_SIZE > -currentActiveTag->EDITOR_SCROLL_Y + WINDOW_H)
         {
             y++;
             line = line->next;
             continue;
         }
+
 
         while (word)
         {
@@ -657,12 +662,12 @@ void renderTextEditor()
             }
 
             SDL_RenderCopy(renderer, word->t1, NULL, &r1);
-            printf("[%s]", word->content);
+            // printf("[%s]", word->content);
             x += w;
             word = word->next;
         }
 
-        printf("\n");
+        // printf("\n");
         /*===== Draw Line Number =====*/
         char text[12];
         sprintf(text, "%d", y + 1);

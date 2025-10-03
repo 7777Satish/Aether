@@ -22,18 +22,20 @@ int main()
 
     // SDL_Surface* bgImageSurface = IMG_Load("assets/bgImage.png");
     SDL_Surface *bgImageSurface = IMG_Load("assets/landscape2.jpg");
-    if (!bgImageSurface) {
+    if (!bgImageSurface)
+    {
         fprintf(stderr, "Error loading background image: %s\n", IMG_GetError());
         return 1;
     }
-    
+
     SDL_Texture *bgImage = SDL_CreateTextureFromSurface(renderer, bgImageSurface);
-    if (!bgImage) {
+    if (!bgImage)
+    {
         fprintf(stderr, "Error creating background texture: %s\n", SDL_GetError());
         SDL_FreeSurface(bgImageSurface);
         return 1;
     }
-    
+
     SDL_Rect bgRect = {
         MENU_W,
         0,
@@ -159,11 +161,44 @@ int main()
                 // Text Editor
                 if (currentActiveTag && x > MENU_W && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
                 {
-
                     int scrollX = currentActiveTag->EDITOR_SCROLL_X;
-                    int scrollY = currentActiveTag->EDITOR_SCROLL_Y;
+                    // int scrollY = currentActiveTag->EDITOR_SCROLL_Y;
+
+                    int ty = 0;
+                    int cy = y - 2*TOPNAV_H;
                     
-                    
+                    FileLine* node = currentActiveTag->visibleLine;
+                    if(node){
+                        int offset = cy / EDITOR_FONT_HEIGHT;
+                        printf("%d\n", offset);
+                        while (offset > 0 && node->next)
+                        {
+                            node = node->next;
+                            offset--;
+                        }
+                        
+                        currentActiveTag->currentLine = node;
+                        
+                        Token* word = node->word;
+                        int sum = scrollX;
+
+                        while (sum < x - MENU_W - 70 && word->next)
+                        {
+                            sum += word->len * cursor->w;
+                            if(sum>x-MENU_W-70){
+                                break;
+                            }
+                            word = word->next;
+                        }
+                        sum -= word->len * cursor->w;
+                        
+                        currentActiveTag->currentWord = word;
+                        currentActiveTag->startIndex = (x - (sum + MENU_W + 70)) / cursor->w;
+                        // if(currentActiveTag->startIndex > word->len) currentActiveTag->startIndex = word->len;
+
+                    } else {
+                        printf("Node Does not Exist\n");
+                    }
                     
                 }
             }
