@@ -89,7 +89,15 @@ void initExplorer(){
         if(Folder) Folder->prev = node;
         
         SDL_Color color = {255, 255, 255, 255};
+        if (!poppins_regular) {
+            fprintf(stderr, "Error: poppins_regular font not loaded\n");
+            continue;
+        }
         SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
+        if (!s1) {
+            fprintf(stderr, "Error creating text surface for %s: %s\n", node->name, TTF_GetError());
+            continue;
+        }
         
 
         node->r1.x = LEFT_MENU[0].rect.x + s1->h + 2;
@@ -110,23 +118,46 @@ void initExplorer(){
     Folder = parent;
     
     SDL_Color color = {255, 255, 255, 255};
+    if (!poppins_regular) {
+        fprintf(stderr, "Error: poppins_regular font not loaded\n");
+        return;
+    }
     SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, parent->name, color);
+    if (!s1) {
+        fprintf(stderr, "Error creating text surface for parent: %s\n", TTF_GetError());
+        return;
+    }
 
     parent->r1.x = LEFT_MENU[0].rect.x;
     parent->r1.w = s1->w;
     parent->r1.y = LEFT_MENU[0].rect.y + MENU_BAR_H - MENU_PAD_Y;
     parent->r1.h = s1->h;
 
+    SDL_FreeSurface(s1);
+
     closedir(dir);
 }
 
 char* readFile(char* path){
     FILE* f = fopen(path, "r");
-    fseek(f, 1, SEEK_END);
+    if (!f) {
+        fprintf(stderr, "Error: Could not open file %s\n", path);
+        return NULL;
+    }
+    
+    fseek(f, 0, SEEK_END);
     int len = ftell(f);
     rewind(f);
+    
     char* content = malloc(len+1);
+    if (!content) {
+        fprintf(stderr, "Error: Could not allocate memory for file content\n");
+        fclose(f);
+        return NULL;
+    }
+    
     fread(content, 1, len, f);
     content[len] = '\0';
+    fclose(f);
     return content;
 }

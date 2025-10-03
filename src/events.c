@@ -63,20 +63,27 @@ void handleMouseScroll(int x, int y)
     }
 }
 
-void moveCursorLeft(){
-    if (!currentActiveTag || !currentActiveTag->currentLine) return;
-    
-    if(currentActiveTag->startIndex == 0){
-        if(currentActiveTag->currentWord->prev){
+void moveCursorLeft()
+{
+    if (!currentActiveTag || !currentActiveTag->currentLine)
+        return;
+
+    if (currentActiveTag->startIndex <= 0)
+    {
+        if (currentActiveTag->currentWord->prev)
+        {
             currentActiveTag->currentWord = currentActiveTag->currentWord->prev;
-            currentActiveTag->startIndex = currentActiveTag->currentWord->len-1;
-        } else if(currentActiveTag->currentLine->prev) {
-            Token* word = currentActiveTag->currentLine->prev->word;
+            currentActiveTag->startIndex = currentActiveTag->currentWord->len - 1;
+        }
+        else if (currentActiveTag->currentLine->prev)
+        {
+            Token *word = currentActiveTag->currentLine->prev->word;
             while (word->next)
             {
                 word = word->next;
             }
             currentActiveTag->currentWord = word;
+            currentActiveTag->currentLine = currentActiveTag->currentLine->prev;
             currentActiveTag->startIndex = word->len;
         }
         return;
@@ -85,15 +92,23 @@ void moveCursorLeft(){
     currentActiveTag->startIndex--;
 }
 
-void moveCursorRight(){
-    if (!currentActiveTag || !currentActiveTag->currentLine) return;
-    
-    if(currentActiveTag->startIndex == currentActiveTag->currentWord->len){
-        if(currentActiveTag->currentWord->next){
+void moveCursorRight()
+{
+    if (!currentActiveTag || !currentActiveTag->currentLine)
+        return;
+
+    if (currentActiveTag->startIndex == currentActiveTag->currentWord->len || strcmp(currentActiveTag->currentWord->content, "") == 0)
+    {
+        if (currentActiveTag->currentWord->next)
+        {
             currentActiveTag->currentWord = currentActiveTag->currentWord->next;
             currentActiveTag->startIndex = 1;
-        } else if(currentActiveTag->currentLine->next) {
+        }
+        else if (currentActiveTag->currentLine->next)
+        {
             currentActiveTag->currentWord = currentActiveTag->currentLine->next->word;
+            currentActiveTag->currentLine = currentActiveTag->currentLine->next;
+
             currentActiveTag->startIndex = 0;
         }
         return;
@@ -188,7 +203,7 @@ void leftDeleteChar()
         {
             currentActiveTag->currentWord->content[i] = currentActiveTag->currentWord->content[i + 1];
         }
-        
+
         currentActiveTag->currentWord->content[size - 1] = '\0';
 
         currentActiveTag->currentWord->len--;
@@ -205,6 +220,8 @@ void createNewline()
 {
     if (!currentActiveTag || !currentActiveTag->currentWord)
         return;
+
+    // Split thw word into two if the cursor is at middle of a word
     if (currentActiveTag->startIndex != 0 && currentActiveTag->startIndex != currentActiveTag->currentWord->len)
     {
         char *newWord = malloc(currentActiveTag->currentWord->len - currentActiveTag->startIndex);
@@ -231,6 +248,7 @@ void createNewline()
         currentActiveTag->startIndex = 0;
     }
 
+    // break line at cursor position, create new line, append it to previous line.
     FileLine *currentLine = currentActiveTag->currentLine;
     Token *currentWord = currentActiveTag->currentWord;
 
@@ -255,49 +273,18 @@ void insertChar(char c)
 {
     if (!currentActiveTag || !currentActiveTag->currentLine)
         return;
-    /*
-        if(c==' '){
-            Token* space = createToken(" ", 1, (SDL_Color){255, 255, 255, 255});
-            Token* next = space;
-            space->next = currentActiveTag->currentWord->next;
-            currentActiveTag->currentWord->next = space;
-            space->prev = currentActiveTag->currentWord;
 
-            if(currentActiveTag->startIndex != currentActiveTag->currentWord->len){
-                char* newWord = malloc(currentActiveTag->currentWord->len - currentActiveTag->startIndex);
-                for(int i=currentActiveTag->startIndex; i<currentActiveTag->currentWord->len; i++){
-                    newWord[i - currentActiveTag->startIndex] = currentActiveTag->currentWord->content[i];
-                }
-                newWord[currentActiveTag->currentWord->len - currentActiveTag->startIndex] = '\0';
-                next = createToken(newWord, 0, (SDL_Color){255, 255, 255, 255});
-                currentActiveTag->currentWord->content[currentActiveTag->startIndex] = '\0';
-                currentActiveTag->currentWord->len = currentActiveTag->startIndex;
-
-                SDL_Surface* s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, (SDL_Color){255, 255, 255, 255});
-                currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-                SDL_FreeSurface(s1);
-
-                next->next = space->next;
-                space->next = next;
-                next->prev = space;
-
-            }
-            currentActiveTag->currentWord = next;
-            currentActiveTag->startIndex = 0;
-
-            return;
-        };
-    */
-
-    if(!currentActiveTag->currentWord){
+    if (!currentActiveTag->currentWord)
+    {
         char str[1];
         str[0] = c;
         FileLine *line1 = parseText(str);
         currentActiveTag->currentLine->word = line1->word;
-        if(line1->word) currentActiveTag->startIndex = 1;
+        if (line1->word)
+            currentActiveTag->startIndex = 1;
         return;
     }
-    
+
     size_t size = strlen(currentActiveTag->currentWord->content);
 
     currentActiveTag->currentWord->content = realloc(currentActiveTag->currentWord->content, size + 2);

@@ -101,11 +101,16 @@ extern int TOP_NAV_LOGO_W;
 extern int TOPNAV_MENU_BUTTON_WIDTH;
 extern int IS_TOPNAV_MENU_DOWN;
 
+// Initialising FOOTER
+extern int FOOTER_H;
+
 // Initialising Editor
 extern int EDITORMENU_H;
 extern int EDITOR_PADDINGX;
 extern int EDITOR_PADDINGY;
 extern int EDITOR_FONT_SIZE;
+extern int EDITOR_FONT_HEIGHT;
+extern int MINIMAP_W;
 
 // Fonts
 extern TTF_Font *poppins_regular;
@@ -152,5 +157,6 @@ void renderFolder(FileNode **folder, int *i, int padX);
 void renderSearch();
 void renderGithub();
 void renderExtentions();
+void renderFooter();
 
 #endif

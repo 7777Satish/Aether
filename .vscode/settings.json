@@ -11,6 +11,7 @@
         "renderer.h": "c",
         "files.h": "c",
         "events.h": "c",
-        "parcer.h": "c"
+        "parcer.h": "c",
+        "sdl_image.h": "c"
     }
 }

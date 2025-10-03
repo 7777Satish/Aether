@@ -346,10 +346,20 @@ FileLine *parseText(char *content)
             break;
         }
 
+        
         // Check for comments
         if (c == '/' && content[i + 1] == '/' && !isInString)
         {
             isInComment = 1;
+
+            size_t len = strlen(currentWord);
+            currentWord = realloc(currentWord, len + 2);
+            currentWord[len] = c;
+            currentWord[len + 1] = '\0';
+
+            i++;
+            c = content[i];
+            continue;
         }
 
         // Check for strings
@@ -405,73 +415,11 @@ FileLine *parseText(char *content)
         // Do this if the character is a seperator [space or punctuation or operator]
         if (!isInString && !isInComment && ((c == ' ') || isPunctuation(tempC) || isOperator(tempC)))
         {
-
-            Token *t = NULL;
-
-            // Check if the word is an identifier
-            if ((lastToken && strcmp(lastToken->content, " ") == 0) && (lastToken->prev && lastToken->prev->type == TOKEN_TYPE) && !isPunctuation(tempC))
+            if (strcmp(currentWord, "") != 0)
             {
-                t = createToken(currentWord, 1, (SDL_Color){200, 255, 200, 255});
-            }
 
-            // Check if the word is a function name, and not a keyword
-            else if (c == '(' && (strcmp(currentWord, " ") != 0) && !isKeyword(currentWord))
-            {
-                t = createToken(currentWord, 1, (SDL_Color){220, 220, 170, 255});
-            }
+                Token *t = NULL;
 
-            // Otherwise Create Token Normally
-            else
-            {
-                t = createToken(currentWord, 0, white);
-            }
-
-            // Push the token to the end of line
-            t->prev = lastToken;
-            t->next = NULL;
-
-            if (lastToken)
-                lastToken->next = t;
-            lastToken = t;
-
-            if (!firstToken)
-            {
-                firstToken = t;
-                lastToken = t;
-            }
-
-            // Reset currentWord
-            free(currentWord);
-            currentWord = malloc(1);
-            currentWord[0] = '\0';
-
-            /* Push the seperator token to the end of line */
-            Token *t2 = NULL;
-            if (c == ' ')
-                t2 = createToken(tempC, 1, white); // white token if space
-            else
-                t2 = createToken(tempC, 0, white); // nomally create token otherwise
-
-            t2->prev = lastToken;
-            t2->next = NULL;
-
-            if (lastToken)
-                lastToken->next = t2;
-            lastToken = t2;
-
-            i++;
-            c = content[i];
-            continue;
-        }
-
-        // Do this if new line
-        if (c == '\n')
-        {
-            Token *t = NULL;
-
-            // Check is current word is not in comment
-            if (!isInComment)
-            {
                 // Check if the word is an identifier
                 if ((lastToken && strcmp(lastToken->content, " ") == 0) && (lastToken->prev && lastToken->prev->type == TOKEN_TYPE) && !isPunctuation(tempC))
                 {
@@ -489,33 +437,121 @@ FileLine *parseText(char *content)
                 {
                     t = createToken(currentWord, 0, white);
                 }
+
+                // Push the token to the end of line
+                t->prev = lastToken;
+                t->next = NULL;
+
+                if (lastToken)
+                    lastToken->next = t;
+                lastToken = t;
+
+                if (!firstToken)
+                {
+                    firstToken = t;
+                    lastToken = t;
+                }
+
+                // Reset currentWord
+                free(currentWord);
+                currentWord = malloc(1);
+                currentWord[0] = '\0';
             }
 
-            // Check if current word is in a single line comment
-            else if (isInComment == 1)
-            {
-                t = createToken(currentWord, 1, (SDL_Color){87, 166, 74, 255});
-                t->type = TOKEN_COMMENT;
-                isInComment = 0;
-            }
+            /* Push the seperator token to the end of line */
+            Token *t2 = NULL;
+            if (c == ' ')
+                t2 = createToken(tempC, 1, white); // white token if space
+            else
+                t2 = createToken(tempC, 0, white); // nomally create token otherwise
 
-            t->prev = lastToken;
-            t->next = NULL;
+            t2->prev = lastToken;
+            t2->next = NULL;
 
             if (lastToken)
-                lastToken->next = t;
-            lastToken = t;
+                lastToken->next = t2;
+            lastToken = t2;
 
             if (!firstToken)
             {
-                firstToken = t;
-                lastToken = t;
+                firstToken = t2;
+                lastToken = t2;
             }
 
-            // Reset Word
-            free(currentWord);
-            currentWord = malloc(1);
-            currentWord[0] = '\0';
+            i++;
+            c = content[i];
+            continue;
+        }
+
+        // Do this if new line
+        if (c == '\n')
+        {
+            if (!firstToken && strcmp(currentWord, "") == 0)
+            {
+                Token *t = createToken("", 1, (SDL_Color){200, 255, 200, 255});
+
+                t->prev = lastToken;
+                t->next = NULL;
+
+                if (lastToken)
+                    lastToken->next = t;
+                lastToken = t;
+
+                firstToken = t;
+            }
+
+            if (strcmp(currentWord, "") != 0)
+            {
+                Token *t = NULL;
+
+                // Check is current word is not in comment
+                if (!isInComment)
+                {
+                    // Check if the word is an identifier
+                    if ((lastToken && strcmp(lastToken->content, " ") == 0) && (lastToken->prev && lastToken->prev->type == TOKEN_TYPE) && !isPunctuation(tempC))
+                    {
+                        t = createToken(currentWord, 1, (SDL_Color){200, 255, 200, 255});
+                    }
+
+                    // Check if the word is a function name, and not a keyword
+                    else if (c == '(' && (strcmp(currentWord, " ") != 0) && !isKeyword(currentWord))
+                    {
+                        t = createToken(currentWord, 1, (SDL_Color){220, 220, 170, 255});
+                    }
+
+                    // Otherwise Create Token Normally
+                    else
+                    {
+                        t = createToken(currentWord, 0, white);
+                    }
+                }
+
+                // Check if current word is in a single line comment
+                else if (isInComment == 1)
+                {
+                    t = createToken(currentWord, 1, (SDL_Color){87, 166, 74, 255});
+                    t->type = TOKEN_COMMENT;
+                    isInComment = 0;
+                }
+
+                t->prev = lastToken;
+                t->next = NULL;
+
+                if (lastToken)
+                    lastToken->next = t;
+                lastToken = t;
+
+                if (!firstToken)
+                {
+                    firstToken = t;
+                    lastToken = t;
+                }
+
+                // Reset Word
+                free(currentWord);
+                currentWord = malloc(1);
+                currentWord[0] = '\0';
+            }
 
             /* Create a line and for the current line */
             FileLine *line = (FileLine *)malloc(sizeof(FileLine));

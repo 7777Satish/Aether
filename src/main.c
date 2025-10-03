@@ -21,14 +21,30 @@ int main()
     int i = 0;
 
     // SDL_Surface* bgImageSurface = IMG_Load("assets/bgImage.png");
-    SDL_Surface* bgImageSurface = IMG_Load("assets/girl.png");
-    SDL_Texture* bgImage = SDL_CreateTextureFromSurface(renderer, bgImageSurface);
+    SDL_Surface *bgImageSurface = IMG_Load("assets/landscape2.jpg");
+    if (!bgImageSurface) {
+        fprintf(stderr, "Error loading background image: %s\n", IMG_GetError());
+        return 1;
+    }
+    
+    SDL_Texture *bgImage = SDL_CreateTextureFromSurface(renderer, bgImageSurface);
+    if (!bgImage) {
+        fprintf(stderr, "Error creating background texture: %s\n", SDL_GetError());
+        SDL_FreeSurface(bgImageSurface);
+        return 1;
+    }
+    
     SDL_Rect bgRect = {
         MENU_W,
         0,
-        (bgImageSurface->w+0.0)/bgImageSurface->h * WINDOW_H,
-        WINDOW_H
-    };
+        (bgImageSurface->w + 0.0) / bgImageSurface->h * WINDOW_H,
+        WINDOW_H};
+
+    SDL_Rect fullScreenRect = {
+        0,
+        0,
+        WINDOW_W,
+        WINDOW_H};
 
     int running = 1;
     SDL_Event event;
@@ -119,7 +135,7 @@ int main()
                                 if (showMenu == 0)
                                 {
                                     showMenu = 1;
-                                    logoRect2.x =  MENU_W + (WINDOW_W - MENU_W) / 2 - dlw2 / 2;
+                                    logoRect2.x = MENU_W + (WINDOW_W - MENU_W) / 2 - dlw2 / 2;
                                     FILEBAR_bg_rect.x = MENU_W + 1;
                                 }
                                 else
@@ -138,6 +154,26 @@ int main()
                             menu_state = i;
                         }
                     }
+                }
+
+                // Text Editor
+                if (currentActiveTag && x > MENU_W && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
+                {
+
+                    int scrollX = currentActiveTag->EDITOR_SCROLL_X;
+                    int scrollY = currentActiveTag->EDITOR_SCROLL_Y;
+                    
+                    
+                    
+                }
+            }
+
+            if (event.type == SDL_WINDOWEVENT)
+            {
+                if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+                {
+                    WINDOW_W = event.window.data1;
+                    WINDOW_H = event.window.data2;
                 }
             }
 
@@ -226,29 +262,35 @@ int main()
                     handleMouseScroll(event.wheel.x, event.wheel.y);
                 }
             }
-        
-        
-            if(event.type == SDL_KEYDOWN){
+
+            if (event.type == SDL_KEYDOWN)
+            {
                 int key = event.key.keysym.sym;
-                
-                if(key == SDLK_BACKSPACE) leftDeleteChar();
-                if(key == SDLK_LEFT) moveCursorLeft();
-                if(key == SDLK_RIGHT) moveCursorRight();
-                if(key == SDLK_RETURN) createNewline();
+
+                if (key == SDLK_BACKSPACE)
+                    leftDeleteChar();
+                if (key == SDLK_LEFT)
+                    moveCursorLeft();
+                if (key == SDLK_RIGHT)
+                    moveCursorRight();
+                if (key == SDLK_RETURN)
+                    createNewline();
             }
 
-            if(event.type == SDL_TEXTINPUT){
-                if(currentActiveTag) insertChar(event.text.text[0]);
+            if (event.type == SDL_TEXTINPUT)
+            {
+                if (currentActiveTag)
+                    insertChar(event.text.text[0]);
             }
         }
 
-        
         SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);
         SDL_RenderClear(renderer);
         // SDL_SetRenderDrawColor(renderer, 17, 17, 17, 170);
         SDL_SetRenderDrawColor(renderer, 17, 17, 17, 200);
-        
-        if(!FileBar){
+
+        if (!FileBar)
+        {
             SDL_RenderCopy(renderer, bgImage, NULL, &bgRect);
             // SDL_RenderFillRect(renderer, &bgRect);
         }
@@ -259,8 +301,12 @@ int main()
 
         renderMenuBar();
         renderTopNav();
-        renderTopNavBarMenu();
         renderTextEditor();
+        renderFooter();
+        renderTopNavBarMenu();
+
+        SDL_SetRenderDrawColor(renderer, 155, 20, 127, 15);
+        SDL_RenderFillRect(renderer, &fullScreenRect);
 
         SDL_RenderPresent(renderer);
         SDL_Delay(1000 / 60);

@@ -62,6 +62,7 @@ FileBarItem *createFileBarNode(char *name, char *path)
     node->EDITOR_SCROLL_Y = 0;
     node->currentLine = NULL;
     node->currentWord = NULL;
+    node->visibleLine = NULL;
     node->startIndex = 0;
     return node;
 }
@@ -82,12 +83,13 @@ void addFileBarNode(char *name, char *path)
     FileBarItem *node = createFileBarNode(name, path);
     node->active = 1;
     currentActiveTag = node;
-
+    
     char *content = readFile(path);
-
-    FileLine *lines = parseText(content);
+    FileLine *lines = lines = parseText(content);
+    
     node->lines = lines;
     node->currentLine = lines;
+    node->visibleLine = lines;
     if(lines) node->currentWord = lines->word;
 
     if (!node->t1)
