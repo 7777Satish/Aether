@@ -628,7 +628,7 @@ void renderTextEditor()
         if(y * EDITOR_FONT_SIZE < -currentActiveTag->EDITOR_SCROLL_Y){
             currentActiveTag->visibleLine = line;
         }
-
+ 
         if (y * EDITOR_FONT_SIZE < -currentActiveTag->EDITOR_SCROLL_Y - 10 || y * EDITOR_FONT_SIZE > -currentActiveTag->EDITOR_SCROLL_Y + WINDOW_H)
         {
             y++;
