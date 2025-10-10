@@ -625,11 +625,11 @@ void renderTextEditor()
 
         int x = 0;
 
-        if(y * EDITOR_FONT_SIZE < -currentActiveTag->EDITOR_SCROLL_Y){
+        if((y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT == 0){
             currentActiveTag->visibleLine = line;
         }
  
-        if (y * EDITOR_FONT_SIZE < -currentActiveTag->EDITOR_SCROLL_Y - 10 || y * EDITOR_FONT_SIZE > -currentActiveTag->EDITOR_SCROLL_Y + WINDOW_H)
+        if ((y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT < 0 || y * EDITOR_FONT_SIZE > -currentActiveTag->EDITOR_SCROLL_Y + WINDOW_H)
         {
             y++;
             line = line->next;
@@ -639,7 +639,7 @@ void renderTextEditor()
 
         while (word)
         {
-
+            word->len = strlen(word->content);
             // printf("%s",word->content);
             int w = 0, h = 0;
             SDL_QueryTexture(word->t1, NULL, NULL, &w, &h);

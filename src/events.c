@@ -4,6 +4,7 @@ void handleMouseScroll(int x, int y)
 {
 
     int dy = 15;
+    // int dy = EDITOR_FONT_HEIGHT;
     int dx = 15;
 
     if (Folder != NULL && MOUSE_X > 0 && MOUSE_X < MENU_W && MOUSE_Y > TOPNAV_H)
@@ -215,58 +216,88 @@ void leftDeleteChar()
 
     SDL_FreeSurface(s1);
 }
-
 void createNewline()
 {
     if (!currentActiveTag || !currentActiveTag->currentWord)
         return;
 
-    // Split thw word into two if the cursor is at middle of a word
-    if (currentActiveTag->startIndex != 0 && currentActiveTag->startIndex != currentActiveTag->currentWord->len)
+    // Split the word into 2 if cursor is in middle
+    if (currentActiveTag->startIndex > 0 && currentActiveTag->startIndex < currentActiveTag->currentWord->len)
     {
-        char *newWord = malloc(currentActiveTag->currentWord->len - currentActiveTag->startIndex);
-        Token *next = NULL;
+        int remainLen = currentActiveTag->currentWord->len - currentActiveTag->startIndex;
+        char *newText = malloc(remainLen + 1);
+        if (!newText)
+            return;
 
-        for (int i = currentActiveTag->startIndex; i < currentActiveTag->currentWord->len; i++)
-        {
-            newWord[i - currentActiveTag->startIndex] = currentActiveTag->currentWord->content[i];
-        }
-        newWord[currentActiveTag->currentWord->len - currentActiveTag->startIndex] = '\0';
-        next = createToken(newWord, 0, (SDL_Color){255, 255, 255, 255});
+        memcpy(newText, currentActiveTag->currentWord->content + currentActiveTag->startIndex, remainLen);
+        newText[remainLen] = '\0';
+
+        Token *newToken = createToken(newText, 0, (SDL_Color){255, 255, 255, 255});
+        free(newText); // createToken should own its own content
+
+        // Cut original token
         currentActiveTag->currentWord->content[currentActiveTag->startIndex] = '\0';
         currentActiveTag->currentWord->len = currentActiveTag->startIndex;
 
+        // Re-render old token
         SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, (SDL_Color){255, 255, 255, 255});
         currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
         SDL_FreeSurface(s1);
 
-        next->next = currentActiveTag->currentWord->next;
-        currentActiveTag->currentWord->next = next;
-        next->prev = currentActiveTag->currentWord;
+        // Insert new token after current
+        newToken->next = currentActiveTag->currentWord->next;
+        if (newToken->next)
+            newToken->next->prev = newToken;
+        currentActiveTag->currentWord->next = newToken;
+        newToken->prev = currentActiveTag->currentWord;
 
-        currentActiveTag->currentWord = next;
+        currentActiveTag->currentWord = newToken;
         currentActiveTag->startIndex = 0;
     }
 
-    // break line at cursor position, create new line, append it to previous line.
+    else if (currentActiveTag->startIndex == currentActiveTag->currentWord->len)
+    {
+        if (currentActiveTag->currentWord->next)
+        {
+            currentActiveTag->currentWord = currentActiveTag->currentWord->next;
+            currentActiveTag->startIndex = 0;
+        }
+        else
+        {
+            Token *newToken = createToken("", 1, (SDL_Color){255, 255, 255, 255});
+            
+            // Insert new token after current
+            newToken->next = currentActiveTag->currentWord->next;
+            if (newToken->next)
+                newToken->next->prev = newToken;
+            currentActiveTag->currentWord->next = newToken;
+            newToken->prev = currentActiveTag->currentWord;
+
+            currentActiveTag->currentWord = newToken;
+            currentActiveTag->startIndex = 0;
+        }
+    }
+
+    // ---- Create newline and move token chain ----
     FileLine *currentLine = currentActiveTag->currentLine;
-    Token *currentWord = currentActiveTag->currentWord;
+    FileLine *newLine = malloc(sizeof(FileLine));
+    memset(newLine, 0, sizeof(FileLine)); // initialize
 
-    FileLine *line = (FileLine *)malloc(sizeof(FileLine));
-    line->next = currentLine->next;
-    line->prev = currentLine;
+    newLine->next = currentLine->next;
+    newLine->prev = currentLine;
     if (currentLine->next)
-        currentLine->next->prev = line;
-    currentLine->next = line;
+        currentLine->next->prev = newLine;
+    currentLine->next = newLine;
 
-    currentActiveTag->currentLine = line;
-
-    line->word = currentWord;
-    if (currentWord->prev)
-        currentWord->prev->next = NULL;
+    // Move words to new line
+    newLine->word = currentActiveTag->currentWord;
+    if (currentActiveTag->currentWord->prev)
+        currentActiveTag->currentWord->prev->next = NULL;
     else
         currentLine->word = NULL;
-    currentWord->prev = NULL;
+
+    currentActiveTag->currentWord->prev = NULL;
+    currentActiveTag->currentLine = newLine;
 }
 
 void insertChar(char c)

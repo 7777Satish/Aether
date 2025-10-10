@@ -20,8 +20,28 @@ int main()
 
     int i = 0;
 
+    // Loading Screen
+
+    SDL_Rect loadingBgRect = {0, 0, WINDOW_W, WINDOW_H};
+    SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);
+    SDL_RenderFillRect(renderer, &loadingBgRect);
+
+    // SDL_Rect loadingMenuRect = {0, 0, WINDOW_W, WINDOW_H};
+    SDL_SetRenderDrawColor(renderer, 37, 37, 37, 255);
+    SDL_RenderFillRect(renderer, &MENU_bg_rect);
+
+    // SDL_Rect loadingBgRect = {0, 0, WINDOW_W, WINDOW_H};
+    SDL_SetRenderDrawColor(renderer, 27, 27, 27, 255);
+    SDL_RenderFillRect(renderer, &TOPNAV_bg_rect);
+
+    SDL_Rect loadingFooterRect = {0, WINDOW_H - FOOTER_H, WINDOW_W, FOOTER_H};
+    SDL_SetRenderDrawColor(renderer, 57, 57, 57, 255);
+    SDL_RenderFillRect(renderer, &loadingFooterRect);
+
+
+
     // SDL_Surface* bgImageSurface = IMG_Load("assets/bgImage.png");
-    SDL_Surface *bgImageSurface = IMG_Load("assets/landscape2.jpg");
+    SDL_Surface *bgImageSurface = IMG_Load("assets/girl.png");
     if (!bgImageSurface)
     {
         fprintf(stderr, "Error loading background image: %s\n", IMG_GetError());
@@ -48,6 +68,14 @@ int main()
         WINDOW_W,
         WINDOW_H};
 
+    // Load the I-beam (text) cursor
+    SDL_Cursor *ibeam = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+    // SDL_SetCursor(ibeam);
+
+    // Load the Pointer cursor
+    SDL_Cursor *arrowCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+    // SDL_SetCursor(ibeam);
+
     int running = 1;
     SDL_Event event;
     while (running)
@@ -61,7 +89,6 @@ int main()
 
             if (event.type == SDL_MOUSEBUTTONDOWN)
             {
-
                 int x = event.motion.x;
                 int y = event.motion.y;
 
@@ -164,42 +191,51 @@ int main()
                     int scrollX = currentActiveTag->EDITOR_SCROLL_X;
                     // int scrollY = currentActiveTag->EDITOR_SCROLL_Y;
 
-                    int ty = 0;
-                    int cy = y - 2*TOPNAV_H;
-                    
-                    FileLine* node = currentActiveTag->visibleLine;
-                    if(node){
+                    // int ty = 0;
+                    int cy = y - 2 * TOPNAV_H;
+
+                    // if (scrollY < -EDITOR_FONT_HEIGHT)
+                    //     currentActiveTag->visibleLine = currentActiveTag->lines;
+
+                    FileLine *node = currentActiveTag->visibleLine;
+                    if (node)
+                    {
                         int offset = cy / EDITOR_FONT_HEIGHT;
-                        printf("%d\n", offset);
+                        // printf("%d\n", offset);
                         while (offset > 0 && node->next)
                         {
                             node = node->next;
                             offset--;
                         }
-                        
+
                         currentActiveTag->currentLine = node;
-                        
-                        Token* word = node->word;
-                        int sum = scrollX;
+
+                        Token *word = node->word;
+                        int sum = scrollX + cursor->w;
 
                         while (sum < x - MENU_W - 70 && word->next)
                         {
-                            sum += word->len * cursor->w;
-                            if(sum>x-MENU_W-70){
+                            if (sum + word->len * cursor->w >= x - MENU_W - 70)
+                            {
                                 break;
                             }
+                            sum += word->len * cursor->w;
                             word = word->next;
                         }
-                        sum -= word->len * cursor->w;
-                        
+                        // word = word;
+                        // sum += word->len * cursor->w;
+
                         currentActiveTag->currentWord = word;
                         currentActiveTag->startIndex = (x - (sum + MENU_W + 70)) / cursor->w;
-                        // if(currentActiveTag->startIndex > word->len) currentActiveTag->startIndex = word->len;
-
-                    } else {
+                        
+                        if (currentActiveTag->startIndex > word->len)
+                            currentActiveTag->startIndex = word->len;
+                        printf("%s %s %d\n", currentActiveTag->currentLine->word->content, currentActiveTag->currentWord->content, currentActiveTag->startIndex);
+                    }
+                    else
+                    {
                         printf("Node Does not Exist\n");
                     }
-                    
                 }
             }
 
@@ -274,15 +310,23 @@ int main()
                     }
                 }
 
+                // Files and Folders in Exploror
                 if (x > 0 && x < MENU_W)
                 {
-
-                    // Files and Folders in Exploror
                     if (Folder)
                     {
 
                         handleExplorerItemsHover(&Folder, x, y);
                     }
+                }
+
+
+                // Text Editor
+                if (currentActiveTag && x > MENU_W && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
+                {
+                    SDL_SetCursor(ibeam);
+                } else {
+                    SDL_SetCursor(arrowCursor);
                 }
             }
 

@@ -1,0 +1,16 @@
+{
+    "editor": {
+        "fontSize": 14,
+        "fontFamily": "Jet Brains, monospace",
+        "tabSize": 4,
+        "useSpaces": true,
+        "autoSave": true,
+        "lineNumbers": true,
+        "wordWrap": false,
+        "minimap": true
+    },
+    "files": {
+        "defaultDirectory": "/default",
+        "recentFilesLimit": 10
+    }
+}
