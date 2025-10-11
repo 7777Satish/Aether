@@ -38,8 +38,6 @@ int main()
     SDL_SetRenderDrawColor(renderer, 57, 57, 57, 255);
     SDL_RenderFillRect(renderer, &loadingFooterRect);
 
-
-
     // SDL_Surface* bgImageSurface = IMG_Load("assets/bgImage.png");
     SDL_Surface *bgImageSurface = IMG_Load("assets/girl.png");
     if (!bgImageSurface)
@@ -186,8 +184,9 @@ int main()
                 }
 
                 // Text Editor
-                if (currentActiveTag && x > MENU_W && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
+                if (currentActiveTag && x > MENU_W + 70 && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
                 {
+                    IS_SELECTING = 1;
                     int scrollX = currentActiveTag->EDITOR_SCROLL_X;
                     // int scrollY = currentActiveTag->EDITOR_SCROLL_Y;
 
@@ -227,10 +226,16 @@ int main()
 
                         currentActiveTag->currentWord = word;
                         currentActiveTag->startIndex = (x - (sum + MENU_W + 70)) / cursor->w;
-                        
+
                         if (currentActiveTag->startIndex > word->len)
                             currentActiveTag->startIndex = word->len;
-                        printf("%s %s %d\n", currentActiveTag->currentLine->word->content, currentActiveTag->currentWord->content, currentActiveTag->startIndex);
+                        if (currentActiveTag->startIndex < 0)
+                            currentActiveTag->startIndex = 0;
+
+                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                        // printf("%s %s %d\n", currentActiveTag->currentLine->word->content, currentActiveTag->currentWord->content, currentActiveTag->startIndex);
                     }
                     else
                     {
@@ -251,6 +256,7 @@ int main()
             if (event.type == SDL_MOUSEBUTTONUP)
             {
                 IS_MOUSE_DOWN = 0;
+                IS_SELECTING = 0;
             }
 
             if (event.type == SDL_MOUSEMOTION)
@@ -320,14 +326,72 @@ int main()
                     }
                 }
 
-
                 // Text Editor
                 if (currentActiveTag && x > MENU_W && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
                 {
                     SDL_SetCursor(ibeam);
-                } else {
+                }
+                else
+                {
                     SDL_SetCursor(arrowCursor);
                 }
+
+                // Handle Selection
+                if (IS_SELECTING)
+                {
+                    currentActiveTag->SELECTION_START_INDEX = (x - MENU_W - 70) / cursor->w;
+
+                    int scrollX = currentActiveTag->EDITOR_SCROLL_X;
+                    // int scrollY = currentActiveTag->EDITOR_SCROLL_Y;
+
+                    // int ty = 0;
+                    int cy = y - 2 * TOPNAV_H;
+
+                    // if (scrollY < -EDITOR_FONT_HEIGHT)
+                    //     currentActiveTag->visibleLine = currentActiveTag->lines;
+
+                    FileLine *node = currentActiveTag->visibleLine;
+                    if (node)
+                    {
+                        int offset = cy / EDITOR_FONT_HEIGHT;
+                        // printf("%d\n", offset);
+                        while (offset > 0 && node->next)
+                        {
+                            node = node->next;
+                            offset--;
+                        }
+
+                        currentActiveTag->currentLine = node;
+
+                        Token *word = node->word;
+                        int sum = scrollX + cursor->w;
+
+                        while (sum < x - MENU_W - 70 && word->next)
+                        {
+                            if (sum + word->len * cursor->w >= x - MENU_W - 70)
+                            {
+                                break;
+                            }
+                            sum += word->len * cursor->w;
+                            word = word->next;
+                        }
+                        // word = word;
+                        // sum += word->len * cursor->w;
+
+                        currentActiveTag->currentWord = word;
+                        currentActiveTag->startIndex = (x - (sum + MENU_W + 70)) / cursor->w;
+
+                        if (currentActiveTag->startIndex > word->len)
+                            currentActiveTag->startIndex = word->len;
+                        if(currentActiveTag->startIndex<0) currentActiveTag->startIndex = 0;
+                        // printf("%s %s %d\n", currentActiveTag->currentLine->word->content, currentActiveTag->currentWord->content, currentActiveTag->startIndex);
+                    }
+                    else
+                    {
+                        printf("Node Does not Exist\n");
+                    }
+                }
+            
             }
 
             if (event.type == SDL_MOUSEWHEEL)
@@ -348,6 +412,10 @@ int main()
 
                 if (key == SDLK_BACKSPACE)
                     leftDeleteChar();
+                if (key == SDLK_UP)
+                    moveCursorUp();
+                if (key == SDLK_DOWN)
+                    moveCursorDown();
                 if (key == SDLK_LEFT)
                     moveCursorLeft();
                 if (key == SDLK_RIGHT)
@@ -361,6 +429,20 @@ int main()
                 if (currentActiveTag)
                     insertChar(event.text.text[0]);
             }
+        }
+
+        if(IS_SELECTING){
+            if(MOUSE_Y > WINDOW_H - FOOTER_H && currentActiveTag->currentLine->next){
+                currentActiveTag->EDITOR_SCROLL_Y -= EDITOR_FONT_HEIGHT*2;
+            }
+
+            if(MOUSE_Y < 2*TOPNAV_H && currentActiveTag->currentLine->prev){
+                currentActiveTag->EDITOR_SCROLL_Y += EDITOR_FONT_HEIGHT*2;
+            }
+        }
+
+        if(currentActiveTag && currentActiveTag->currentLine && currentActiveTag->EDITOR_SCROLL_Y > 0){
+            currentActiveTag->EDITOR_SCROLL_Y = 0;
         }
 
         SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);

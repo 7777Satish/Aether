@@ -60,6 +60,9 @@ FileBarItem *createFileBarNode(char *name, char *path)
     node->cursorY = 0;
     node->EDITOR_SCROLL_X = 0;
     node->EDITOR_SCROLL_Y = 0;
+    node->SELECTION_START_LINE = NULL;
+    node->SELECTION_START_WORD = NULL;
+    node->SELECTION_START_INDEX = 0;
     node->currentLine = NULL;
     node->currentWord = NULL;
     node->visibleLine = NULL;

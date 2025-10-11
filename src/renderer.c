@@ -101,6 +101,8 @@ int WINDOW_H = 800;
 int MOUSE_X = 0;
 int MOUSE_Y = 0;
 int IS_MOUSE_DOWN = 0;
+int IS_SELECTING = 0;
+
 
 // Initialising Left Menu
 int MENU_BAR_H = 50;
@@ -609,6 +611,7 @@ void renderTextEditor()
 
     // SDL_Color fg = {255, 255, 255, 255};
 
+    int hasSelectionStarted = 0;
     int LINE_NUMBER_WIDTH = 70;
     while (line)
     {
@@ -624,6 +627,10 @@ void renderTextEditor()
         }
 
         int x = 0;
+
+        if(currentActiveTag->currentWord != currentActiveTag->SELECTION_START_WORD && (line == currentActiveTag->currentLine || line == currentActiveTag->SELECTION_START_LINE)){
+            hasSelectionStarted = !hasSelectionStarted;
+        }
 
         if((y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT == 0){
             currentActiveTag->visibleLine = line;
@@ -665,6 +672,18 @@ void renderTextEditor()
             // printf("[%s]", word->content);
             x += w;
             word = word->next;
+        }
+
+        if(hasSelectionStarted){
+            SDL_Rect selectionRect = {
+                MENU_W + LINE_NUMBER_WIDTH,
+                FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT,
+                1000,
+                EDITOR_FONT_HEIGHT
+            };
+
+            SDL_SetRenderDrawColor(renderer, 100, 150, 250, 50);
+            SDL_RenderFillRect(renderer, &selectionRect);
         }
 
         // printf("\n");

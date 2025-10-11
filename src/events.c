@@ -64,6 +64,72 @@ void handleMouseScroll(int x, int y)
     }
 }
 
+void moveCursorUp()
+{
+    if (!currentActiveTag || !currentActiveTag->currentLine || !currentActiveTag->currentWord)
+        return;
+
+    int currentX = 0;
+    Token* currentNode = currentActiveTag->currentLine->word;
+    while (currentNode != currentActiveTag->currentWord)
+    {
+        currentX += currentNode->len;
+        currentNode = currentNode->next;
+    }
+    currentX+=currentActiveTag->startIndex;
+
+    currentActiveTag->currentLine = currentActiveTag->currentLine->prev;
+    currentActiveTag->currentWord = currentActiveTag->currentLine->word;
+
+    int newX = 0;
+    currentNode = currentActiveTag->currentWord;
+    while (newX + currentNode->len < currentX && currentNode->next)
+    {
+        newX += currentNode->len;
+        currentNode = currentNode->next;
+    }
+    currentActiveTag->currentWord = currentNode;
+    currentActiveTag->startIndex = currentX - newX;
+
+    if(currentActiveTag->startIndex > currentActiveTag->currentWord->len){
+        currentActiveTag->startIndex = currentActiveTag->currentWord->len;
+    }
+}
+
+
+void moveCursorDown()
+{
+    if (!currentActiveTag || !currentActiveTag->currentLine || !currentActiveTag->currentWord)
+        return;
+
+    int currentX = 0;
+    Token* currentNode = currentActiveTag->currentLine->word;
+    while (currentNode != currentActiveTag->currentWord)
+    {
+        currentX += currentNode->len;
+        currentNode = currentNode->next;
+    }
+    currentX+=currentActiveTag->startIndex;
+
+    currentActiveTag->currentLine = currentActiveTag->currentLine->next;
+    currentActiveTag->currentWord = currentActiveTag->currentLine->word;
+
+    int newX = 0;
+    currentNode = currentActiveTag->currentWord;
+    while (newX + currentNode->len < currentX && currentNode->next)
+    {
+        newX += currentNode->len;
+        currentNode = currentNode->next;
+    }
+    currentActiveTag->currentWord = currentNode;
+    currentActiveTag->startIndex = currentX - newX;
+
+    if(currentActiveTag->startIndex > currentActiveTag->currentWord->len){
+        currentActiveTag->startIndex = currentActiveTag->currentWord->len;
+    }
+}
+
+
 void moveCursorLeft()
 {
     if (!currentActiveTag || !currentActiveTag->currentLine)
@@ -304,7 +370,7 @@ void insertChar(char c)
 {
     if (!currentActiveTag || !currentActiveTag->currentLine)
         return;
-
+    IS_SELECTING = 0;
     if (!currentActiveTag->currentWord)
     {
         char str[1];

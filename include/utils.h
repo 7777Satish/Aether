@@ -46,9 +46,11 @@ typedef struct FileBarItem{
     SDL_Rect r1;
     SDL_Rect r2;
     FileLine *lines;
-    
     int EDITOR_SCROLL_X;
     int EDITOR_SCROLL_Y;
+    FileLine* SELECTION_START_LINE;
+    Token* SELECTION_START_WORD;
+    int SELECTION_START_INDEX;
     Token* currentWord;
     FileLine* currentLine;
     FileLine* visibleLine;

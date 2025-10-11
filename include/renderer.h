@@ -83,6 +83,7 @@ extern int WINDOW_H;
 extern int MOUSE_X;
 extern int MOUSE_Y;
 extern int IS_MOUSE_DOWN;
+extern int IS_SELECTING;
 
 // Initialising Left Menu
 extern int MENU_BAR_H;
