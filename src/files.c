@@ -1,36 +1,75 @@
+/**
+ * @file files.c
+ * @brief File system operations and file explorer functionality
+ * 
+ * This module provides:
+ * - File and directory browsing capabilities
+ * - File I/O operations (read, write, create)
+ * - Folder selection dialogs using native OS dialogs
+ * - File tree management and navigation
+ * - Asynchronous file operations to prevent UI blocking
+ */
+
 #include "../include/files.h"
 
+// ======== GLOBAL FILE STATE ========
+
+/** @brief Path to currently selected folder */
 char selected_folder[1024] = "";
+
+/** @brief Root node of the file explorer tree */
 FileNode* Folder = NULL;
 
+/**
+ * @brief Opens a native folder selection dialog
+ * 
+ * Uses Zenity (on Linux) to display a system folder selection dialog.
+ * This function blocks until the user selects a folder or cancels.
+ * 
+ * @return Pointer to selected folder path, or NULL if cancelled/error
+ * @note The returned string is static and will be overwritten on next call
+ */
 char* open_folder_dialog() {
     FILE *fp;
     static char path[1024];
 
+    // Execute zenity file selection dialog
     fp = popen("zenity --file-selection --directory --title=\"Select a folder\"", "r");
     if (fp == NULL) {
         fprintf(stderr, "Failed to run zenity\n");
         return NULL;
     }
 
+    // Read the selected path from zenity output
     if (fgets(path, sizeof(path), fp) == NULL) {
         pclose(fp);
         return NULL;
     }
 
-    // Remove newline character
+    // Remove trailing newline character from path
     path[strcspn(path, "\n")] = '\0';
 
     pclose(fp);
     return path;
 }
 
-
+/**
+ * @brief Thread function for non-blocking folder selection
+ * 
+ * This function runs in a separate thread to prevent the UI from freezing
+ * while the folder dialog is open. Updates the global folder state and
+ * reinitializes the file explorer when a folder is selected.
+ * 
+ * @param arg Unused thread argument
+ * @return NULL (required by pthread interface)
+ */
 void* open_folder_thread() {
     char* folder = open_folder_dialog();
     if (folder) {
         printf("You selected: %s\n", folder);
+        // Copy selected path to global state
         strncpy(selected_folder, folder, sizeof(selected_folder));
+        // Reinitialize file explorer with new folder
         initExplorer();
     } else {
         printf("No folder selected.\n");
@@ -38,6 +77,12 @@ void* open_folder_thread() {
     return NULL;
 }
 
+/**
+ * @brief Clears the file explorer and frees all associated memory
+ * 
+ * Traverses the entire file tree and deallocates all FileNode structures.
+ * Should be called before loading a new folder or when shutting down.
+ */
 void clearExplorer(){
     FileNode* temp = Folder;
     while (temp!=NULL)

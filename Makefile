@@ -15,7 +15,7 @@ TARGET = $(BUILD_DIR)/main
 
 # Compiler flags
 CFLAGS = -I$(INC_DIR) -Wall -Wextra -g `sdl2-config --cflags`
-LDFLAGS = `sdl2-config --libs` -lSDL2_image -lSDL2_ttf
+LDFLAGS = `sdl2-config --libs` -lSDL2_image -lSDL2_ttf -lm
 
 # Default target
 all: $(TARGET)

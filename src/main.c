@@ -1,26 +1,49 @@
+/**
+ * @file main.c
+ * @brief Main application entry point and core event loop
+ * 
+ * This file contains the main application logic, including:
+ * - SDL initialization and window creation
+ * - Main event loop for handling user input
+ * - Core UI rendering and state management
+ * - File explorer and editor coordination
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "../include/renderer.h"
 #include "files.h"
 #include "events.h"
 #include "parser.h"
 
+// Function prototypes
 void renderFile();
 char *open_folder_dialog();
 void *open_folder_thread();
 
-// ======== LEFT MENU EXPLORER ========
+// ======== GLOBAL STATE VARIABLES ========
 
+/** @brief Current editor state (0 = normal, 1 = loading, etc.) */
 int editorState = 0;
 
+/**
+ * @brief Main application entry point
+ * 
+ * Initializes SDL, creates the main window, sets up the UI components,
+ * and enters the main event loop for handling user interactions.
+ * 
+ * @return 0 on successful exit, non-zero on error
+ */
 int main()
 {
+    // Initialize SDL2, fonts, and all UI components
     init();
 
     int i = 0;
 
-    // Loading Screen
+    // ======== LOADING SCREEN SETUP ========
 
     SDL_Rect loadingBgRect = {0, 0, WINDOW_W, WINDOW_H};
     SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);
@@ -39,7 +62,7 @@ int main()
     SDL_RenderFillRect(renderer, &loadingFooterRect);
 
     // SDL_Surface* bgImageSurface = IMG_Load("assets/bgImage.png");
-    SDL_Surface *bgImageSurface = IMG_Load("assets/girl.png");
+    SDL_Surface *bgImageSurface = IMG_Load("assets/landscape2.jpg");
     if (!bgImageSurface)
     {
         fprintf(stderr, "Error loading background image: %s\n", IMG_GetError());
@@ -66,6 +89,15 @@ int main()
         WINDOW_W,
         WINDOW_H};
 
+    /* ===== Props ===== */
+        SDL_Surface* propS1 = IMG_Load("assets/prop1.png");
+        SDL_Texture* prop1 = SDL_CreateTextureFromSurface(renderer, propS1);
+        SDL_Rect propRect1 = {
+            100, 0, 100, 100
+        };
+        SDL_Point propCenter1 = {(propRect1.x + propRect1.w)/2, (propRect1.y + propRect1.h)/2};
+        int propangle1 = 0;
+
     // Load the I-beam (text) cursor
     SDL_Cursor *ibeam = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
     // SDL_SetCursor(ibeam);
@@ -75,6 +107,7 @@ int main()
     // SDL_SetCursor(ibeam);
 
     int running = 1;
+    int time = 0;
     SDL_Event event;
     while (running)
     {
@@ -383,7 +416,8 @@ int main()
 
                         if (currentActiveTag->startIndex > word->len)
                             currentActiveTag->startIndex = word->len;
-                        if(currentActiveTag->startIndex<0) currentActiveTag->startIndex = 0;
+                        if (currentActiveTag->startIndex < 0)
+                            currentActiveTag->startIndex = 0;
                         // printf("%s %s %d\n", currentActiveTag->currentLine->word->content, currentActiveTag->currentWord->content, currentActiveTag->startIndex);
                     }
                     else
@@ -391,7 +425,6 @@ int main()
                         printf("Node Does not Exist\n");
                     }
                 }
-            
             }
 
             if (event.type == SDL_MOUSEWHEEL)
@@ -431,17 +464,21 @@ int main()
             }
         }
 
-        if(IS_SELECTING){
-            if(MOUSE_Y > WINDOW_H - FOOTER_H && currentActiveTag->currentLine->next){
-                currentActiveTag->EDITOR_SCROLL_Y -= EDITOR_FONT_HEIGHT*2;
+        if (IS_SELECTING)
+        {
+            if (MOUSE_Y > WINDOW_H - FOOTER_H && currentActiveTag->currentLine->next)
+            {
+                currentActiveTag->EDITOR_SCROLL_Y -= EDITOR_FONT_HEIGHT * 2;
             }
 
-            if(MOUSE_Y < 2*TOPNAV_H && currentActiveTag->currentLine->prev){
-                currentActiveTag->EDITOR_SCROLL_Y += EDITOR_FONT_HEIGHT*2;
+            if (MOUSE_Y < 2 * TOPNAV_H && currentActiveTag->currentLine->prev)
+            {
+                currentActiveTag->EDITOR_SCROLL_Y += EDITOR_FONT_HEIGHT * 2;
             }
         }
 
-        if(currentActiveTag && currentActiveTag->currentLine && currentActiveTag->EDITOR_SCROLL_Y > 0){
+        if (currentActiveTag && currentActiveTag->currentLine && currentActiveTag->EDITOR_SCROLL_Y > 0)
+        {
             currentActiveTag->EDITOR_SCROLL_Y = 0;
         }
 
@@ -469,6 +506,19 @@ int main()
         SDL_SetRenderDrawColor(renderer, 155, 20, 127, 15);
         SDL_RenderFillRect(renderer, &fullScreenRect);
 
+        // Render Props
+
+        SDL_RenderCopyEx(renderer, prop1, NULL, &propRect1, propangle1, &propCenter1, SDL_FLIP_NONE);
+
+        // Update Props
+        propRect1.y += 1;
+        propRect1.x = 100 + sin((time+0.0)/100)*100;
+        // propCenter1.y += 1.0;
+        propangle1 = sin((time+0.0)/100)*360+45;
+
+        if(propRect1.y > WINDOW_H) propRect1.y = -propRect1.h;
+
+        time++;
         SDL_RenderPresent(renderer);
         SDL_Delay(1000 / 60);
     }

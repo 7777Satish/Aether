@@ -1,12 +1,32 @@
+/**
+ * @file renderer.c
+ * @brief SDL2-based rendering system for the code editor
+ * 
+ * This module handles all graphics rendering operations including:
+ * - SDL2 initialization and window management
+ * - UI component rendering (menus, panels, text)
+ * - Font management and text rendering
+ * - Theme and color management
+ * - Layout calculations and positioning
+ */
+
 #include "renderer.h"
 
+// ======== UI MENU DEFINITIONS ========
+
+/**
+ * @brief Top navigation menu configuration
+ * 
+ * Defines the main menu bar items (File, Edit, View, Run, Help)
+ * with their respective dropdown menu items and initial state.
+ */
 TOPNAV_MENU_NODE TOPNAV_MENU[5] = {
     {"File",
      {"New File", "Open File", "Save", "Save As", "Exit"},
-     0,
-     0,
-     NULL,
-     {0, 0, 0, 0}},
+     0,  // active
+     0,  // clicked
+     NULL,  // surface
+     {0, 0, 0, 0}},  // rect
     {"Edit",
      {"Undo", "Redo", "Cut", "Copy", "Paste"},
      0,
@@ -164,17 +184,33 @@ SDL_Rect logoRect = {};
 int EXPLORER_SCROLL_Y = 0;
 int FILEMENU_SCROLL_X = 0;
 
+/**
+ * @brief Initializes the entire application rendering system
+ * 
+ * This function sets up SDL2, creates the main window and renderer,
+ * loads all fonts and assets, and configures the initial UI layout.
+ * Must be called once at application startup before any rendering.
+ * 
+ * @note Will exit the program if critical resources fail to load
+ */
 void init()
 {
-
+    // ======== SDL2 INITIALIZATION ========
+    
+    // Initialize SDL2 video subsystem with OpenGL support
     SDL_Init(SDL_VIDEO_OPENGL);
+    // Initialize TrueType font rendering subsystem
     TTF_Init();
+    // Initialize image loading subsystem (PNG, JPG support)
     IMG_Init(0);
 
+    // Enable high-quality scaling for textures
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    window = SDL_CreateWindow("Aether", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, 0);
+    // Create main application window
+    window = SDL_CreateWindow("CodeEditor_C", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, 0);
+    // Create hardware-accelerated renderer
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
