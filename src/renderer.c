@@ -683,7 +683,6 @@ void renderTextEditor()
         while (word)
         {
             word->len = strlen(word->content);
-            // printf("%s",word->content);
             int w = 0, h = 0;
             SDL_QueryTexture(word->t1, NULL, NULL, &w, &h);
             h = EDITOR_FONT_HEIGHT;
@@ -705,12 +704,12 @@ void renderTextEditor()
             }
 
             SDL_RenderCopy(renderer, word->t1, NULL, &r1);
-            // printf("[%s]", word->content);
+            printf("[%s]", word->content);
             x += w;
             word = word->next;
         }
 
-        if(hasSelectionStarted){
+        if(hasSelectionStarted && currentActiveTag->SELECTION_START_WORD){
             SDL_Rect selectionRect = {
                 MENU_W + LINE_NUMBER_WIDTH,
                 FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT,
@@ -722,7 +721,7 @@ void renderTextEditor()
             SDL_RenderFillRect(renderer, &selectionRect);
         }
 
-        // printf("\n");
+        printf("\n");
         /*===== Draw Line Number =====*/
         char text[12];
         sprintf(text, "%d", y + 1);

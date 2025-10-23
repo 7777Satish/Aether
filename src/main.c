@@ -1,7 +1,7 @@
 /**
  * @file main.c
  * @brief Main application entry point and core event loop
- * 
+ *
  * This file contains the main application logic, including:
  * - SDL initialization and window creation
  * - Main event loop for handling user input
@@ -30,10 +30,10 @@ int editorState = 0;
 
 /**
  * @brief Main application entry point
- * 
+ *
  * Initializes SDL, creates the main window, sets up the UI components,
  * and enters the main event loop for handling user interactions.
- * 
+ *
  * @return 0 on successful exit, non-zero on error
  */
 int main()
@@ -90,13 +90,12 @@ int main()
         WINDOW_H};
 
     /* ===== Props ===== */
-        SDL_Surface* propS1 = IMG_Load("assets/prop1.png");
-        SDL_Texture* prop1 = SDL_CreateTextureFromSurface(renderer, propS1);
-        SDL_Rect propRect1 = {
-            100, 0, 100, 100
-        };
-        SDL_Point propCenter1 = {(propRect1.x + propRect1.w)/2, (propRect1.y + propRect1.h)/2};
-        int propangle1 = 0;
+    SDL_Surface *propS1 = IMG_Load("assets/prop1.png");
+    SDL_Texture *prop1 = SDL_CreateTextureFromSurface(renderer, propS1);
+    SDL_Rect propRect1 = {
+        100, 0, 100, 100};
+    SDL_Point propCenter1 = {(propRect1.x + propRect1.w) / 2, (propRect1.y + propRect1.h) / 2};
+    int propangle1 = 0;
 
     // Load the I-beam (text) cursor
     SDL_Cursor *ibeam = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
@@ -441,26 +440,86 @@ int main()
 
             if (event.type == SDL_KEYDOWN)
             {
-                int key = event.key.keysym.sym;
-
+                SDL_Keycode key = event.key.keysym.sym;
+                SDL_Keymod mod = event.key.keysym.mod;
                 if (key == SDLK_BACKSPACE)
+                {
                     leftDeleteChar();
+
+                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                }
+
                 if (key == SDLK_UP)
+                {
                     moveCursorUp();
+
+                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                }
                 if (key == SDLK_DOWN)
+                {
                     moveCursorDown();
+
+                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                }
                 if (key == SDLK_LEFT)
+                {
                     moveCursorLeft();
+
+                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                }
+
                 if (key == SDLK_RIGHT)
+                {
                     moveCursorRight();
+
+                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                }
                 if (key == SDLK_RETURN)
+                {
                     createNewline();
+
+                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                }
+                if (currentActiveTag && (mod & KMOD_CTRL) && key == SDLK_TAB)
+                {
+                    if (mod & KMOD_SHIFT)
+                    {
+                        if (currentActiveTag->prev)
+                            currentActiveTag = currentActiveTag->prev;
+                        else
+                            currentActiveTag = FileBar;
+                    }
+                    else
+                    {
+                        if (currentActiveTag->next)
+                            currentActiveTag = currentActiveTag->next;
+                        else
+                            currentActiveTag = FileBar;
+                    }
+                }
             }
 
             if (event.type == SDL_TEXTINPUT)
             {
                 if (currentActiveTag)
+                {
                     insertChar(event.text.text[0]);
+                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                }
             }
         }
 
@@ -512,11 +571,12 @@ int main()
 
         // Update Props
         propRect1.y += 1;
-        propRect1.x = 100 + sin((time+0.0)/100)*100;
+        propRect1.x = 100 + sin((time + 0.0) / 100) * 100;
         // propCenter1.y += 1.0;
-        propangle1 = sin((time+0.0)/100)*360+45;
+        propangle1 = sin((time + 0.0) / 100) * 360 + 45;
 
-        if(propRect1.y > WINDOW_H) propRect1.y = -propRect1.h;
+        if (propRect1.y > WINDOW_H)
+            propRect1.y = -propRect1.h;
 
         time++;
         SDL_RenderPresent(renderer);

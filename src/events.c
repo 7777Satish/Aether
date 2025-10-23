@@ -69,14 +69,20 @@ void moveCursorUp()
     if (!currentActiveTag || !currentActiveTag->currentLine || !currentActiveTag->currentWord)
         return;
 
+    if (!currentActiveTag->currentLine->prev)
+    {
+        currentActiveTag->currentWord = currentActiveTag->currentLine->word;
+        return;
+    }
+
     int currentX = 0;
-    Token* currentNode = currentActiveTag->currentLine->word;
+    Token *currentNode = currentActiveTag->currentLine->word;
     while (currentNode != currentActiveTag->currentWord)
     {
         currentX += currentNode->len;
         currentNode = currentNode->next;
     }
-    currentX+=currentActiveTag->startIndex;
+    currentX += currentActiveTag->startIndex;
 
     currentActiveTag->currentLine = currentActiveTag->currentLine->prev;
     currentActiveTag->currentWord = currentActiveTag->currentLine->word;
@@ -91,25 +97,37 @@ void moveCursorUp()
     currentActiveTag->currentWord = currentNode;
     currentActiveTag->startIndex = currentX - newX;
 
-    if(currentActiveTag->startIndex > currentActiveTag->currentWord->len){
+    if (currentActiveTag->startIndex > currentActiveTag->currentWord->len)
+    {
         currentActiveTag->startIndex = currentActiveTag->currentWord->len;
     }
 }
-
 
 void moveCursorDown()
 {
     if (!currentActiveTag || !currentActiveTag->currentLine || !currentActiveTag->currentWord)
         return;
 
+    if (!currentActiveTag->currentLine->next)
+    {
+        Token *node = currentActiveTag->currentWord;
+        while (node->next)
+        {
+            node = node->next;
+        }
+        currentActiveTag->currentWord = node;
+        currentActiveTag->startIndex = node->len;
+        return;
+    }
+
     int currentX = 0;
-    Token* currentNode = currentActiveTag->currentLine->word;
+    Token *currentNode = currentActiveTag->currentLine->word;
     while (currentNode != currentActiveTag->currentWord)
     {
         currentX += currentNode->len;
         currentNode = currentNode->next;
     }
-    currentX+=currentActiveTag->startIndex;
+    currentX += currentActiveTag->startIndex;
 
     currentActiveTag->currentLine = currentActiveTag->currentLine->next;
     currentActiveTag->currentWord = currentActiveTag->currentLine->word;
@@ -124,11 +142,11 @@ void moveCursorDown()
     currentActiveTag->currentWord = currentNode;
     currentActiveTag->startIndex = currentX - newX;
 
-    if(currentActiveTag->startIndex > currentActiveTag->currentWord->len){
+    if (currentActiveTag->startIndex > currentActiveTag->currentWord->len)
+    {
         currentActiveTag->startIndex = currentActiveTag->currentWord->len;
     }
 }
-
 
 void moveCursorLeft()
 {
@@ -188,6 +206,45 @@ void leftDeleteChar()
 {
     if (!currentActiveTag || !currentActiveTag->currentWord)
         return;
+
+    if (!currentActiveTag->currentWord->len)
+    {
+
+    //     if (!currentActiveTag->currentWord->prev)
+    //     {
+    //         SDL_DestroyTexture(currentActiveTag->currentWord->t1);
+    //         if (!currentActiveTag->currentLine->prev)
+    //             return;
+
+    //         Token *temp = currentActiveTag->currentLine->prev->word;
+    //         FileLine *tempLine = currentActiveTag->currentLine;
+
+    //         if (temp)
+    //         {
+    //             while (temp->next)
+    //             {
+    //                 temp = temp->next;
+    //             }
+
+    //             temp->next = tempLine->word;
+    //             currentActiveTag->currentWord->prev = temp;
+    //         }
+    //         else
+    //         {
+    //             tempLine->prev->word = currentActiveTag->currentLine->word;
+    //         }
+
+    //         tempLine->prev->next = tempLine->next;
+    //         if (tempLine->next)
+    //             tempLine->next->prev = tempLine->prev;
+
+    //         currentActiveTag->currentLine = tempLine->prev;
+            
+    //         free(tempLine);
+    //         return;
+    //     }
+
+    // }
 
     if (currentActiveTag->startIndex == 0)
     {
@@ -331,7 +388,7 @@ void createNewline()
         else
         {
             Token *newToken = createToken("", 1, (SDL_Color){255, 255, 255, 255});
-            
+
             // Insert new token after current
             newToken->next = currentActiveTag->currentWord->next;
             if (newToken->next)
