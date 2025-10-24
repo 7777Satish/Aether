@@ -202,143 +202,133 @@ void moveCursorRight()
     currentActiveTag->startIndex++;
 }
 
-void leftDeleteChar()
-{
+void leftDeleteChar() {
     if (!currentActiveTag || !currentActiveTag->currentWord)
         return;
 
-    if (!currentActiveTag->currentWord->len)
-    {
+    if (!currentActiveTag->currentWord->len) {
 
-    //     if (!currentActiveTag->currentWord->prev)
-    //     {
-    //         SDL_DestroyTexture(currentActiveTag->currentWord->t1);
-    //         if (!currentActiveTag->currentLine->prev)
-    //             return;
+        //     if (!currentActiveTag->currentWord->prev)
+        //     {
+        //         SDL_DestroyTexture(currentActiveTag->currentWord->t1);
+        //         if (!currentActiveTag->currentLine->prev)
+        //             return;
 
-    //         Token *temp = currentActiveTag->currentLine->prev->word;
-    //         FileLine *tempLine = currentActiveTag->currentLine;
+        //         Token *temp = currentActiveTag->currentLine->prev->word;
+        //         FileLine *tempLine = currentActiveTag->currentLine;
 
-    //         if (temp)
-    //         {
-    //             while (temp->next)
-    //             {
-    //                 temp = temp->next;
-    //             }
+        //         if (temp)
+        //         {
+        //             while (temp->next)
+        //             {
+        //                 temp = temp->next;
+        //             }
 
-    //             temp->next = tempLine->word;
-    //             currentActiveTag->currentWord->prev = temp;
-    //         }
-    //         else
-    //         {
-    //             tempLine->prev->word = currentActiveTag->currentLine->word;
-    //         }
+        //             temp->next = tempLine->word;
+        //             currentActiveTag->currentWord->prev = temp;
+        //         }
+        //         else
+        //         {
+        //             tempLine->prev->word = currentActiveTag->currentLine->word;
+        //         }
 
-    //         tempLine->prev->next = tempLine->next;
-    //         if (tempLine->next)
-    //             tempLine->next->prev = tempLine->prev;
+        //         tempLine->prev->next = tempLine->next;
+        //         if (tempLine->next)
+        //             tempLine->next->prev = tempLine->prev;
 
-    //         currentActiveTag->currentLine = tempLine->prev;
-            
-    //         free(tempLine);
-    //         return;
-    //     }
+        //         currentActiveTag->currentLine = tempLine->prev;
 
-    // }
+        //         free(tempLine);
+        //         return;
+        //     }
 
-    if (currentActiveTag->startIndex == 0)
-    {
-        size_t size1 = strlen(currentActiveTag->currentWord->content);
-        currentActiveTag->currentWord->len = size1;
-        if (currentActiveTag->currentWord->prev)
-        {
-            size_t size2 = strlen(currentActiveTag->currentWord->prev->content);
-            currentActiveTag->currentWord->prev->len = size2;
+        // }
 
-            int len = size1 + size2;
+        if (currentActiveTag->startIndex == 0) {
+            size_t size1 = strlen(currentActiveTag->currentWord->content);
+            currentActiveTag->currentWord->len = size1;
+            if (currentActiveTag->currentWord->prev) {
+                size_t size2 = strlen(currentActiveTag->currentWord->prev->content);
+                currentActiveTag->currentWord->prev->len = size2;
 
-            currentActiveTag->startIndex = size2;
+                int len = size1 + size2;
 
-            char *newContent = realloc(currentActiveTag->currentWord->prev->content, len + 1);
-            if (!newContent)
-                return; // out of memory
-            currentActiveTag->currentWord->prev->content = newContent;
+                currentActiveTag->startIndex = size2;
 
-            for (int i = 0; i < (int)size1; i++)
-            {
-                currentActiveTag->currentWord->prev->content[size2 + i] = currentActiveTag->currentWord->content[i];
-            }
+                char *newContent = realloc(currentActiveTag->currentWord->prev->content, len + 1);
+                if (!newContent)
+                    return; // out of memory
+                currentActiveTag->currentWord->prev->content = newContent;
 
-            currentActiveTag->currentWord->prev->content[len] = '\0';
-            currentActiveTag->currentWord->prev->len = len;
-
-            // printf("%s %d\n", currentActiveTag->currentWord->prev->content, currentActiveTag->currentWord->prev->len);
-            Token *temp = currentActiveTag->currentWord;
-            temp->prev->next = temp->next;
-            if (temp->next)
-                temp->next->prev = temp->prev;
-
-            SDL_DestroyTexture(temp->t1);
-            free(temp->content);
-
-            currentActiveTag->currentWord = temp->prev;
-            free(temp);
-        }
-        else
-        {
-            if (!currentActiveTag->currentLine->prev)
-                return;
-
-            Token *temp = currentActiveTag->currentLine->prev->word;
-            FileLine *tempLine = currentActiveTag->currentLine;
-
-            if (temp)
-            {
-                while (temp->next)
-                {
-                    temp = temp->next;
+                for (int i = 0; i < (int) size1; i++) {
+                    currentActiveTag->currentWord->prev->content[size2 + i] = currentActiveTag->currentWord->content[i];
                 }
 
-                temp->next = tempLine->word;
-                currentActiveTag->currentWord->prev = temp;
+                currentActiveTag->currentWord->prev->content[len] = '\0';
+                currentActiveTag->currentWord->prev->len = len;
+
+                // printf("%s %d\n", currentActiveTag->currentWord->prev->content, currentActiveTag->currentWord->prev->len);
+                Token *temp = currentActiveTag->currentWord;
+                temp->prev->next = temp->next;
+                if (temp->next)
+                    temp->next->prev = temp->prev;
+
+                SDL_DestroyTexture(temp->t1);
+                free(temp->content);
+
+                currentActiveTag->currentWord = temp->prev;
+                free(temp);
+            } else {
+                if (!currentActiveTag->currentLine->prev)
+                    return;
+
+                Token *temp = currentActiveTag->currentLine->prev->word;
+                FileLine *tempLine = currentActiveTag->currentLine;
+
+                if (temp) {
+                    while (temp->next) {
+                        temp = temp->next;
+                    }
+
+                    temp->next = tempLine->word;
+                    currentActiveTag->currentWord->prev = temp;
+                } else {
+                    tempLine->prev->word = currentActiveTag->currentLine->word;
+                }
+
+                tempLine->prev->next = tempLine->next;
+                if (tempLine->next)
+                    tempLine->next->prev = tempLine->prev;
+
+                currentActiveTag->currentLine = tempLine->prev;
+
+                free(tempLine);
+
+                return;
             }
-            else
-            {
-                tempLine->prev->word = currentActiveTag->currentLine->word;
+        }
+
+        size_t size = strlen(currentActiveTag->currentWord->content);
+        // printf("%d\n", currentActiveTag->startIndex);
+        if (currentActiveTag->startIndex > 0) {
+            for (int i = currentActiveTag->startIndex - 1; i < (int) size; i++) {
+                currentActiveTag->currentWord->content[i] = currentActiveTag->currentWord->content[i + 1];
             }
 
-            tempLine->prev->next = tempLine->next;
-            if (tempLine->next)
-                tempLine->next->prev = tempLine->prev;
+            currentActiveTag->currentWord->content[size - 1] = '\0';
 
-            currentActiveTag->currentLine = tempLine->prev;
-
-            free(tempLine);
-
-            return;
+            currentActiveTag->currentWord->len--;
+            currentActiveTag->startIndex -= 1;
         }
+        SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content,
+                                                 (SDL_Color) {255, 255, 255, 255});
+        SDL_DestroyTexture(currentActiveTag->currentWord->t1);
+        currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+
+        SDL_FreeSurface(s1);
     }
-
-    size_t size = strlen(currentActiveTag->currentWord->content);
-    // printf("%d\n", currentActiveTag->startIndex);
-    if (currentActiveTag->startIndex > 0)
-    {
-        for (int i = currentActiveTag->startIndex - 1; i < (int)size; i++)
-        {
-            currentActiveTag->currentWord->content[i] = currentActiveTag->currentWord->content[i + 1];
-        }
-
-        currentActiveTag->currentWord->content[size - 1] = '\0';
-
-        currentActiveTag->currentWord->len--;
-        currentActiveTag->startIndex -= 1;
-    }
-    SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, (SDL_Color){255, 255, 255, 255});
-    SDL_DestroyTexture(currentActiveTag->currentWord->t1);
-    currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-
-    SDL_FreeSurface(s1);
 }
+
 void createNewline()
 {
     if (!currentActiveTag || !currentActiveTag->currentWord)

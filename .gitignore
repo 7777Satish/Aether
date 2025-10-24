@@ -1,9 +1,12 @@
 # Ignore build artifacts
 /build
 /build/
+build/
 *.o
 *.out
 *.exe
+cmake-build-debug-mingw/
+main
 
 # Ignore editor settings
 .vscode/

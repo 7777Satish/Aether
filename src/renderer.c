@@ -1178,7 +1178,7 @@ void renderGithub()
     if (!Github.t3)
     {
         SDL_Color color = {233, 233, 233, 255};
-        SDL_Surface *s3 = TTF_RenderText_Blended(font2, "Cennect Github", color);
+        SDL_Surface *s3 = TTF_RenderText_Blended(font2, "Connect Github", color);
         Github.t3 = SDL_CreateTextureFromSurface(renderer, s3);
     }
 

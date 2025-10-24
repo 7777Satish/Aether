@@ -9,6 +9,7 @@
  * - File explorer and editor coordination
  */
 
+#define SDL_MAIN_HANDLED
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
