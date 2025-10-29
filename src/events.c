@@ -206,45 +206,46 @@ void leftDeleteChar()
 {
     if (!currentActiveTag || !currentActiveTag->currentWord)
         return;
+    /*
+        if (!currentActiveTag->currentWord->len)
+        {
 
-    // if (!currentActiveTag->currentWord->len)
-    // {
+            if (!currentActiveTag->currentWord->prev)
+            {
+                SDL_DestroyTexture(currentActiveTag->currentWord->t1);
+                if (!currentActiveTag->currentLine->prev)
+                    return;
 
-    //     if (!currentActiveTag->currentWord->prev)
-    //     {
-    //         SDL_DestroyTexture(currentActiveTag->currentWord->t1);
-    //         if (!currentActiveTag->currentLine->prev)
-    //             return;
+                Token *temp = currentActiveTag->currentLine->prev->word;
+                FileLine *tempLine = currentActiveTag->currentLine;
 
-    //         Token *temp = currentActiveTag->currentLine->prev->word;
-    //         FileLine *tempLine = currentActiveTag->currentLine;
+                if (temp)
+                {
+                    while (temp->next)
+                    {
+                        temp = temp->next;
+                    }
 
-    //         if (temp)
-    //         {
-    //             while (temp->next)
-    //             {
-    //                 temp = temp->next;
-    //             }
+                    temp->next = tempLine->word;
+                    currentActiveTag->currentWord->prev = temp;
+                }
+                else
+                {
+                    tempLine->prev->word = currentActiveTag->currentLine->word;
+                }
 
-    //             temp->next = tempLine->word;
-    //             currentActiveTag->currentWord->prev = temp;
-    //         }
-    //         else
-    //         {
-    //             tempLine->prev->word = currentActiveTag->currentLine->word;
-    //         }
+                tempLine->prev->next = tempLine->next;
+                if (tempLine->next)
+                    tempLine->next->prev = tempLine->prev;
 
-    //         tempLine->prev->next = tempLine->next;
-    //         if (tempLine->next)
-    //             tempLine->next->prev = tempLine->prev;
+                currentActiveTag->currentLine = tempLine->prev;
 
-    //         currentActiveTag->currentLine = tempLine->prev;
-            
-    //         free(tempLine);
-    //         return;
-    //     }
+                free(tempLine);
+                return;
+            }
 
-    // }
+        }
+    */
 
     if (currentActiveTag->startIndex == 0)
     {
@@ -298,9 +299,21 @@ void leftDeleteChar()
                 {
                     temp = temp->next;
                 }
-
-                temp->next = tempLine->word;
-                currentActiveTag->currentWord->prev = temp;
+                if(temp->len){
+                    if(tempLine->word->len){
+                        temp->next = tempLine->word;
+                        currentActiveTag->currentWord->prev = temp;
+                    }
+                    else{
+                        temp->next = NULL;
+                        SDL_DestroyTexture(tempLine->word->t1);
+                        free(tempLine->word);
+                        currentActiveTag->currentWord = temp;
+                        currentActiveTag->startIndex = temp->len;
+                    }
+                } else {
+                    tempLine->prev->word = currentActiveTag->currentLine->word;
+                }
             }
             else
             {
