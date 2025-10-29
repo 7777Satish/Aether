@@ -429,10 +429,10 @@ void init()
     MENU_bg_rect.h = WINDOW_H;
 
     if (showMenu)
-        FILEBAR_bg_rect.x = MENU_W + 1;
+        FILEBAR_bg_rect.x = MENU_W;
     else
-        FILEBAR_bg_rect.x = 1;
-    FILEBAR_bg_rect.y = TOPNAV_H + 1;
+        FILEBAR_bg_rect.x = 0;
+    FILEBAR_bg_rect.y = TOPNAV_H;
     FILEBAR_bg_rect.w = WINDOW_W;
     FILEBAR_bg_rect.h = TOPNAV_H;
 }
@@ -480,7 +480,7 @@ void renderTopNavBarMenu()
             int j = 0;
             char *item = node.list[0];
             int prevY = node.rect.y + node.rect.h;
-            int itemH = 50;
+            int itemH = EDITOR_FONT_HEIGHT + 10;
             while (strcmp(item, "") != 0 && j <= 5)
             {
                 SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
@@ -491,6 +491,17 @@ void renderTopNavBarMenu()
                 r.h = itemH;
                 SDL_RenderFillRect(renderer, &r);
                 SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+
+                SDL_Surface* s1 = TTF_RenderText_Blended(font2, item, (SDL_Color){180, 180, 180, 255});
+                SDL_Texture* t1 = SDL_CreateTextureFromSurface(renderer, s1);
+                r.x = r.x + 10;
+                r.y = r.y + 5;
+                r.h = s1->h;
+                r.w = (s1->w + 0.0)/s1->h * r.h;
+
+                SDL_RenderCopy(renderer, t1, NULL, &r);
+                SDL_DestroyTexture(t1);
+                SDL_FreeSurface(s1);
 
                 j++;
                 item = node.list[j];
@@ -705,7 +716,7 @@ void renderTextEditor()
             if(r1.x + r1.w > MENU_W && r1.x < WINDOW_W){
                 SDL_RenderCopy(renderer, word->t1, NULL, &r1);
             }
-            printf("[%s]", word->content);
+            // printf("[%s]", word->content);
             x += w;
             word = word->next;
         }
@@ -722,7 +733,7 @@ void renderTextEditor()
             SDL_RenderFillRect(renderer, &selectionRect);
         }
 
-        printf("\n");
+        // printf("\n");
         /*===== Draw Line Number =====*/
         char text[12];
         sprintf(text, "%d", y + 1);
@@ -736,7 +747,7 @@ void renderTextEditor()
             lineNoSurface->h};
 
         SDL_Rect lineNoBgRect = {
-            FILEBAR_bg_rect.x,
+            MENU_W,
             FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * lineNoSurface->h,
             LINE_NUMBER_WIDTH,
             lineNoSurface->h};
@@ -1179,7 +1190,7 @@ void renderGithub()
     if (!Github.t3)
     {
         SDL_Color color = {233, 233, 233, 255};
-        SDL_Surface *s3 = TTF_RenderText_Blended(font2, "Cennect Github", color);
+        SDL_Surface *s3 = TTF_RenderText_Blended(font2, "Connect Github", color);
         Github.t3 = SDL_CreateTextureFromSurface(renderer, s3);
     }
 
