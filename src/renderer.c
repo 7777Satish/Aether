@@ -702,9 +702,10 @@ void renderTextEditor()
                 SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
                 SDL_RenderFillRect(renderer, &cursorRect);
             }
-
-            SDL_RenderCopy(renderer, word->t1, NULL, &r1);
-            printf("[%s]", word->content);
+            if(r1.x + r1.w > MENU_W && r1.x < WINDOW_W){
+                SDL_RenderCopy(renderer, word->t1, NULL, &r1);
+            }
+            // printf("[%s]", word->content);
             x += w;
             word = word->next;
         }
@@ -721,7 +722,7 @@ void renderTextEditor()
             SDL_RenderFillRect(renderer, &selectionRect);
         }
 
-        printf("\n");
+        // printf("\n");
         /*===== Draw Line Number =====*/
         char text[12];
         sprintf(text, "%d", y + 1);

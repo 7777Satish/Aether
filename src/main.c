@@ -554,11 +554,11 @@ int main()
 
         /* ===== Draw Home Screen ===== */
 
+        renderTextEditor();
         renderFileBar();
 
         renderMenuBar();
         renderTopNav();
-        renderTextEditor();
         renderFooter();
         renderTopNavBarMenu();
 

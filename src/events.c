@@ -207,8 +207,8 @@ void leftDeleteChar()
     if (!currentActiveTag || !currentActiveTag->currentWord)
         return;
 
-    if (!currentActiveTag->currentWord->len)
-    {
+    // if (!currentActiveTag->currentWord->len)
+    // {
 
     //     if (!currentActiveTag->currentWord->prev)
     //     {

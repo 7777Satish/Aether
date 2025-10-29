@@ -247,7 +247,7 @@ Token *createToken(char *word, int custom, SDL_Color color)
 
 FileLine *parseText(char *content)
 {
-
+    int max_length = 100000000000000;
     char c = content[0];
     int i = 0;
 
@@ -263,13 +263,13 @@ FileLine *parseText(char *content)
     int isInComment = 0;
 
     // Loop through the text
-    while (1)
+    while (i <= max_length)
     {
         char tempC[2];
         tempC[0] = c;
         tempC[1] = '\0';
 
-        if (c == '\0')
+        if (c == '\0' || i>=max_length)
         {
 
             Token *t = NULL;
@@ -413,7 +413,7 @@ FileLine *parseText(char *content)
         }
 
         // Do this if the character is a seperator [space or punctuation or operator]
-        if (!isInString && !isInComment && ((c == ' ') || isPunctuation(tempC) || isOperator(tempC)))
+        if ((!isInString && !isInComment && ((c == ' ') || isPunctuation(tempC) || isOperator(tempC))) || (!isInComment && strlen(currentWord)>10))
         {
             if (strcmp(currentWord, "") != 0)
             {
