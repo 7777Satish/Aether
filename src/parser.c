@@ -413,7 +413,7 @@ FileLine *parseText(char *content)
         }
 
         // Do this if the character is a seperator [space or punctuation or operator]
-        if ((!isInString && !isInComment && ((c == ' ') || isPunctuation(tempC) || isOperator(tempC))) || (!isInComment && strlen(currentWord)>10))
+        if ((!isInString && !isInComment && ((c == ' ') || isPunctuation(tempC) || isOperator(tempC))) || (!isInComment && !isInString && strlen(currentWord)>50))
         {
             if (strcmp(currentWord, "") != 0)
             {

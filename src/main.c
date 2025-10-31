@@ -442,71 +442,90 @@ int main()
             {
                 SDL_Keycode key = event.key.keysym.sym;
                 SDL_Keymod mod = event.key.keysym.mod;
-                if (key == SDLK_BACKSPACE)
+
+                if (currentActiveTag)
                 {
-                    leftDeleteChar();
-
-                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
-                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
-                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
-                }
-
-                if (key == SDLK_UP)
-                {
-                    moveCursorUp();
-
-                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
-                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
-                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
-                }
-                if (key == SDLK_DOWN)
-                {
-                    moveCursorDown();
-
-                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
-                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
-                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
-                }
-                if (key == SDLK_LEFT)
-                {
-                    moveCursorLeft();
-
-                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
-                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
-                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
-                }
-
-                if (key == SDLK_RIGHT)
-                {
-                    moveCursorRight();
-
-                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
-                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
-                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
-                }
-                if (key == SDLK_RETURN)
-                {
-                    createNewline();
-
-                    currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
-                    currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
-                    currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
-                }
-                if (currentActiveTag && (mod & KMOD_CTRL) && key == SDLK_TAB)
-                {
-                    if (mod & KMOD_SHIFT)
+                    if (key == SDLK_BACKSPACE)
                     {
-                        if (currentActiveTag->prev)
-                            currentActiveTag = currentActiveTag->prev;
+                        leftDeleteChar();
+
+                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                    }
+
+                    if (key == SDLK_UP)
+                    {
+                        moveCursorUp();
+
+                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                    }
+                    if (key == SDLK_DOWN)
+                    {
+                        moveCursorDown();
+
+                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                    }
+                    if (key == SDLK_LEFT)
+                    {
+                        moveCursorLeft();
+
+                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                    }
+
+                    if (key == SDLK_RIGHT)
+                    {
+                        moveCursorRight();
+
+                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                    }
+                    if (key == SDLK_RETURN)
+                    {
+                        createNewline();
+
+                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                    }
+
+                    if ((mod & KMOD_CTRL) && key == SDLK_TAB)
+                    {
+                        if (mod & KMOD_SHIFT)
+                        {
+                            if (currentActiveTag->prev)
+                                currentActiveTag = currentActiveTag->prev;
+                            else
+                                currentActiveTag = FileBar;
+                        }
                         else
-                            currentActiveTag = FileBar;
+                        {
+                            if (currentActiveTag->next)
+                                currentActiveTag = currentActiveTag->next;
+                            else
+                                currentActiveTag = FileBar;
+                        }
                     }
                     else
                     {
-                        if (currentActiveTag->next)
-                            currentActiveTag = currentActiveTag->next;
-                        else
-                            currentActiveTag = FileBar;
+                        if (key == SDLK_TAB)
+                        {
+                            insertChar(' ');
+                            insertChar(' ');
+                            insertChar(' ');
+                            insertChar(' ');
+
+                            currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                            currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                            currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                        }
                     }
                 }
             }

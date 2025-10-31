@@ -117,7 +117,7 @@ void addFileBarNode(char *name, char *path)
             {
                 ptr->active = 1;
                 currentActiveTag = ptr;
-                ptr->lines = lines;
+                // ptr->lines = lines;
                 return;
             }
             else
@@ -130,7 +130,7 @@ void addFileBarNode(char *name, char *path)
         {
             ptr->active = 1;
             currentActiveTag = ptr;
-            ptr->lines = lines;
+            // ptr->lines = lines;
             return;
         }
 

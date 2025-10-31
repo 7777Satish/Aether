@@ -1,7 +1,7 @@
 /**
  * @file renderer.c
  * @brief SDL2-based rendering system for the code editor
- * 
+ *
  * This module handles all graphics rendering operations including:
  * - SDL2 initialization and window management
  * - UI component rendering (menus, panels, text)
@@ -16,17 +16,17 @@
 
 /**
  * @brief Top navigation menu configuration
- * 
+ *
  * Defines the main menu bar items (File, Edit, View, Run, Help)
  * with their respective dropdown menu items and initial state.
  */
 TOPNAV_MENU_NODE TOPNAV_MENU[5] = {
     {"File",
      {"New File", "Open File", "Save", "Save As", "Exit"},
-     0,  // active
-     0,  // clicked
-     NULL,  // surface
-     {0, 0, 0, 0}},  // rect
+     0,             // active
+     0,             // clicked
+     NULL,          // surface
+     {0, 0, 0, 0}}, // rect
     {"Edit",
      {"Undo", "Redo", "Cut", "Copy", "Paste"},
      0,
@@ -123,7 +123,6 @@ int MOUSE_Y = 0;
 int IS_MOUSE_DOWN = 0;
 int IS_SELECTING = 0;
 
-
 // Initialising Left Menu
 int MENU_BAR_H = 50;
 int MENU_W = 250;
@@ -186,17 +185,17 @@ int FILEMENU_SCROLL_X = 0;
 
 /**
  * @brief Initializes the entire application rendering system
- * 
+ *
  * This function sets up SDL2, creates the main window and renderer,
  * loads all fonts and assets, and configures the initial UI layout.
  * Must be called once at application startup before any rendering.
- * 
+ *
  * @note Will exit the program if critical resources fail to load
  */
 void init()
 {
     // ======== SDL2 INITIALIZATION ========
-    
+
     // Initialize SDL2 video subsystem with OpenGL support
     SDL_Init(SDL_VIDEO_OPENGL);
     // Initialize TrueType font rendering subsystem
@@ -492,12 +491,12 @@ void renderTopNavBarMenu()
                 SDL_RenderFillRect(renderer, &r);
                 SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
 
-                SDL_Surface* s1 = TTF_RenderText_Blended(font2, item, (SDL_Color){180, 180, 180, 255});
-                SDL_Texture* t1 = SDL_CreateTextureFromSurface(renderer, s1);
+                SDL_Surface *s1 = TTF_RenderText_Blended(font2, item, (SDL_Color){180, 180, 180, 255});
+                SDL_Texture *t1 = SDL_CreateTextureFromSurface(renderer, s1);
                 r.x = r.x + 10;
                 r.y = r.y + 5;
                 r.h = s1->h;
-                r.w = (s1->w + 0.0)/s1->h * r.h;
+                r.w = (s1->w + 0.0) / s1->h * r.h;
 
                 SDL_RenderCopy(renderer, t1, NULL, &r);
                 SDL_DestroyTexture(t1);
@@ -514,7 +513,7 @@ void renderTopNavBarMenu()
             r.y = node.rect.y + node.rect.h;
             r.w = 220;
             r.h = itemH * j;
-            // SDL_RenderFillRect(renderer, &r);
+
             SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
             SDL_RenderDrawRect(renderer, &r);
         }
@@ -537,6 +536,28 @@ void renderMenuBar()
     if (showMenu)
         SDL_RenderDrawLine(renderer, MENU_W, TOPNAV_H, MENU_W, WINDOW_H); // Drawing MENU Border
     SDL_RenderDrawLine(renderer, 0, TOPNAV_H, WINDOW_W, TOPNAV_H);        // Drawing TOPNAV Border
+
+    // ===== Drawing Left Menu Components =====
+    if (showMenu)
+    {
+        if (menu_state == 0)
+            renderExplorer();
+        if (menu_state == 1)
+            renderSearch();
+        if (menu_state == 2)
+            renderGithub();
+        if (menu_state == 3)
+            renderExtentions();
+    }
+
+    SDL_Rect r = {
+        0,
+        TOPNAV_H,
+        MENU_W,
+        LEFT_MENU[0].rect.h + 30};
+
+    SDL_SetRenderDrawColor(renderer,  23, 23, 23, 255);
+    SDL_RenderFillRect(renderer, &r);
 
     int i;
     // Menu Bar Buttons
@@ -564,19 +585,6 @@ void renderMenuBar()
         {
             SDL_RenderCopy(renderer, node.texture, NULL, &node.rect);
         }
-    }
-
-    // ===== Drawing Left Menu Components =====
-    if (showMenu)
-    {
-        if (menu_state == 0)
-            renderExplorer();
-        if (menu_state == 1)
-            renderSearch();
-        if (menu_state == 2)
-            renderGithub();
-        if (menu_state == 3)
-            renderExtentions();
     }
 }
 
@@ -618,7 +626,7 @@ void renderFileBar()
 
         if (node == currentActiveTag)
         {
-            SDL_SetRenderDrawColor(renderer, 46, 46, 46, 100);
+            SDL_SetRenderDrawColor(renderer, 66, 66, 66, 100);
             SDL_RenderFillRect(renderer, &node->r1);
         }
 
@@ -675,21 +683,22 @@ void renderTextEditor()
 
         int x = 0;
 
-        if(currentActiveTag->currentWord != currentActiveTag->SELECTION_START_WORD && (line == currentActiveTag->currentLine || line == currentActiveTag->SELECTION_START_LINE)){
+        if (currentActiveTag->currentWord != currentActiveTag->SELECTION_START_WORD && (line == currentActiveTag->currentLine || line == currentActiveTag->SELECTION_START_LINE))
+        {
             hasSelectionStarted = !hasSelectionStarted;
         }
 
-        if((y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT == 0){
+        if ((y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT == 0)
+        {
             currentActiveTag->visibleLine = line;
         }
- 
+
         if ((y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT < 0 || y * EDITOR_FONT_SIZE > -currentActiveTag->EDITOR_SCROLL_Y + WINDOW_H)
         {
             y++;
             line = line->next;
             continue;
         }
-
 
         while (word)
         {
@@ -713,7 +722,8 @@ void renderTextEditor()
                 SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
                 SDL_RenderFillRect(renderer, &cursorRect);
             }
-            if(r1.x + r1.w > MENU_W && r1.x < WINDOW_W){
+            if (r1.x + r1.w > MENU_W && r1.x < WINDOW_W)
+            {
                 SDL_RenderCopy(renderer, word->t1, NULL, &r1);
             }
             // printf("[%s]", word->content);
@@ -721,13 +731,13 @@ void renderTextEditor()
             word = word->next;
         }
 
-        if(hasSelectionStarted && currentActiveTag->SELECTION_START_WORD){
+        if (hasSelectionStarted && currentActiveTag->SELECTION_START_WORD)
+        {
             SDL_Rect selectionRect = {
                 MENU_W + LINE_NUMBER_WIDTH,
                 FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT,
                 1000,
-                EDITOR_FONT_HEIGHT
-            };
+                EDITOR_FONT_HEIGHT};
 
             SDL_SetRenderDrawColor(renderer, 100, 150, 250, 50);
             SDL_RenderFillRect(renderer, &selectionRect);
