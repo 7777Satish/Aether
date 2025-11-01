@@ -72,6 +72,7 @@ extern Search_TEXTBOXES SearchMenu;
 
 extern ELEMENT Github;
 extern ELEMENT Extentions;
+extern ELEMENT Footer;
 
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
@@ -144,6 +145,8 @@ extern int logoAW, logoAH;
 extern SDL_Rect logoRect;
 
 extern Cursor* cursor;
+
+extern SDL_Color white;
 
 void init();
 

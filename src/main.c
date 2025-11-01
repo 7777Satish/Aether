@@ -361,6 +361,12 @@ int main()
                     Github.r2.x = 0;
                     Github.r3.x = 0;
                     Github.r4.x = 0;
+
+                    // Github Menu
+                    Footer.r1.x = 0;
+                    Footer.r2.x = 0;
+                    Footer.r3.x = 0;
+                    Footer.r4.x = 0;
                 }
             }
 

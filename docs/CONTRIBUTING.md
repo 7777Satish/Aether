@@ -1,6 +1,6 @@
-# Contributing to CodeEditor_C
+# Contributing to Aether
 
-Thank you for your interest in contributing to CodeEditor_C! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to Aether! This document provides guidelines for contributing to the project.
 
 ## Table of Contents
 
@@ -39,12 +39,12 @@ Before contributing, ensure you have:
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/CodeEditor_C.git
-   cd CodeEditor_C
+   git clone https://github.com/7777Satish/Aether.git
+   cd Aether
    ```
 3. **Add upstream remote**:
    ```bash
-   git remote add upstream https://github.com/7777Satish/CodeEditor_C.git
+   git remote add upstream https://github.com/7777Satish/Aether.git
    ```
 4. **Install dependencies** (see [BUILD.md](BUILD.md))
 5. **Build the project**:
@@ -100,7 +100,7 @@ We welcome several types of contributions:
 
 ### Finding Issues to Work On
 
-- Check the [GitHub Issues](https://github.com/7777Satish/CodeEditor_C/issues) page
+- Check the [GitHub Issues](https://github.com/7777Satish/Aether/issues) page
 - Look for issues labeled `good first issue` for beginners
 - Issues labeled `help wanted` are especially welcome for contributions
 - Feel free to propose new features by opening an issue first
@@ -393,4 +393,4 @@ All contributors will be:
 - Credited in release notes for significant contributions
 - Thanked publicly for their contributions
 
-Thank you for contributing to CodeEditor_C! Your efforts help make this project better for everyone.
+Thank you for contributing to Aether! Your efforts help make this project better for everyone.

@@ -106,6 +106,7 @@ Search_TEXTBOXES SearchMenu = {
 
 ELEMENT Github = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 ELEMENT Extentions = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
+ELEMENT Footer = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 
 ELEMENT FileIcons = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
 ELEMENT FileIcons2 = {NULL, NULL, NULL, NULL, NULL, {}, {}, {}, {}, {}};
@@ -152,6 +153,8 @@ int EDITOR_FONT_SIZE = 0;
 int EDITOR_FONT_HEIGHT = 0;
 int MINIMAP_W = 100;
 Cursor *cursor;
+
+SDL_Color white = {255, 255, 255, 255};
 
 // Fonts
 TTF_Font *poppins_regular = NULL;
@@ -1385,4 +1388,35 @@ void renderFooter()
     SDL_RenderFillRect(renderer, &r1);
     SDL_SetRenderDrawColor(renderer, 47, 47, 47, 255);
     SDL_RenderDrawLine(renderer, r1.x, r1.y, r1.x + r1.w, r1.y);
+
+    if (!Footer.t1)
+    {
+        // SDL_Surface* s1 = TTF_RenderText_Blended(jetbrains_regular, "open source @ github.com/7777satish/aether", (SDL_Color){100, 100, 100, 255});
+        SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, "/7777Satish/Aether", (SDL_Color){140, 140, 140, 255});
+        Footer.t1 = SDL_CreateTextureFromSurface(renderer, s1);
+        SDL_FreeSurface(s1);
+    }
+
+    SDL_Rect r = {
+        10,
+        WINDOW_H - FOOTER_H / 2 - (FOOTER_H - 15) / 2,
+        (LEFT_MENU[2].rect.w + 0.0) / LEFT_MENU[2].rect.h * (FOOTER_H - 15),
+        (FOOTER_H - 15)};
+
+    if (!Footer.r1.x)
+    {
+        int w, h;
+        SDL_QueryTexture(Footer.t1, NULL, NULL, &w, &h);
+
+        SDL_Rect r1 = {
+            r.x + r.w + 5,
+            WINDOW_H - FOOTER_H / 2 - (FOOTER_H - 15) / 2,
+            ((w + 0.0) / h) * (FOOTER_H - 15),
+            (FOOTER_H - 15)};
+
+        Footer.r1 = r1;
+    }
+
+    SDL_RenderCopy(renderer, LEFT_MENU[2].texture, NULL, &r);
+    SDL_RenderCopy(renderer, Footer.t1, NULL, &Footer.r1);
 }

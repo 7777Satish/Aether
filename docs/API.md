@@ -1,6 +1,6 @@
 # API Documentation
 
-This document provides detailed information about the CodeEditor_C API, including functions, structures, and their usage.
+This document provides detailed information about the Aether API, including functions, structures, and their usage.
 
 ## Table of Contents
 

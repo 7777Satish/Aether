@@ -1,10 +1,10 @@
 # Build Documentation
 
-This document describes the build system, dependencies, and compilation process for CodeEditor_C.
+This document describes the build system, dependencies, and compilation process for Aether.
 
 ## Build System Overview
 
-CodeEditor_C uses a traditional Makefile-based build system. The build process compiles C source files into object files and links them with required libraries.
+Aether uses a traditional Makefile-based build system. The build process compiles C source files into object files and links them with required libraries.
 
 ## Makefile Structure
 

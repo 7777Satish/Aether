@@ -1,6 +1,6 @@
 # Architecture Documentation
 
-This document describes the overall architecture, design patterns, and module relationships in CodeEditor_C.
+This document describes the overall architecture, design patterns, and module relationships in Aether.
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ This document describes the overall architecture, design patterns, and module re
 
 ## Overview
 
-CodeEditor_C follows a modular, layered architecture designed for maintainability, performance, and extensibility. The system is built around SDL2 for cross-platform graphics and uses a component-based approach for UI elements.
+Aether follows a modular, layered architecture designed for maintainability, performance, and extensibility. The system is built around SDL2 for cross-platform graphics and uses a component-based approach for UI elements.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
