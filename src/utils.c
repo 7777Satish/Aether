@@ -4,27 +4,35 @@ FileBarItem *FileBar = NULL;
 FileBarItem *currentActiveTag = NULL;
 int TotalFileBarLength = 0;
 
-FileType getFileType(char* filename){
-    char* lastDot = NULL;
+FileType getFileType(char *filename)
+{
+    char *lastDot = NULL;
     while (*filename)
     {
-        if(*filename == '.')
+        if (*filename == '.')
             lastDot = filename;
         filename++;
     }
-    
-    if(!lastDot) return TXT;
+
+    if (!lastDot)
+        return AETHER_TXT;
 
     lastDot++;
 
-    if (strcmp(lastDot, "c") == 0) return CLANG;
-    else if (strcmp(lastDot, "h") == 0) return CHEADER;
-    else if (strcmp(lastDot, "html") == 0) return HTML;
-    else if (strcmp(lastDot, "css") == 0) return CSS;
-    else if (strcmp(lastDot, "txt") == 0) return TXT;
-    else if (strcmp(lastDot, "png") == 0 || strcmp(lastDot, "jpg") == 0) return IMG;
+    if (strcmp(lastDot, "c") == 0)
+        return AETHER_CLANG;
+    else if (strcmp(lastDot, "h") == 0)
+        return AETHER_CHEADER;
+    else if (strcmp(lastDot, "html") == 0)
+        return AETHER_HTML;
+    else if (strcmp(lastDot, "css") == 0)
+        return AETHER_CSS;
+    else if (strcmp(lastDot, "txt") == 0)
+        return AETHER_TXT;
+    else if (strcmp(lastDot, "png") == 0 || strcmp(lastDot, "jpg") == 0)
+        return AETHER_IMG;
 
-    return TXT;
+    return AETHER_TXT;
 }
 
 FileNode *createFileNode(char *name, char *path, int isDir)
@@ -32,7 +40,7 @@ FileNode *createFileNode(char *name, char *path, int isDir)
     FileNode *node = (FileNode *)malloc(sizeof(FileNode));
     node->name = strdup(name);
     node->path = strdup(path);
-    node->type = getFileType(name);
+    node->type = isDir ? AETHER_TXT : getFileType(name);
     node->isDir = isDir;
     node->next = NULL;
     node->prev = NULL;
@@ -51,9 +59,11 @@ FileBarItem *createFileBarNode(char *name, char *path)
     FileBarItem *node = (FileBarItem *)malloc(sizeof(FileBarItem));
     node->name = strdup(name);
     node->path = strdup(path);
+    node->type = getFileType(name);
     node->next = NULL;
     node->prev = NULL;
     node->t1 = NULL;
+    node->t2 = NULL;
     node->active = 1;
     node->lines = NULL;
     node->cursorX = 0;
@@ -80,20 +90,26 @@ void inActiveAllFileNodes()
     }
 }
 
+
+
 void addFileBarNode(char *name, char *path)
 {
-    inActiveAllFileNodes();
     FileBarItem *node = createFileBarNode(name, path);
     node->active = 1;
     currentActiveTag = node;
+    if(node->type != AETHER_IMG) {
+        char *content = readFile(path);
+        FileLine *lines = parseText(content);
     
-    char *content = readFile(path);
-    FileLine *lines = lines = parseText(content);
-    
-    node->lines = lines;
-    node->currentLine = lines;
-    node->visibleLine = lines;
-    if(lines) node->currentWord = lines->word;
+        node->lines = lines;
+        node->currentLine = lines;
+        node->visibleLine = lines;
+        node->SELECTION_START_LINE = lines;
+        if (lines){
+            node->currentWord = lines->word;
+            node->SELECTION_START_WORD = lines->word;
+        }
+    }
 
     if (!node->t1)
     {
@@ -117,7 +133,7 @@ void addFileBarNode(char *name, char *path)
             {
                 ptr->active = 1;
                 currentActiveTag = ptr;
-                // ptr->lines = lines;
+
                 return;
             }
             else
@@ -130,7 +146,7 @@ void addFileBarNode(char *name, char *path)
         {
             ptr->active = 1;
             currentActiveTag = ptr;
-            // ptr->lines = lines;
+
             return;
         }
 

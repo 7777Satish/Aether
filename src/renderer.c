@@ -513,7 +513,7 @@ void renderTopNavBarMenu()
             r.y = node.rect.y + node.rect.h;
             r.w = 220;
             r.h = itemH * j;
-
+            // SDL_RenderFillRect(renderer, &r);
             SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
             SDL_RenderDrawRect(renderer, &r);
         }
@@ -554,9 +554,10 @@ void renderMenuBar()
         0,
         TOPNAV_H,
         MENU_W,
-        LEFT_MENU[0].rect.h + 30};
+        LEFT_MENU[0].rect.h + 40};
+    // SDL_SetRenderDrawColor(renderer, 50, 50, 130, 255);
 
-    SDL_SetRenderDrawColor(renderer,  23, 23, 23, 255);
+    SDL_SetRenderDrawColor(renderer, 23, 23, 23, 255);
     SDL_RenderFillRect(renderer, &r);
 
     int i;
@@ -652,6 +653,54 @@ void renderTextEditor()
         return;
     }
 
+    if (node->type == AETHER_IMG)
+    {
+        if (!node->t2)
+        {
+            SDL_Surface *s1 = IMG_Load(node->path);
+            if (s1)
+            {
+                node->t2 = SDL_CreateTextureFromSurface(renderer, s1);
+                SDL_FreeSurface(s1);
+            }
+        }
+
+        if (node->t2)
+        {
+            int w, h;
+            SDL_QueryTexture(node->t2, NULL, NULL, &w, &h);
+
+            int editorW = WINDOW_W - MENU_W - 50;
+            int editorH = WINDOW_H - 2 * TOPNAV_H - FOOTER_H - 50;
+            SDL_Rect r1;
+
+            if (w > editorW || h > editorH)
+            {
+                if (w > h)
+                {
+                    r1.w = editorW;
+                    r1.h = ((h + 0.0) / w) * editorW;
+                }
+                else
+                {
+                    r1.h = editorH;
+                    r1.w = ((w + 0.0) / h) * editorH;
+                }
+            }
+            else
+            {
+                r1.w = w;
+                r1.h = h;
+            }
+
+            r1.x = MENU_W + editorW / 2 + 25 - r1.w / 2;
+            r1.y = 2 * TOPNAV_H + editorH / 2 + 25 - r1.h / 2;
+
+            SDL_RenderCopy(renderer, node->t2, NULL, &r1);
+        }
+        return;
+    }
+
     FileLine *line = node->lines;
     if (!line)
         return;
@@ -703,6 +752,7 @@ void renderTextEditor()
         while (word)
         {
             word->len = strlen(word->content);
+            // printf("%s",word->content);
             int w = 0, h = 0;
             SDL_QueryTexture(word->t1, NULL, NULL, &w, &h);
             h = EDITOR_FONT_HEIGHT;
@@ -722,6 +772,7 @@ void renderTextEditor()
                 SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
                 SDL_RenderFillRect(renderer, &cursorRect);
             }
+
             if (r1.x + r1.w > MENU_W && r1.x < WINDOW_W)
             {
                 SDL_RenderCopy(renderer, word->t1, NULL, &r1);
@@ -731,7 +782,7 @@ void renderTextEditor()
             word = word->next;
         }
 
-        if (hasSelectionStarted && currentActiveTag->SELECTION_START_WORD)
+        if (hasSelectionStarted)
         {
             SDL_Rect selectionRect = {
                 MENU_W + LINE_NUMBER_WIDTH,
@@ -1080,15 +1131,15 @@ void renderFolder(FileNode **folder, int *i, int padX)
         {
             // Display File Icons
             SDL_Texture *fileTexture = FileIcons.t1;
-            if (node->type == CLANG)
+            if (node->type == AETHER_CLANG)
                 fileTexture = FileIcons.t4;
-            else if (node->type == CHEADER)
+            else if (node->type == AETHER_CHEADER)
                 fileTexture = FileIcons.t4;
-            else if (node->type == HTML)
+            else if (node->type == AETHER_HTML)
                 fileTexture = FileIcons.t5;
-            else if (node->type == CSS)
+            else if (node->type == AETHER_CSS)
                 fileTexture = FileIcons2.t1;
-            else if (node->type == IMG)
+            else if (node->type == AETHER_IMG)
                 fileTexture = FileIcons2.t2;
 
             SDL_RenderCopy(renderer, fileTexture, NULL, &FileIcons.r1);

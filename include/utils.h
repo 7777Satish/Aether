@@ -8,12 +8,12 @@
 #include "parser.h"
 
 typedef enum {
-    CLANG,
-    CHEADER,
-    HTML,
-    CSS,
-    TXT,
-    IMG,
+    AETHER_CLANG,
+    AETHER_CHEADER,
+    AETHER_HTML,
+    AETHER_CSS,
+    AETHER_TXT,
+    AETHER_IMG,
 } FileType;
 
 typedef struct FileNode
@@ -43,8 +43,10 @@ typedef struct FileBarItem{
     char *path;
     int active;
     SDL_Texture *t1;
+    SDL_Texture *t2;
     SDL_Rect r1;
     SDL_Rect r2;
+    FileType type;
     FileLine *lines;
     int EDITOR_SCROLL_X;
     int EDITOR_SCROLL_Y;
@@ -65,6 +67,9 @@ typedef struct FileBarItem{
 extern FileBarItem *FileBar;
 extern FileBarItem *currentActiveTag;
 extern int TotalFileBarLength;
+
+// Forward declarations
+char* readFile(char* path);
 
 FileNode *createFileNode(char *name, char *path, int isDir);
 FileBarItem *createFileBarNode(char *name, char *path);

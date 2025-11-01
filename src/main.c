@@ -215,6 +215,29 @@ int main()
                     }
                 }
 
+
+                // File Bar
+                if(FileBar && x > MENU_W && x < WINDOW_W && y > TOPNAV_H && y < 2 * TOPNAV_H){
+                    FileBarItem* node = FileBar;
+
+                    while (node)
+                    {
+                        int x1 = node->r1.x;
+                        int x2 = x1 + node->r1.w;
+                        int y1 = node->r1.y;
+                        int y2 = y1 + node->r1.h;
+                        if(x > x1 && x < x2 && y > y1 && y < y2){
+                            node->active = 1;
+                            currentActiveTag = node;
+                        } else {
+                            node->active = 0;
+                        }
+                        node = node->next;
+                    }
+                    
+                }
+
+
                 // Text Editor
                 if (currentActiveTag && x > MENU_W + 70 && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
                 {
@@ -271,7 +294,7 @@ int main()
                     }
                     else
                     {
-                        printf("Node Does not Exist\n");
+                        // printf("Node Does not Exist\n");
                     }
                 }
             }
@@ -359,7 +382,7 @@ int main()
                 }
 
                 // Text Editor
-                if (currentActiveTag && x > MENU_W && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
+                if (currentActiveTag && currentActiveTag->type != AETHER_IMG && x > MENU_W && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
                 {
                     SDL_SetCursor(ibeam);
                 }
@@ -421,7 +444,7 @@ int main()
                     }
                     else
                     {
-                        printf("Node Does not Exist\n");
+                        // printf("Node Does not Exist\n");
                     }
                 }
             }
@@ -513,6 +536,7 @@ int main()
                                 currentActiveTag = FileBar;
                         }
                     }
+
                     else
                     {
                         if (key == SDLK_TAB)

@@ -247,7 +247,7 @@ Token *createToken(char *word, int custom, SDL_Color color)
 
 FileLine *parseText(char *content)
 {
-    int max_length = 100000000000000;
+    int max_length = 1000000;
     char c = content[0];
     int i = 0;
 
