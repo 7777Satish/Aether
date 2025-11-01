@@ -41,6 +41,7 @@ typedef struct Token Token;
 typedef struct FileBarItem{
     char *name;
     char *path;
+    int length;
     int active;
     SDL_Texture *t1;
     SDL_Texture *t2;

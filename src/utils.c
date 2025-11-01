@@ -59,6 +59,7 @@ FileBarItem *createFileBarNode(char *name, char *path)
     FileBarItem *node = (FileBarItem *)malloc(sizeof(FileBarItem));
     node->name = strdup(name);
     node->path = strdup(path);
+    node->length = 0;
     node->type = getFileType(name);
     node->next = NULL;
     node->prev = NULL;
@@ -90,22 +91,42 @@ void inActiveAllFileNodes()
     }
 }
 
-
-
 void addFileBarNode(char *name, char *path)
 {
+    FileBarItem *tnode = FileBar;
+    while (tnode)
+    {
+
+        if (strcmp(tnode->path, path) == 0)
+        {
+            tnode->active = 1;
+            currentActiveTag = tnode;
+
+            return;
+        }
+        else
+        {
+            tnode->active = 0;
+        }
+        tnode = tnode->next;
+    }
+
     FileBarItem *node = createFileBarNode(name, path);
     node->active = 1;
     currentActiveTag = node;
-    if(node->type != AETHER_IMG) {
+    if (node->type != AETHER_IMG)
+    {
         char *content = readFile(path);
+        node->length = strlen(content);
+
         FileLine *lines = parseText(content);
-    
+
         node->lines = lines;
         node->currentLine = lines;
         node->visibleLine = lines;
         node->SELECTION_START_LINE = lines;
-        if (lines){
+        if (lines)
+        {
             node->currentWord = lines->word;
             node->SELECTION_START_WORD = lines->word;
         }

@@ -208,7 +208,7 @@ void init()
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     // Create main application window
-    window = SDL_CreateWindow("CodeEditor_C", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Aether", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, SDL_WINDOW_RESIZABLE);
     // Create hardware-accelerated renderer
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -754,7 +754,6 @@ void renderTextEditor()
             word->len = strlen(word->content);
             // printf("%s",word->content);
 
-
             int w = 0, h = 0;
             SDL_QueryTexture(word->t1, NULL, NULL, &w, &h);
             h = EDITOR_FONT_HEIGHT;
@@ -794,7 +793,7 @@ void renderTextEditor()
 
                 SDL_DestroyTexture(temp->t1);
                 free(temp);
-                
+
                 continue;
             }
             */
@@ -803,7 +802,7 @@ void renderTextEditor()
             {
                 SDL_RenderCopy(renderer, word->t1, NULL, &r1);
             }
-            printf("[%s]", word->content);
+            // printf("[%s]", word->content);
             x += w;
             word = word->next;
         }
@@ -820,7 +819,7 @@ void renderTextEditor()
             SDL_RenderFillRect(renderer, &selectionRect);
         }
 
-        printf("\n");
+        // printf("\n");
         /*===== Draw Line Number =====*/
         char text[12];
         sprintf(text, "%d", y + 1);
@@ -851,58 +850,61 @@ void renderTextEditor()
     }
 
     /* ===== Render Minimap =====*/
-    SDL_SetRenderDrawColor(renderer, 17, 17, 17, 250);
-    SDL_RenderFillRect(renderer, &minimapBgRect);
-
-    line = node->lines;
-    y = 0;
-    while (line)
+    if (currentActiveTag->length < 1000000)
     {
+        SDL_SetRenderDrawColor(renderer, 17, 17, 17, 250);
+        SDL_RenderFillRect(renderer, &minimapBgRect);
 
-        Token *wrd = line->word;
-        int i = 0;
-        while (wrd)
+        line = node->lines;
+        y = 0;
+        while (line)
         {
-            if (strcmp(wrd->content, " ") == 0)
+
+            Token *wrd = line->word;
+            int i = 0;
+            while (wrd)
             {
-                i++;
+                if (strcmp(wrd->content, " ") == 0)
+                {
+                    i++;
+                    wrd = wrd->next;
+                    continue;
+                }
+                SDL_Rect minimapRect = {
+                    WINDOW_W - 100 + 4 + i * 1,
+                    FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + y * 2,
+                    (int)strlen(wrd->content) * 1,
+                    1.5};
+                if (wrd->color.r >= 200 && wrd->color.g >= 200 && wrd->color.b >= 200)
+                    SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255);
+                else
+                    SDL_SetRenderDrawColor(renderer, wrd->color.r, wrd->color.g, wrd->color.b, wrd->color.a);
+                SDL_RenderFillRect(renderer, &minimapRect);
+                i += (int)strlen(wrd->content);
                 wrd = wrd->next;
-                continue;
             }
-            SDL_Rect minimapRect = {
-                WINDOW_W - 100 + 4 + i * 1,
-                FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + y * 2,
-                (int)strlen(wrd->content) * 1,
-                1.5};
-            if (wrd->color.r >= 200 && wrd->color.g >= 200 && wrd->color.b >= 200)
-                SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255);
-            else
-                SDL_SetRenderDrawColor(renderer, wrd->color.r, wrd->color.g, wrd->color.b, wrd->color.a);
-            SDL_RenderFillRect(renderer, &minimapRect);
-            i += (int)strlen(wrd->content);
-            wrd = wrd->next;
+
+            y++;
+            line = line->next;
         }
 
-        y++;
-        line = line->next;
+        /* ===== Draw Highlight Rect ===== */
+        SDL_Rect highlightRect = {
+            WINDOW_W - 100,
+            FILEBAR_bg_rect.y + FILEBAR_bg_rect.h - (0.0 + currentActiveTag->EDITOR_SCROLL_Y) / cursor->h * 2,
+            100,
+            70};
+
+        SDL_SetRenderDrawColor(renderer, 137, 137, 137, 100);
+        SDL_RenderFillRect(renderer, &highlightRect);
+
+        /*===== Draw Borders =====*/
+        SDL_SetRenderDrawColor(renderer, 57, 57, 57, 255);
+        SDL_RenderDrawLine(renderer, WINDOW_W - 100, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, WINDOW_W - 100, WINDOW_H);
     }
 
-    /* ===== Draw Highlight Rect ===== */
-    SDL_Rect highlightRect = {
-        WINDOW_W - 100,
-        FILEBAR_bg_rect.y + FILEBAR_bg_rect.h - (0.0 + currentActiveTag->EDITOR_SCROLL_Y) / cursor->h * 2,
-        100,
-        70};
-
-    SDL_SetRenderDrawColor(renderer, 137, 137, 137, 100);
-    SDL_RenderFillRect(renderer, &highlightRect);
-
-    /*===== Draw Borders =====*/
     SDL_SetRenderDrawColor(renderer, 37, 37, 37, 255);
     SDL_RenderDrawLine(renderer, FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH, WINDOW_H);
-
-    SDL_SetRenderDrawColor(renderer, 57, 57, 57, 255);
-    SDL_RenderDrawLine(renderer, WINDOW_W - 100, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, WINDOW_W - 100, WINDOW_H);
 }
 
 void renderExplorer()
