@@ -79,5 +79,6 @@ void inActiveAllFileNodes();
 void addFileBarNode(char *name, char *path);
 void handleExplorerItemsHover(FileNode **folder, int x, int y);
 void handleExplorerItemsClick(FileNode **folder, int x, int y);
+void removeTab(FileBarItem* Tab);
 
 #endif

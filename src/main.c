@@ -613,6 +613,11 @@ int main()
                             currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
                         }
                     }
+
+
+                    if ((mod & KMOD_CTRL) && key == SDLK_w){
+                        removeTab(currentActiveTag);
+                    }
                 }
             }
 

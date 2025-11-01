@@ -232,3 +232,44 @@ void handleExplorerItemsClick(FileNode **folder, int x, int y)
         node = node->next;
     }
 }
+
+void removeTab(FileBarItem* tab){
+    FileBarItem* temp = tab;
+    if(tab->prev){
+        tab->prev->next = tab->next;
+    } else {
+        FileBar = tab->next;
+    }
+
+    if(tab->next){
+        tab->next->prev = tab->prev;
+    }
+
+    if(tab->prev) currentActiveTag = tab->prev;
+    else currentActiveTag = tab->next;
+
+    SDL_DestroyTexture(tab->t1);
+    SDL_DestroyTexture(tab->t2);
+    free(tab->name);
+    free(tab->path);
+
+    FileLine* line = tab->lines;
+    while (line)
+    {
+        SDL_DestroyTexture(line->t1);
+        Token* word = line->word;
+        while (word)
+        {
+            SDL_DestroyTexture(word->t1);
+            free(word->content);
+            
+            word = word->next;
+        }
+        
+        if(line->prev) free(line->prev);
+        
+        line = line->next;
+    }
+    
+    free(temp);
+}
