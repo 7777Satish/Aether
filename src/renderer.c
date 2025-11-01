@@ -208,7 +208,7 @@ void init()
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     // Create main application window
-    window = SDL_CreateWindow("CodeEditor_C", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, 0);
+    window = SDL_CreateWindow("CodeEditor_C", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, SDL_WINDOW_RESIZABLE);
     // Create hardware-accelerated renderer
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -753,6 +753,8 @@ void renderTextEditor()
         {
             word->len = strlen(word->content);
             // printf("%s",word->content);
+
+
             int w = 0, h = 0;
             SDL_QueryTexture(word->t1, NULL, NULL, &w, &h);
             h = EDITOR_FONT_HEIGHT;
@@ -773,11 +775,35 @@ void renderTextEditor()
                 SDL_RenderFillRect(renderer, &cursorRect);
             }
 
+            /*
+            if (word->len == 0 && word->prev)
+            {
+                if(currentActiveTag->currentWord == word){
+                    // if(word->next){
+                    //     currentActiveTag->currentWord = word->next;
+                    //     currentActiveTag->startIndex = 0;
+                    // } else {
+                        currentActiveTag->currentWord = word->prev;
+                        currentActiveTag->startIndex = word->len;
+                    // }
+                }
+                Token *temp = word;
+                if(word->prev) word->prev->next = word->next;
+                if(word->next) word->next->prev = word->prev;
+                word = word->next;
+
+                SDL_DestroyTexture(temp->t1);
+                free(temp);
+                
+                continue;
+            }
+            */
+
             if (r1.x + r1.w > MENU_W && r1.x < WINDOW_W)
             {
                 SDL_RenderCopy(renderer, word->t1, NULL, &r1);
             }
-            // printf("[%s]", word->content);
+            printf("[%s]", word->content);
             x += w;
             word = word->next;
         }
@@ -787,14 +813,14 @@ void renderTextEditor()
             SDL_Rect selectionRect = {
                 MENU_W + LINE_NUMBER_WIDTH,
                 FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT,
-                1000,
+                WINDOW_W,
                 EDITOR_FONT_HEIGHT};
 
             SDL_SetRenderDrawColor(renderer, 100, 150, 250, 50);
             SDL_RenderFillRect(renderer, &selectionRect);
         }
 
-        // printf("\n");
+        printf("\n");
         /*===== Draw Line Number =====*/
         char text[12];
         sprintf(text, "%d", y + 1);

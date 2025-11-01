@@ -215,10 +215,10 @@ int main()
                     }
                 }
 
-
                 // File Bar
-                if(FileBar && x > MENU_W && x < WINDOW_W && y > TOPNAV_H && y < 2 * TOPNAV_H){
-                    FileBarItem* node = FileBar;
+                if (FileBar && x > MENU_W && x < WINDOW_W && y > TOPNAV_H && y < 2 * TOPNAV_H)
+                {
+                    FileBarItem *node = FileBar;
 
                     while (node)
                     {
@@ -226,17 +226,18 @@ int main()
                         int x2 = x1 + node->r1.w;
                         int y1 = node->r1.y;
                         int y2 = y1 + node->r1.h;
-                        if(x > x1 && x < x2 && y > y1 && y < y2){
+                        if (x > x1 && x < x2 && y > y1 && y < y2)
+                        {
                             node->active = 1;
                             currentActiveTag = node;
-                        } else {
+                        }
+                        else
+                        {
                             node->active = 0;
                         }
                         node = node->next;
                     }
-                    
                 }
-
 
                 // Text Editor
                 if (currentActiveTag && x > MENU_W + 70 && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
@@ -305,6 +306,61 @@ int main()
                 {
                     WINDOW_W = event.window.data1;
                     WINDOW_H = event.window.data2;
+
+                    MENU_W = WINDOW_W / 6;
+                    FILEBAR_bg_rect.w = MENU_W;
+                    FILEBAR_bg_rect.h = WINDOW_H;
+
+                    // Creating Top Nav and Left Menu
+                    TOPNAV_bg_rect.x = 0;
+                    TOPNAV_bg_rect.y = 0;
+                    TOPNAV_bg_rect.w = WINDOW_W;
+                    TOPNAV_bg_rect.h = TOPNAV_H;
+
+                    MENUBAR_bg_rect.x = 0;
+                    MENUBAR_bg_rect.y = TOPNAV_H;
+                    MENUBAR_bg_rect.w = 0;
+                    MENUBAR_bg_rect.h = WINDOW_H;
+
+                    MENU_bg_rect.x = 0;
+                    MENU_bg_rect.y = TOPNAV_H;
+                    MENU_bg_rect.w = MENU_W;
+                    MENU_bg_rect.h = WINDOW_H;
+
+                    if (showMenu)
+                        FILEBAR_bg_rect.x = MENU_W;
+                    else
+                        FILEBAR_bg_rect.x = 0;
+                    FILEBAR_bg_rect.y = TOPNAV_H;
+                    FILEBAR_bg_rect.w = WINDOW_W;
+                    FILEBAR_bg_rect.h = TOPNAV_H;
+
+                    // BG Rect
+                    bgRect.x = MENU_W;
+                    bgRect.w = (bgImageSurface->w + 0.0) / bgImageSurface->h * WINDOW_H;
+                    bgRect.h = WINDOW_H;
+
+                        // Full Screen Rect
+                    fullScreenRect.w = WINDOW_W;
+                    fullScreenRect.h = WINDOW_H;
+
+                    // Explorer Menu
+                    Explorer.r1.x = 0;
+                    Explorer.r2.x = 0;
+                    Explorer.r3.x = 0;
+                    Explorer.r4.x = 0;
+
+                    // Search Menu
+                    Search.r1.x = 0;
+                    Search.r2.x = 0;
+                    Search.r3.x = 0;
+                    Search.r4.x = 0;
+
+                    // Github Menu
+                    Github.r1.x = 0;
+                    Github.r2.x = 0;
+                    Github.r3.x = 0;
+                    Github.r4.x = 0;
                 }
             }
 

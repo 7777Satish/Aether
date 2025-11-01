@@ -299,7 +299,7 @@ void leftDeleteChar()
                 {
                     temp = temp->next;
                 }
-                if(temp->len){
+                if(currentActiveTag->currentLine->prev->word->len){
                     if(tempLine->word->len){
                         temp->next = tempLine->word;
                         currentActiveTag->currentWord->prev = temp;
@@ -352,6 +352,7 @@ void leftDeleteChar()
 
     SDL_FreeSurface(s1);
 }
+
 void createNewline()
 {
     if (!currentActiveTag || !currentActiveTag->currentWord)
