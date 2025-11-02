@@ -268,9 +268,9 @@ int main()
                         Token *word = node->word;
                         int sum = scrollX + cursor->w;
 
-                        while (sum < x - MENU_W - 70 && word->next)
+                        while (sum < x - MENU_W - 75 && word->next)
                         {
-                            if (sum + word->len * cursor->w >= x - MENU_W - 70)
+                            if (sum + word->len * cursor->w >= x - MENU_W - 75)
                             {
                                 break;
                             }
