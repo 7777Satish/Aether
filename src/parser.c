@@ -269,7 +269,7 @@ FileLine *parseText(char *content)
         tempC[0] = c;
         tempC[1] = '\0';
 
-        if (c == '\0' || i>=max_length)
+        if (c == '\0' || i >= max_length)
         {
 
             Token *t = NULL;
@@ -346,7 +346,6 @@ FileLine *parseText(char *content)
             break;
         }
 
-        
         // Check for comments
         if (c == '/' && content[i + 1] == '/' && !isInString)
         {
@@ -413,7 +412,7 @@ FileLine *parseText(char *content)
         }
 
         // Do this if the character is a seperator [space or punctuation or operator]
-        if ((!isInString && !isInComment && ((c == ' ') || isPunctuation(tempC) || isOperator(tempC))) || (!isInComment && !isInString && strlen(currentWord)>50))
+        if ((!isInString && !isInComment && ((c == ' ') || isPunctuation(tempC) || isOperator(tempC))) || (!isInComment && !isInString && strlen(currentWord) > 50))
         {
             if (strcmp(currentWord, "") != 0)
             {

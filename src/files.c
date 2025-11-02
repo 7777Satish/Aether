@@ -206,3 +206,15 @@ char* readFile(char* path){
     fclose(f);
     return content;
 }
+
+
+void writeFile(const char* path, const char* content){
+    FILE* f = fopen(path, "w");
+    if(!f){
+        fprintf(stderr, "Error: Could not open file %s\n", path);
+        return;
+    }
+
+    fprintf(f, "%s", content);
+    fclose(f);
+}

@@ -1,4 +1,4 @@
-# CodeEditor_C
+# Aether
 
 A modern, lightweight code editor built from scratch in C using SDL2. This project provides a fast, efficient, and customizable text editing experience with a graphical user interface.
 
@@ -92,8 +92,8 @@ brew install sdl2 sdl2_image sdl2_ttf gtk+3
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/7777Satish/CodeEditor_C.git
-   cd CodeEditor_C
+   git clone https://github.com/7777Satish/Aether.git
+   cd Aether
    ```
 
 2. **Build the project**:
@@ -146,7 +146,7 @@ brew install sdl2 sdl2_image sdl2_ttf gtk+3
 ## Project Structure
 
 ```
-CodeEditor_C/
+Aether/
 ├── src/                    # Source code
 │   ├── main.c             # Main application entry point
 │   ├── renderer.c         # SDL2 rendering and UI

@@ -268,9 +268,9 @@ int main()
                         Token *word = node->word;
                         int sum = scrollX + cursor->w;
 
-                        while (sum < x - MENU_W - 75 && word->next)
+                        while (sum < x - MENU_W - 70 && word->next)
                         {
-                            if (sum + word->len * cursor->w >= x - MENU_W - 75)
+                            if (sum + word->len * cursor->w >= x - MENU_W - 70)
                             {
                                 break;
                             }
@@ -281,7 +281,7 @@ int main()
                         // sum += word->len * cursor->w;
 
                         currentActiveTag->currentWord = word;
-                        currentActiveTag->startIndex = (x - (sum + MENU_W + 70)) / cursor->w;
+                        currentActiveTag->startIndex = (x - (sum + MENU_W + 66)) / cursor->w;
 
                         if (currentActiveTag->startIndex > word->len)
                             currentActiveTag->startIndex = word->len;
@@ -615,8 +615,9 @@ int main()
                     }
 
 
-                    if ((mod & KMOD_CTRL) && key == SDLK_w){
-                        removeTab(currentActiveTag);
+                    if ((mod & KMOD_CTRL) && key == SDLK_s){
+                        char* content = convertToText(currentActiveTag);
+                        writeFile(currentActiveTag->path, content);
                     }
                 }
             }

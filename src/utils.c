@@ -273,3 +273,37 @@ void removeTab(FileBarItem* tab){
     
     free(temp);
 }
+
+
+char *convertToText(FileBarItem *tab)
+{
+    if(!tab) return;
+
+    int size = 1;
+    char *content = malloc(size);
+    content[0] = '\0';
+    FileLine *line = tab->lines;
+
+    while (line)
+    {
+
+        Token *word = line->word;
+
+        while (word)
+        {
+            size += word->len + 1;
+            content = realloc(content, size);
+            strcat(content, word->content);
+            word = word->next;
+        }
+
+        size += 2;
+
+        content = realloc(content, size);
+        strcat(content, "\n");
+
+        line = line->next;
+    }
+
+    return content;
+}

@@ -23,5 +23,6 @@ extern char selected_folder[1024];
 
 void clearExplorer();
 void initExplorer();
+void writeFile(const char* path, const char* content);
 
 #endif

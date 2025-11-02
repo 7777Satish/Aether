@@ -31,7 +31,9 @@ void handleMouseScroll(int x, int y)
         }
         else if (y < 0)
         {
-            currentActiveTag->EDITOR_SCROLL_Y -= dy * 2;
+            if(currentActiveTag->visibleLine->next){
+                currentActiveTag->EDITOR_SCROLL_Y -= dy * 2;
+            }
         }
 
         if (x > 0)

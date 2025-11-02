@@ -860,9 +860,12 @@ void renderTextEditor()
 
         line = node->lines;
         y = 0;
+        int highlightStartY = 0;
         while (line)
         {
-
+            if(line == currentActiveTag->visibleLine){
+                highlightStartY = FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + y * 2;
+            }
             Token *wrd = line->word;
             int i = 0;
             while (wrd)
@@ -894,9 +897,10 @@ void renderTextEditor()
         /* ===== Draw Highlight Rect ===== */
         SDL_Rect highlightRect = {
             WINDOW_W - 100,
-            FILEBAR_bg_rect.y + FILEBAR_bg_rect.h - (0.0 + currentActiveTag->EDITOR_SCROLL_Y) / cursor->h * 2,
-            100,
-            70};
+            highlightStartY,
+            MINIMAP_W,
+            (WINDOW_H - 3*TOPNAV_H)/EDITOR_FONT_HEIGHT * 2
+        };
 
         SDL_SetRenderDrawColor(renderer, 137, 137, 137, 100);
         SDL_RenderFillRect(renderer, &highlightRect);
