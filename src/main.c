@@ -61,8 +61,8 @@ int main()
     SDL_SetRenderDrawColor(renderer, 57, 57, 57, 255);
     SDL_RenderFillRect(renderer, &loadingFooterRect);
 
-    // SDL_Surface* bgImageSurface = IMG_Load("assets/bgImage.png");
-    SDL_Surface *bgImageSurface = IMG_Load("assets/landscape2.jpg");
+    SDL_Surface *bgImageSurface = IMG_Load("assets/nature.png");
+    // SDL_Surface *bgImageSurface = IMG_Load("assets/landscape2.jpg");
     if (!bgImageSurface)
     {
         fprintf(stderr, "Error loading background image: %s\n", IMG_GetError());
@@ -298,6 +298,11 @@ int main()
                         // printf("Node Does not Exist\n");
                     }
                 }
+            
+                // Completion Box
+                if(currentActiveTag){
+                    showCompletion = 0;
+                }
             }
 
             if (event.type == SDL_WINDOWEVENT)
@@ -340,7 +345,7 @@ int main()
                     bgRect.w = (bgImageSurface->w + 0.0) / bgImageSurface->h * WINDOW_H;
                     bgRect.h = WINDOW_H;
 
-                        // Full Screen Rect
+                    // Full Screen Rect
                     fullScreenRect.w = WINDOW_W;
                     fullScreenRect.h = WINDOW_H;
 
@@ -434,7 +439,7 @@ int main()
                 }
 
                 // Files and Folders in Exploror
-                if (x > 0 && x < MENU_W)
+                if (x > 0 && x < MENU_W + 150)
                 {
                     if (Folder)
                     {
@@ -533,10 +538,11 @@ int main()
                     if (key == SDLK_BACKSPACE)
                     {
                         leftDeleteChar();
-
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+
+                        getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
                     }
 
                     if (key == SDLK_UP)
@@ -546,6 +552,8 @@ int main()
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+
+                        showCompletion = 0;
                     }
                     if (key == SDLK_DOWN)
                     {
@@ -554,6 +562,8 @@ int main()
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+
+                        showCompletion = 0;
                     }
                     if (key == SDLK_LEFT)
                     {
@@ -562,6 +572,9 @@ int main()
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+
+                        if(showCompletion)
+                        getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
                     }
 
                     if (key == SDLK_RIGHT)
@@ -571,6 +584,9 @@ int main()
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                        
+                        if(showCompletion)
+                        getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
                     }
                     if (key == SDLK_RETURN)
                     {
@@ -579,6 +595,8 @@ int main()
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                        
+                        showCompletion = 0;
                     }
 
                     if ((mod & KMOD_CTRL) && key == SDLK_TAB)
@@ -603,10 +621,7 @@ int main()
                     {
                         if (key == SDLK_TAB)
                         {
-                            insertChar(' ');
-                            insertChar(' ');
-                            insertChar(' ');
-                            insertChar(' ');
+                            insertString("    ");
 
                             currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                             currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
@@ -614,10 +629,24 @@ int main()
                         }
                     }
 
-
-                    if ((mod & KMOD_CTRL) && key == SDLK_s){
-                        char* content = convertToText(currentActiveTag);
+                    if ((mod & KMOD_CTRL) && key == SDLK_s)
+                    {
+                        char *content = convertToText(currentActiveTag);
                         writeFile(currentActiveTag->path, content);
+                    }
+
+                    if ((mod & KMOD_CTRL) && key == SDLK_v)
+                    {
+                        if (SDL_HasClipboardText())
+                        {
+                            char *s = SDL_GetClipboardText();
+                            insertString(s);
+                            free(s);
+
+                            currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                            currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                            currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                        }
                     }
                 }
             }
@@ -626,10 +655,13 @@ int main()
             {
                 if (currentActiveTag)
                 {
-                    insertChar(event.text.text[0]);
+                    // insertChar(event.text.text[0]);
+                    insertString(event.text.text);
                     currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                     currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                     currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+
+                    getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
                 }
             }
         }
@@ -666,6 +698,7 @@ int main()
         /* ===== Draw Home Screen ===== */
 
         renderTextEditor();
+        renderSuggestionBox();
         renderFileBar();
 
         renderMenuBar();

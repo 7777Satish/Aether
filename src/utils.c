@@ -275,7 +275,7 @@ void removeTab(FileBarItem* tab){
 }
 
 
-char *convertToText(FileBarItem *tab)
+char* convertToText(FileBarItem *tab)
 {
     if(!tab) return;
 
@@ -291,6 +291,49 @@ char *convertToText(FileBarItem *tab)
 
         while (word)
         {
+            if(!word->len){
+                word = word->next;
+                continue;
+            }
+
+            size += word->len + 1;
+            content = realloc(content, size);
+            strcat(content, word->content);
+            word = word->next;
+        }
+
+        size += 2;
+
+        content = realloc(content, size);
+        strcat(content, "\n");
+
+        line = line->next;
+    }
+
+    return content;
+}
+
+char* getSelection(FileBarItem *tab){
+
+    if(!tab) return;
+
+    int size = 1;
+    char *content = malloc(size);
+    content[0] = '\0';
+    FileLine *line = tab->lines;
+
+    while (line)
+    {
+
+        Token *word = line->word;
+
+        while (word)
+        {
+            if(!word->len){
+                word = word->next;
+                continue;
+            }
+
             size += word->len + 1;
             content = realloc(content, size);
             strcat(content, word->content);

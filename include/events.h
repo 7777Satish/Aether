@@ -5,6 +5,7 @@
 #include <string.h>
 #include "renderer.h"
 #include "utils.h"
+#include "completion.h"
 
 void handleMouseScroll(int x, int y);
 void moveCursorUp();
@@ -13,6 +14,7 @@ void moveCursorLeft();
 void moveCursorRight();
 void leftDeleteChar();
 void insertChar(char c);
+void insertString(char* s);
 void createNewline();
 
 #endif

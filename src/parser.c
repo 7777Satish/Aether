@@ -271,52 +271,53 @@ FileLine *parseText(char *content)
 
         if (c == '\0' || i >= max_length)
         {
-
-            Token *t = NULL;
-
-            // Check is current word is not in comment
-            if (!isInComment)
+            if (strlen(currentWord))
             {
-                // Check if the word is an identifier
-                if ((lastToken && strcmp(lastToken->content, " ") == 0) && (lastToken->prev && lastToken->prev->type == TOKEN_TYPE) && !isPunctuation(tempC))
+                Token *t = NULL;
+
+                // Check is current word is not in comment
+                if (!isInComment)
                 {
-                    t = createToken(currentWord, 1, (SDL_Color){200, 255, 200, 255});
+                    // Check if the word is an identifier
+                    if ((lastToken && strcmp(lastToken->content, " ") == 0) && (lastToken->prev && lastToken->prev->type == TOKEN_TYPE) && !isPunctuation(tempC))
+                    {
+                        t = createToken(currentWord, 1, (SDL_Color){200, 255, 200, 255});
+                    }
+
+                    // Check if the word is a function name, and not a keyword
+                    else if (c == '(' && (strcmp(currentWord, " ") != 0) && !isKeyword(currentWord))
+                    {
+                        t = createToken(currentWord, 1, (SDL_Color){220, 220, 170, 255});
+                    }
+
+                    // Otherwise Create Token Normally
+                    else
+                    {
+                        t = createToken(currentWord, 0, white);
+                    }
                 }
 
-                // Check if the word is a function name, and not a keyword
-                else if (c == '(' && (strcmp(currentWord, " ") != 0) && !isKeyword(currentWord))
+                // Check if current word is in a single line comment
+                else if (isInComment == 1)
                 {
-                    t = createToken(currentWord, 1, (SDL_Color){220, 220, 170, 255});
+                    t = createToken(currentWord, 1, (SDL_Color){87, 166, 74, 255});
+                    t->type = TOKEN_COMMENT;
+                    isInComment = 0;
                 }
 
-                // Otherwise Create Token Normally
-                else
-                {
-                    t = createToken(currentWord, 0, white);
-                }
-            }
+                t->prev = lastToken;
+                t->next = NULL;
 
-            // Check if current word is in a single line comment
-            else if (isInComment == 1)
-            {
-                t = createToken(currentWord, 1, (SDL_Color){87, 166, 74, 255});
-                t->type = TOKEN_COMMENT;
-                isInComment = 0;
-            }
-
-            t->prev = lastToken;
-            t->next = NULL;
-
-            if (lastToken)
-                lastToken->next = t;
-            lastToken = t;
-
-            if (!firstToken)
-            {
-                firstToken = t;
+                if (lastToken)
+                    lastToken->next = t;
                 lastToken = t;
-            }
 
+                if (!firstToken)
+                {
+                    firstToken = t;
+                    lastToken = t;
+                }
+            }
             // Reset Word
             free(currentWord);
             currentWord = malloc(1);

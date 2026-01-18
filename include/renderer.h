@@ -6,6 +6,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include "files.h"
+#include "completion.h"
 
 typedef struct
 {
@@ -57,6 +58,8 @@ typedef struct
 typedef struct Cursor{
     int w;
     int h;
+    int x;
+    int y;
 } Cursor;
 
 typedef struct FileNode FileNode;
@@ -155,6 +158,7 @@ void renderTopNavBarMenu();
 void renderMenuBar();
 void renderFileBar();
 void renderTextEditor();
+void renderSuggestionBox();
 
 void renderExplorer();
 void renderFolder(FileNode **folder, int *i, int padX);

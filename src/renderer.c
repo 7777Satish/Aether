@@ -256,6 +256,8 @@ void init()
     cursor = (Cursor *)malloc(sizeof(Cursor));
     cursor->w = space->w;
     cursor->h = space->h;
+    cursor->x = NULL;
+    cursor->y = NULL;
     EDITOR_FONT_HEIGHT = space->h;
     SDL_FreeSurface(space);
 
@@ -770,7 +772,8 @@ void renderTextEditor()
             if (word == currentActiveTag->currentWord)
             {
                 int x = r1.x + cursor->w * currentActiveTag->startIndex;
-
+                cursor->x = x;
+                cursor->y = r1.y;
                 SDL_Rect cursorRect = {x, r1.y, 2, cursor->h};
 
                 SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
@@ -863,7 +866,8 @@ void renderTextEditor()
         int highlightStartY = 0;
         while (line)
         {
-            if(line == currentActiveTag->visibleLine){
+            if (line == currentActiveTag->visibleLine)
+            {
                 highlightStartY = FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + y * 2;
             }
             Token *wrd = line->word;
@@ -899,8 +903,7 @@ void renderTextEditor()
             WINDOW_W - 100,
             highlightStartY,
             MINIMAP_W,
-            (WINDOW_H - 3*TOPNAV_H)/EDITOR_FONT_HEIGHT * 2
-        };
+            (WINDOW_H - 3 * TOPNAV_H) / EDITOR_FONT_HEIGHT * 2};
 
         SDL_SetRenderDrawColor(renderer, 137, 137, 137, 100);
         SDL_RenderFillRect(renderer, &highlightRect);
@@ -912,6 +915,50 @@ void renderTextEditor()
 
     SDL_SetRenderDrawColor(renderer, 37, 37, 37, 255);
     SDL_RenderDrawLine(renderer, FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH, WINDOW_H);
+}
+
+void renderSuggestionBox()
+{
+    if (!currentActiveTag || !currentActiveTag->currentWord)
+        return;
+
+    if (showCompletion && cursor && cursor->x && cursor->y)
+    {
+        CompletionListItem *node = CompletionList;
+        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+        int y = cursor->y + cursor->h;
+        int padding = 6;
+        while (node)
+        {
+            int w, h;
+            SDL_QueryTexture(node->t1, NULL, NULL, &w, &h);
+
+            SDL_Rect bgRect = {cursor->x, y, 300, cursor->h + padding};
+            if (!node->prev)
+            {
+                // SDL_SetRenderDrawColor(renderer, 255, 70, 180, 255);
+                SDL_SetRenderDrawColor(renderer, 196, 53, 139, 255);
+            }
+            else
+            {
+                SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+            }
+            SDL_RenderFillRect(renderer, &bgRect);
+
+            SDL_Rect textRect = {cursor->x + padding, y + cursor->h / 2 - h / 2, w, h};
+            SDL_RenderCopy(renderer, node->t1, NULL, &textRect);
+
+            node = node->next;
+            y += h + padding;
+        }
+
+        if (y - cursor->y - cursor->h > 0)
+        {
+            SDL_Rect completionRect = {cursor->x, cursor->y + cursor->h, 300, y - cursor->y - cursor->h + padding/2};
+            SDL_SetRenderDrawColor(renderer, 130, 130, 130, 255);
+            SDL_RenderDrawRect(renderer, &completionRect);
+        }
+    }
 }
 
 void renderExplorer()
@@ -1141,6 +1188,18 @@ void renderFolder(FileNode **folder, int *i, int padX)
 
             SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
             SDL_RenderFillRect(renderer, &hoverRect);
+        }
+
+        if (currentActiveTag && strcmp(currentActiveTag->path, node->path) == 0)
+        {
+            SDL_Rect borderRect = {
+                MENU_PAD_X,
+                node->r1.y,
+                MENU_W - 2 * MENU_PAD_X,
+                node->r1.h};
+
+            SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
+            SDL_RenderFillRect(renderer, &borderRect);
         }
 
         FileIcons.r1.x = node->r1.x - 2 - node->r1.h;
