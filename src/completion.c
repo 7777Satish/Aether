@@ -1,7 +1,10 @@
 #include "completion.h"
 
 int showCompletion = 1;
-CompletionListItem *CompletionList = NULL;
+
+CompletionBoxNode CompletionBox = {
+    NULL, NULL, 0
+};
 
 char *C_SUGGESTIONS[] = {
     "#define",
@@ -199,7 +202,7 @@ int startsWith(char *string, char *sub, int b)
 
 void freeCompletionList()
 {
-    CompletionListItem *item = CompletionList;
+    CompletionListItem *item = CompletionBox.list;
     while (item)
     {
         SDL_DestroyTexture(item->t1);
@@ -216,6 +219,7 @@ int getCompletion(char *word, int n)
         return;
     };
     int i = 0;
+
     freeCompletionList();
 
     CompletionListItem *head = NULL;
@@ -257,5 +261,10 @@ int getCompletion(char *word, int n)
     else
         showCompletion = 0;
     
-    CompletionList = head;
+    CompletionBox.list = head;
+    CompletionBox.active = head;
+    CompletionBox.tail = item;
+    CompletionBox.scrollY = 0;
+
+    printf("Created\n");
 }

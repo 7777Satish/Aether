@@ -14,8 +14,16 @@ typedef struct CompletionListItem
 
 } CompletionListItem;
 
+typedef struct CompletionBoxNode
+{
+    CompletionListItem* list;
+    CompletionListItem* active;
+    CompletionListItem* tail;
+    int scrollY;
+} CompletionBoxNode;
+
 extern int showCompletion;
-extern CompletionListItem* CompletionList;
+extern CompletionBoxNode CompletionBox;
 int getCompletion(char* word, int n);
 
 #endif

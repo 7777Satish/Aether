@@ -242,7 +242,7 @@ void init()
         exit(1);
     }
 
-    jetbrains_regular = TTF_OpenFont("assets/JetBrains_Mono./static/JetBrainsMono-Regular.ttf", EDITOR_FONT_SIZE);
+    jetbrains_regular = TTF_OpenFont("assets/JetBrains_Mono/static/JetBrainsMono-Regular.ttf", EDITOR_FONT_SIZE);
     if (!jetbrains_regular)
     {
         fprintf(stderr, "Failed to load JetBrainsMono-Regular.ttf: %s\n", TTF_GetError());
@@ -919,12 +919,12 @@ void renderTextEditor()
 
 void renderSuggestionBox()
 {
-    if (!currentActiveTag || !currentActiveTag->currentWord)
+    if (!currentActiveTag || !currentActiveTag->currentWord || !currentActiveTag->active)
         return;
 
     if (showCompletion && cursor && cursor->x && cursor->y)
     {
-        CompletionListItem *node = CompletionList;
+        CompletionListItem *node = CompletionBox.list;
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         int y = cursor->y + cursor->h;
         int padding = 6;
@@ -934,7 +934,7 @@ void renderSuggestionBox()
             SDL_QueryTexture(node->t1, NULL, NULL, &w, &h);
 
             SDL_Rect bgRect = {cursor->x, y, 300, cursor->h + padding};
-            if (!node->prev)
+            if (node == CompletionBox.active)
             {
                 // SDL_SetRenderDrawColor(renderer, 255, 70, 180, 255);
                 SDL_SetRenderDrawColor(renderer, 196, 53, 139, 255);
@@ -957,6 +957,8 @@ void renderSuggestionBox()
             SDL_Rect completionRect = {cursor->x, cursor->y + cursor->h, 300, y - cursor->y - cursor->h + padding/2};
             SDL_SetRenderDrawColor(renderer, 130, 130, 130, 255);
             SDL_RenderDrawRect(renderer, &completionRect);
+        } else {
+            showCompletion = 0;
         }
     }
 }

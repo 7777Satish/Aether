@@ -298,9 +298,10 @@ int main()
                         // printf("Node Does not Exist\n");
                     }
                 }
-            
+
                 // Completion Box
-                if(currentActiveTag){
+                if (currentActiveTag)
+                {
                     showCompletion = 0;
                 }
             }
@@ -547,23 +548,43 @@ int main()
 
                     if (key == SDLK_UP)
                     {
-                        moveCursorUp();
+                        if (CompletionBox.active && showCompletion)
+                        {
+                            if (CompletionBox.active->prev)
+                                CompletionBox.active = CompletionBox.active->prev;
+                            else
+                                CompletionBox.active = CompletionBox.tail;
+                        }
+                        else
+                        {
+                            moveCursorUp();
 
-                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
-                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
-                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                            currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                            currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                            currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
 
-                        showCompletion = 0;
+                            showCompletion = 0;
+                        }
                     }
                     if (key == SDLK_DOWN)
                     {
-                        moveCursorDown();
+                        if (showCompletion && CompletionBox.active)
+                        {
+                            if (CompletionBox.active->next)
+                                CompletionBox.active = CompletionBox.active->next;
+                            else
+                                CompletionBox.active = CompletionBox.list;
+                        }
+                        else
+                        {
+                            moveCursorDown();
 
-                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
-                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
-                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                            currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                            currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                            currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
 
-                        showCompletion = 0;
+                            showCompletion = 0;
+                        }
                     }
                     if (key == SDLK_LEFT)
                     {
@@ -573,8 +594,8 @@ int main()
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
 
-                        if(showCompletion)
-                        getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
+                        if (showCompletion)
+                            getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
                     }
 
                     if (key == SDLK_RIGHT)
@@ -584,9 +605,9 @@ int main()
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
-                        
-                        if(showCompletion)
-                        getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
+
+                        if (showCompletion)
+                            getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
                     }
                     if (key == SDLK_RETURN)
                     {
@@ -595,7 +616,7 @@ int main()
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
-                        
+
                         showCompletion = 0;
                     }
 
