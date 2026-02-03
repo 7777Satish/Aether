@@ -265,6 +265,4 @@ int getCompletion(char *word, int n)
     CompletionBox.active = head;
     CompletionBox.tail = item;
     CompletionBox.scrollY = 0;
-
-    printf("Created\n");
 }

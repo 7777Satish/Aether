@@ -52,6 +52,21 @@ TOPNAV_MENU_NODE TOPNAV_MENU[5] = {
      NULL,
      {0, 0, 0, 0}}};
 
+MENU_BAR_NODE TOPNAV_RIGHT[1] = {
+    {"RIGHT PANEL",
+     "assets/panel-right.png",
+     "assets/panel-right-active.png",
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL,
+     {0, 0, 0, 0},
+     {0, 0, 0, 0}}
+};
+
+
+
 MENU_BAR_NODE LEFT_MENU[4] = {
     {"EXPLORER",
      "assets/filemanager_icon.png",
@@ -153,6 +168,10 @@ int EDITOR_FONT_SIZE = 0;
 int EDITOR_FONT_HEIGHT = 0;
 int MINIMAP_W = 100;
 Cursor *cursor;
+
+// Initialising Right Panel
+int RIGHTPANEL_W = 400;
+int RIGHTPANEL_X = 1400 - 400;
 
 SDL_Color white = {255, 255, 255, 255};
 
@@ -324,6 +343,58 @@ void init()
         SDL_FreeSurface(node_surface);
     }
 
+
+    // TOPNAV_RIGHT Buttons
+    prevX = 0;
+    for (int i = 0; i < (int)(sizeof(TOPNAV_RIGHT) / sizeof(TOPNAV_RIGHT[0])); i++)
+    {
+        MENU_BAR_NODE *node = &TOPNAV_RIGHT[i];
+        SDL_Color color = {155, 155, 155, 255};
+
+        SDL_Surface *node_surface = IMG_Load(node->icon);
+        SDL_Surface *node_active_surface = IMG_Load(node->active_icon);
+        SDL_Surface *node_text_surface = TTF_RenderText_Blended(poppins_regular, node->name, color);
+        if (!node_surface || !node_active_surface || !node_text_surface)
+        {
+            fprintf(stderr, "Failed to render text: %s\n", TTF_GetError());
+            continue;
+        }
+
+        node->texture = SDL_CreateTextureFromSurface(renderer, node_surface);
+        node->active_texture = SDL_CreateTextureFromSurface(renderer, node_active_surface);
+        node->text_texture = SDL_CreateTextureFromSurface(renderer, node_text_surface);
+        if (!node->texture || !node->active_texture || !node->text_texture)
+        {
+            fprintf(stderr, "Failed to create texture: %s\n", SDL_GetError());
+            SDL_FreeSurface(node_surface);
+            continue;
+        }
+
+        int viewW = MENU_BAR_H - 30;
+        int viewH = (viewW) * (node_surface->h + 0.0) / node_surface->w;
+        
+        SDL_Rect rect = {
+            WINDOW_W - viewW - TOPNAV_H/2 - prevX,
+            TOPNAV_H / 2 - viewH / 2,
+            viewW,
+            viewH};
+        node->rect = rect;
+
+        SDL_Rect rect2 = {
+            MENU_PAD_X,
+            TOPNAV_H + MENU_BAR_H + MENU_PAD_Y,
+            node_text_surface->w,
+            node_text_surface->h};
+
+        node->text_rect = rect2;
+
+        prevX += viewW + 20;
+
+        SDL_FreeSurface(node_surface);
+    }
+
+    RIGHTPANEL_X = WINDOW_W - RIGHTPANEL_W;
+
     // Menu Bar Buttons
     prevX = 0;
     for (int i = 0; i < (int)(sizeof(LEFT_MENU) / sizeof(LEFT_MENU[0])); i++)
@@ -468,6 +539,28 @@ void renderTopNav()
             SDL_RenderFillRect(renderer, &r);
         }
         SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+        SDL_RenderCopy(renderer, node.texture, NULL, &node.rect);
+    }
+
+
+    // TOPNAV_RIGHT Buttons
+    for (i = 0; i < 1; i++)
+    {
+        MENU_BAR_NODE node = TOPNAV_RIGHT[i];
+        if (node.isActive)
+        {
+            SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+            SDL_Rect r;
+            r.x = node.rect.x - 7.9;
+            r.w = node.rect.w + 16.8;
+            r.y = node.rect.y - 7.9;
+            r.h = node.rect.h + 16.8;
+            SDL_RenderFillRect(renderer, &r);
+        }
+        SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+        if(node.clicked)
+        SDL_RenderCopy(renderer, node.active_texture, NULL, &node.rect);
+        else
         SDL_RenderCopy(renderer, node.texture, NULL, &node.rect);
     }
 }
@@ -804,7 +897,7 @@ void renderTextEditor()
             }
             */
 
-            if (r1.x + r1.w > MENU_W && r1.x < WINDOW_W)
+            if (r1.x + r1.w > MENU_W && r1.x < RIGHTPANEL_X)
             {
                 SDL_RenderCopy(renderer, word->t1, NULL, &r1);
             }
@@ -858,6 +951,7 @@ void renderTextEditor()
     /* ===== Render Minimap =====*/
     if (currentActiveTag->length < 1000000)
     {
+        if(TOPNAV_RIGHT[0].clicked) minimapBgRect.x = RIGHTPANEL_X - minimapBgRect.w;
         SDL_SetRenderDrawColor(renderer, 17, 17, 17, 250);
         SDL_RenderFillRect(renderer, &minimapBgRect);
 
@@ -881,7 +975,7 @@ void renderTextEditor()
                     continue;
                 }
                 SDL_Rect minimapRect = {
-                    WINDOW_W - 100 + 4 + i * 1,
+                    minimapBgRect.x + 4 + i * 1,
                     FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + y * 2,
                     (int)strlen(wrd->content) * 1,
                     1.5};
@@ -900,7 +994,7 @@ void renderTextEditor()
 
         /* ===== Draw Highlight Rect ===== */
         SDL_Rect highlightRect = {
-            WINDOW_W - 100,
+            minimapBgRect.x,
             highlightStartY,
             MINIMAP_W,
             (WINDOW_H - 3 * TOPNAV_H) / EDITOR_FONT_HEIGHT * 2};
@@ -910,11 +1004,28 @@ void renderTextEditor()
 
         /*===== Draw Borders =====*/
         SDL_SetRenderDrawColor(renderer, 57, 57, 57, 255);
-        SDL_RenderDrawLine(renderer, WINDOW_W - 100, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, WINDOW_W - 100, WINDOW_H);
+        SDL_RenderDrawLine(renderer, minimapBgRect.x, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, minimapBgRect.x, WINDOW_H);
     }
 
     SDL_SetRenderDrawColor(renderer, 37, 37, 37, 255);
     SDL_RenderDrawLine(renderer, FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h, FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH, WINDOW_H);
+}
+
+void renderRightPanel(){
+    SDL_SetRenderDrawColor(renderer, 17, 17, 17, 250);
+    SDL_Rect r1 = {
+        RIGHTPANEL_X,
+        TOPNAV_H,
+        RIGHTPANEL_W,
+        WINDOW_H - TOPNAV_H
+    };
+
+    SDL_RenderFillRect(renderer, &r1);
+
+
+    /*===== Draw Borders =====*/
+    SDL_SetRenderDrawColor(renderer, 57, 57, 57, 255);
+    SDL_RenderDrawLine(renderer, RIGHTPANEL_X, FILEBAR_bg_rect.y, RIGHTPANEL_X, WINDOW_H);
 }
 
 void renderSuggestionBox()

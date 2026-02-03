@@ -215,6 +215,37 @@ int main()
                     }
                 }
 
+                // TOPNAV_RIGHT Buttons
+                if (y < TOPNAV_H + 50)
+                {
+                    for (i = 0; i < (int)(sizeof(TOPNAV_RIGHT) / sizeof(TOPNAV_RIGHT[0])); i++)
+                    {
+                        MENU_BAR_NODE *node = &TOPNAV_RIGHT[i];
+
+                        SDL_Rect r;
+                        r.x = node->rect.x;
+                        r.w = node->rect.w;
+                        r.y = node->rect.y - 10;
+                        r.h = node->rect.h + 20;
+
+                        if (x > r.x && x < r.w + r.x && y > r.y && y < r.y + r.h)
+                        {
+                            node->clicked = !node->clicked;
+                            if (i == 0)
+                            {
+                                if (node->clicked)
+                                    RIGHTPANEL_X = WINDOW_W - RIGHTPANEL_W;
+                                else
+                                    RIGHTPANEL_X = WINDOW_W;
+                            }
+                        }
+                        else if (!node->clicked)
+                        {
+                            node->clicked = 0;
+                        }
+                    }
+                }
+
                 // File Bar
                 if (FileBar && x > MENU_W && x < WINDOW_W && y > TOPNAV_H && y < 2 * TOPNAV_H)
                 {
@@ -350,6 +381,12 @@ int main()
                     fullScreenRect.w = WINDOW_W;
                     fullScreenRect.h = WINDOW_H;
 
+                    // TOPNAV_RIGHT BUTTONS
+
+                    int prevX = 0;
+                    for (int i = 0; i < (int)(sizeof(TOPNAV_RIGHT) / sizeof(TOPNAV_RIGHT[0])); i++)
+                        TOPNAV_RIGHT[0].rect.x = WINDOW_W - TOPNAV_RIGHT[0].rect.w - TOPNAV_H / 2 - (prevX++);
+
                     // Explorer Menu
                     Explorer.r1.x = 0;
                     Explorer.r2.x = 0;
@@ -409,6 +446,30 @@ int main()
                             node->isActive = 1;
                         }
                         else if (!node->clicked)
+                        {
+                            node->isActive = 0;
+                        }
+                    }
+                }
+
+                // TOPNAV_RIGHT Buttons
+                if (y < TOPNAV_H + 50)
+                {
+                    for (i = 0; i < (int)(sizeof(TOPNAV_RIGHT) / sizeof(TOPNAV_RIGHT[0])); i++)
+                    {
+                        MENU_BAR_NODE *node = &TOPNAV_RIGHT[i];
+
+                        SDL_Rect r;
+                        r.x = node->rect.x;
+                        r.w = node->rect.w;
+                        r.y = node->rect.y - 10;
+                        r.h = node->rect.h + 20;
+
+                        if (x > r.x && x < r.w + r.x && y > r.y && y < r.y + r.h)
+                        {
+                            node->isActive = 1;
+                        }
+                        else
                         {
                             node->isActive = 0;
                         }
@@ -724,6 +785,12 @@ int main()
 
         renderMenuBar();
         renderTopNav();
+
+        if (TOPNAV_RIGHT[0].clicked)
+        {
+            renderRightPanel();
+        }
+        
         renderFooter();
         renderTopNavBarMenu();
 

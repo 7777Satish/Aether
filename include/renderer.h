@@ -65,6 +65,7 @@ typedef struct Cursor{
 typedef struct FileNode FileNode;
 
 extern TOPNAV_MENU_NODE TOPNAV_MENU[5];
+extern MENU_BAR_NODE TOPNAV_RIGHT[1];
 
 extern MENU_BAR_NODE LEFT_MENU[4];
 
@@ -128,6 +129,10 @@ extern SDL_Rect TOPNAV_bg_rect;
 extern SDL_Rect MENUBAR_bg_rect;
 extern SDL_Rect MENU_bg_rect;
 extern SDL_Rect FILEBAR_bg_rect;
+
+// Initialising Right Panel
+extern int RIGHTPANEL_X;
+extern int RIGHTPANEL_W;
 
 /* ===== Scrollbars =====*/
 extern int EXPLORER_SCROLL_Y;
