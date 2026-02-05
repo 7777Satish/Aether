@@ -231,9 +231,11 @@ int getCompletion(char *word, int n)
         {
             CompletionListItem *node = (CompletionListItem *)malloc(sizeof(CompletionListItem));
             node->text = C_SUGGESTIONS[i];
-            SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->text, (SDL_Color){230, 230, 230, 255});
+            SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->text, strlen(node->text), (SDL_Color){230, 230, 230, 255});
             node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-            SDL_FreeSurface(s1);
+            SDL_SetTextureScaleMode(node->t1, SDL_SCALEMODE_NEAREST);
+
+            SDL_DestroySurface(s1);
             node->next = NULL;
             node->prev = item;
 

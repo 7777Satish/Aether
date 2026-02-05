@@ -45,19 +45,19 @@ int main()
 
     // ======== LOADING SCREEN SETUP ========
 
-    SDL_Rect loadingBgRect = {0, 0, WINDOW_W, WINDOW_H};
+    SDL_FRect loadingBgRect = {0, 0, WINDOW_W, WINDOW_H};
     SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);
     SDL_RenderFillRect(renderer, &loadingBgRect);
 
-    // SDL_Rect loadingMenuRect = {0, 0, WINDOW_W, WINDOW_H};
+    // SDL_FRect loadingMenuRect = {0, 0, WINDOW_W, WINDOW_H};
     SDL_SetRenderDrawColor(renderer, 37, 37, 37, 255);
     SDL_RenderFillRect(renderer, &MENU_bg_rect);
 
-    // SDL_Rect loadingBgRect = {0, 0, WINDOW_W, WINDOW_H};
+    // SDL_FRect loadingBgRect = {0, 0, WINDOW_W, WINDOW_H};
     SDL_SetRenderDrawColor(renderer, 27, 27, 27, 255);
     SDL_RenderFillRect(renderer, &TOPNAV_bg_rect);
 
-    SDL_Rect loadingFooterRect = {0, WINDOW_H - FOOTER_H, WINDOW_W, FOOTER_H};
+    SDL_FRect loadingFooterRect = {0, WINDOW_H - FOOTER_H, WINDOW_W, FOOTER_H};
     SDL_SetRenderDrawColor(renderer, 57, 57, 57, 255);
     SDL_RenderFillRect(renderer, &loadingFooterRect);
 
@@ -65,25 +65,27 @@ int main()
     // SDL_Surface *bgImageSurface = IMG_Load("assets/landscape2.jpg");
     if (!bgImageSurface)
     {
-        fprintf(stderr, "Error loading background image: %s\n", IMG_GetError());
+        fprintf(stderr, "Error loading background image: %s\n", SDL_GetError());
         return 1;
     }
 
     SDL_Texture *bgImage = SDL_CreateTextureFromSurface(renderer, bgImageSurface);
+    SDL_SetTextureScaleMode(bgImage, SDL_SCALEMODE_LINEAR);
+
     if (!bgImage)
     {
         fprintf(stderr, "Error creating background texture: %s\n", SDL_GetError());
-        SDL_FreeSurface(bgImageSurface);
+        SDL_DestroySurface(bgImageSurface);
         return 1;
     }
 
-    SDL_Rect bgRect = {
+    SDL_FRect bgRect = {
         MENU_W,
         0,
         (bgImageSurface->w + 0.0) / bgImageSurface->h * WINDOW_H,
         WINDOW_H};
 
-    SDL_Rect fullScreenRect = {
+    SDL_FRect fullScreenRect = {
         0,
         0,
         WINDOW_W,
@@ -92,17 +94,19 @@ int main()
     /* ===== Props ===== */
     SDL_Surface *propS1 = IMG_Load("assets/prop1.png");
     SDL_Texture *prop1 = SDL_CreateTextureFromSurface(renderer, propS1);
-    SDL_Rect propRect1 = {
+    SDL_SetTextureScaleMode(prop1, SDL_SCALEMODE_NEAREST);
+
+    SDL_FRect propRect1 = {
         100, 0, 100, 100};
-    SDL_Point propCenter1 = {(propRect1.x + propRect1.w) / 2, (propRect1.y + propRect1.h) / 2};
+    SDL_FPoint propCenter1 = {(propRect1.x + propRect1.w) / 2, (propRect1.y + propRect1.h) / 2};
     int propangle1 = 0;
 
     // Load the I-beam (text) cursor
-    SDL_Cursor *ibeam = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+    SDL_Cursor *ibeam = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT);
     // SDL_SetCursor(ibeam);
 
     // Load the Pointer cursor
-    SDL_Cursor *arrowCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+    SDL_Cursor *arrowCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
     // SDL_SetCursor(ibeam);
 
     int running = 1;
@@ -112,15 +116,15 @@ int main()
     {
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_QUIT)
+            if (event.type == SDL_EVENT_QUIT)
             {
                 running = 0;
             }
 
-            if (event.type == SDL_MOUSEBUTTONDOWN)
+            if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
             {
-                int x = event.motion.x;
-                int y = event.motion.y;
+                int x = (int)event.button.x;
+                int y = (int)event.button.y;
 
                 MOUSE_X = x;
                 MOUSE_Y = y;
@@ -155,7 +159,7 @@ int main()
                 for (i = 0; i < (int)(sizeof(TOPNAV_MENU) / sizeof(TOPNAV_MENU[0])); i++)
                 {
                     TOPNAV_MENU_NODE *node = &TOPNAV_MENU[i];
-                    SDL_Rect r;
+                    SDL_FRect r;
                     r.x = node->rect.x - 7.9;
                     r.w = node->rect.w + 16.8;
                     r.y = node->rect.y;
@@ -181,7 +185,7 @@ int main()
                     {
                         MENU_BAR_NODE *node = &LEFT_MENU[i];
 
-                        SDL_Rect r;
+                        SDL_FRect r;
                         r.x = node->rect.x;
                         r.w = node->rect.w;
                         r.y = node->rect.y - 10;
@@ -222,7 +226,7 @@ int main()
                     {
                         MENU_BAR_NODE *node = &TOPNAV_RIGHT[i];
 
-                        SDL_Rect r;
+                        SDL_FRect r;
                         r.x = node->rect.x;
                         r.w = node->rect.w;
                         r.y = node->rect.y - 10;
@@ -337,93 +341,93 @@ int main()
                 }
             }
 
-            if (event.type == SDL_WINDOWEVENT)
+            if (event.type == SDL_EVENT_WINDOW_RESIZED)
             {
-                if (event.window.event == SDL_WINDOWEVENT_RESIZED)
-                {
-                    WINDOW_W = event.window.data1;
-                    WINDOW_H = event.window.data2;
+                // if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+                // {
+                WINDOW_W = event.window.data1;
+                WINDOW_H = event.window.data2;
 
-                    MENU_W = WINDOW_W / 6;
-                    FILEBAR_bg_rect.w = MENU_W;
-                    FILEBAR_bg_rect.h = WINDOW_H;
+                MENU_W = WINDOW_W / 6;
+                FILEBAR_bg_rect.w = MENU_W;
+                FILEBAR_bg_rect.h = WINDOW_H;
 
-                    // Creating Top Nav and Left Menu
-                    TOPNAV_bg_rect.x = 0;
-                    TOPNAV_bg_rect.y = 0;
-                    TOPNAV_bg_rect.w = WINDOW_W;
-                    TOPNAV_bg_rect.h = TOPNAV_H;
+                // Creating Top Nav and Left Menu
+                TOPNAV_bg_rect.x = 0;
+                TOPNAV_bg_rect.y = 0;
+                TOPNAV_bg_rect.w = WINDOW_W;
+                TOPNAV_bg_rect.h = TOPNAV_H;
 
-                    MENUBAR_bg_rect.x = 0;
-                    MENUBAR_bg_rect.y = TOPNAV_H;
-                    MENUBAR_bg_rect.w = 0;
-                    MENUBAR_bg_rect.h = WINDOW_H;
+                MENUBAR_bg_rect.x = 0;
+                MENUBAR_bg_rect.y = TOPNAV_H;
+                MENUBAR_bg_rect.w = 0;
+                MENUBAR_bg_rect.h = WINDOW_H;
 
-                    MENU_bg_rect.x = 0;
-                    MENU_bg_rect.y = TOPNAV_H;
-                    MENU_bg_rect.w = MENU_W;
-                    MENU_bg_rect.h = WINDOW_H;
+                MENU_bg_rect.x = 0;
+                MENU_bg_rect.y = TOPNAV_H;
+                MENU_bg_rect.w = MENU_W;
+                MENU_bg_rect.h = WINDOW_H;
 
-                    if (showMenu)
-                        FILEBAR_bg_rect.x = MENU_W;
-                    else
-                        FILEBAR_bg_rect.x = 0;
-                    FILEBAR_bg_rect.y = TOPNAV_H;
-                    FILEBAR_bg_rect.w = WINDOW_W;
-                    FILEBAR_bg_rect.h = TOPNAV_H;
+                if (showMenu)
+                    FILEBAR_bg_rect.x = MENU_W;
+                else
+                    FILEBAR_bg_rect.x = 0;
+                FILEBAR_bg_rect.y = TOPNAV_H;
+                FILEBAR_bg_rect.w = WINDOW_W;
+                FILEBAR_bg_rect.h = TOPNAV_H;
 
-                    // BG Rect
-                    bgRect.x = MENU_W;
-                    bgRect.w = (bgImageSurface->w + 0.0) / bgImageSurface->h * WINDOW_H;
-                    bgRect.h = WINDOW_H;
+                // BG Rect
+                bgRect.x = MENU_W;
+                bgRect.w = (bgImageSurface->w + 0.0) / bgImageSurface->h * WINDOW_H;
+                bgRect.h = WINDOW_H;
 
-                    // Full Screen Rect
-                    fullScreenRect.w = WINDOW_W;
-                    fullScreenRect.h = WINDOW_H;
+                // Full Screen Rect
+                fullScreenRect.w = WINDOW_W;
+                fullScreenRect.h = WINDOW_H;
 
-                    // TOPNAV_RIGHT BUTTONS
+                // TOPNAV_RIGHT BUTTONS
 
-                    int prevX = 0;
-                    for (int i = 0; i < (int)(sizeof(TOPNAV_RIGHT) / sizeof(TOPNAV_RIGHT[0])); i++)
-                        TOPNAV_RIGHT[0].rect.x = WINDOW_W - TOPNAV_RIGHT[0].rect.w - TOPNAV_H / 2 - (prevX++);
+                int prevX = 0;
+                for (int i = 0; i < (int)(sizeof(TOPNAV_RIGHT) / sizeof(TOPNAV_RIGHT[0])); i++)
+                    TOPNAV_RIGHT[0].rect.x = WINDOW_W - TOPNAV_RIGHT[0].rect.w - TOPNAV_H / 2 - (prevX++);
 
-                    // Explorer Menu
-                    Explorer.r1.x = 0;
-                    Explorer.r2.x = 0;
-                    Explorer.r3.x = 0;
-                    Explorer.r4.x = 0;
+                // Explorer Menu
+                Explorer.r1.x = 0;
+                Explorer.r2.x = 0;
+                Explorer.r3.x = 0;
+                Explorer.r4.x = 0;
 
-                    // Search Menu
-                    Search.r1.x = 0;
-                    Search.r2.x = 0;
-                    Search.r3.x = 0;
-                    Search.r4.x = 0;
+                // Search Menu
+                Search.r1.x = 0;
+                Search.r2.x = 0;
+                Search.r3.x = 0;
+                Search.r4.x = 0;
 
-                    // Github Menu
-                    Github.r1.x = 0;
-                    Github.r2.x = 0;
-                    Github.r3.x = 0;
-                    Github.r4.x = 0;
+                // Github Menu
+                Github.r1.x = 0;
+                Github.r2.x = 0;
+                Github.r3.x = 0;
+                Github.r4.x = 0;
 
-                    // Github Menu
-                    Footer.r1.x = 0;
-                    Footer.r2.x = 0;
-                    Footer.r3.x = 0;
-                    Footer.r4.x = 0;
-                }
+                // Github Menu
+                Footer.r1.x = 0;
+                Footer.r2.x = 0;
+                Footer.r3.x = 0;
+                Footer.r4.x = 0;
+                // }
             }
 
-            if (event.type == SDL_MOUSEBUTTONUP)
+            if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
             {
                 IS_MOUSE_DOWN = 0;
                 IS_SELECTING = 0;
             }
 
-            if (event.type == SDL_MOUSEMOTION)
+            if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
 
-                int x = event.motion.x;
-                int y = event.motion.y;
+                int x = (int)event.motion.x;
+                int y = (int)event.motion.y;
 
                 MOUSE_X = x;
                 MOUSE_Y = y;
@@ -435,7 +439,7 @@ int main()
                     {
                         TOPNAV_MENU_NODE *node = &TOPNAV_MENU[i];
 
-                        SDL_Rect r;
+                        SDL_FRect r;
                         r.x = node->rect.x - 7.9;
                         r.w = node->rect.w + 16.8;
                         r.y = node->rect.y;
@@ -459,7 +463,7 @@ int main()
                     {
                         MENU_BAR_NODE *node = &TOPNAV_RIGHT[i];
 
-                        SDL_Rect r;
+                        SDL_FRect r;
                         r.x = node->rect.x;
                         r.w = node->rect.w;
                         r.y = node->rect.y - 10;
@@ -483,7 +487,7 @@ int main()
                     {
                         MENU_BAR_NODE *node = &LEFT_MENU[i];
 
-                        SDL_Rect r;
+                        SDL_FRect r;
                         r.x = node->rect.x;
                         r.w = node->rect.w;
                         r.y = node->rect.y - 10;
@@ -578,7 +582,7 @@ int main()
                 }
             }
 
-            if (event.type == SDL_MOUSEWHEEL)
+            if (event.type == SDL_EVENT_MOUSE_WHEEL)
             {
                 if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
                 {
@@ -590,10 +594,10 @@ int main()
                 }
             }
 
-            if (event.type == SDL_KEYDOWN)
+            if (event.type == SDL_EVENT_KEY_DOWN)
             {
-                SDL_Keycode key = event.key.keysym.sym;
-                SDL_Keymod mod = event.key.keysym.mod;
+                SDL_Keycode key = event.key.key;
+                SDL_Keymod mod = event.key.mod;
 
                 if (currentActiveTag)
                 {
@@ -604,7 +608,7 @@ int main()
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
 
-                        getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
+                        showCompletion = 0;
                     }
 
                     if (key == SDLK_UP)
@@ -672,18 +676,24 @@ int main()
                     }
                     if (key == SDLK_RETURN)
                     {
-                        createNewline();
+                        if (showCompletion)
+                        {
+                            replaceWord(CompletionBox.active->text);
+                        }
+                        else
+                        {
+                            createNewline();
+                        }
 
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
-
                         showCompletion = 0;
                     }
 
-                    if ((mod & KMOD_CTRL) && key == SDLK_TAB)
+                    if ((mod & SDL_KMOD_CTRL) && key == SDLK_TAB)
                     {
-                        if (mod & KMOD_SHIFT)
+                        if (mod & SDL_KMOD_SHIFT)
                         {
                             if (currentActiveTag->prev)
                                 currentActiveTag = currentActiveTag->prev;
@@ -703,27 +713,37 @@ int main()
                     {
                         if (key == SDLK_TAB)
                         {
-                            insertString("    ");
+                            if (showCompletion)
+                            {
+                                replaceWord(CompletionBox.active->text);
+                            }
+                            else
+                            {
+                                insertString("    ");
+                            }
 
                             currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                             currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                             currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                            showCompletion = 0;
                         }
                     }
 
-                    if ((mod & KMOD_CTRL) && key == SDLK_s)
+                    if ((mod & SDL_KMOD_CTRL) && key == SDLK_S)
                     {
                         char *content = convertToText(currentActiveTag);
                         writeFile(currentActiveTag->path, content);
                     }
 
-                    if ((mod & KMOD_CTRL) && key == SDLK_v)
+                    if ((mod & SDL_KMOD_CTRL) && key == SDLK_V)
                     {
                         if (SDL_HasClipboardText())
                         {
                             char *s = SDL_GetClipboardText();
                             insertString(s);
                             free(s);
+                            // SDL_free(s) in SDL3 usually, but free() might work if aligned.
+                            // SDL3 recommends SDL_free.
 
                             currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                             currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
@@ -733,7 +753,7 @@ int main()
                 }
             }
 
-            if (event.type == SDL_TEXTINPUT)
+            if (event.type == SDL_EVENT_TEXT_INPUT)
             {
                 if (currentActiveTag)
                 {
@@ -773,7 +793,7 @@ int main()
 
         if (!FileBar)
         {
-            SDL_RenderCopy(renderer, bgImage, NULL, &bgRect);
+            SDL_RenderTexture(renderer, bgImage, NULL, &bgRect);
             // SDL_RenderFillRect(renderer, &bgRect);
         }
 
@@ -790,7 +810,7 @@ int main()
         {
             renderRightPanel();
         }
-        
+
         renderFooter();
         renderTopNavBarMenu();
 
@@ -799,7 +819,14 @@ int main()
 
         // Render Props
 
-        SDL_RenderCopyEx(renderer, prop1, NULL, &propRect1, propangle1, &propCenter1, SDL_FLIP_NONE);
+        SDL_RenderTextureRotated(
+            renderer,
+            prop1,
+            NULL,
+            &propRect1,
+            propangle1,
+            &propCenter1,
+            SDL_FLIP_NONE);
 
         // Update Props
         propRect1.y += 1;
@@ -815,8 +842,10 @@ int main()
         SDL_Delay(1000 / 60);
     }
 
-    SDL_FreeSurface(bgImageSurface);
+    SDL_DestroySurface(bgImageSurface);
     SDL_DestroyTexture(bgImage);
+
+    SDL_StopTextInput(window);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

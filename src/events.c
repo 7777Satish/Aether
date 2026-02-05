@@ -31,7 +31,8 @@ void handleMouseScroll(int x, int y)
         }
         else if (y < 0)
         {
-            if(currentActiveTag->visibleLine && currentActiveTag->visibleLine->next){
+            if (currentActiveTag->visibleLine && currentActiveTag->visibleLine->next)
+            {
                 currentActiveTag->EDITOR_SCROLL_Y -= dy * 2;
             }
         }
@@ -301,19 +302,24 @@ void leftDeleteChar()
                 {
                     temp = temp->next;
                 }
-                if(currentActiveTag->currentLine->prev->word->len){
-                    if(tempLine->word->len){
+                if (currentActiveTag->currentLine->prev->word->len)
+                {
+                    if (tempLine->word->len)
+                    {
                         temp->next = tempLine->word;
                         currentActiveTag->currentWord->prev = temp;
                     }
-                    else{
+                    else
+                    {
                         temp->next = NULL;
                         SDL_DestroyTexture(tempLine->word->t1);
                         free(tempLine->word);
                         currentActiveTag->currentWord = temp;
                         currentActiveTag->startIndex = temp->len;
                     }
-                } else {
+                }
+                else
+                {
                     tempLine->prev->word = currentActiveTag->currentLine->word;
                 }
             }
@@ -348,11 +354,13 @@ void leftDeleteChar()
         currentActiveTag->currentWord->len--;
         currentActiveTag->startIndex -= 1;
     }
-    SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, (SDL_Color){255, 255, 255, 255});
+    SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
     SDL_DestroyTexture(currentActiveTag->currentWord->t1);
     currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+    SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
-    SDL_FreeSurface(s1);
+
+    SDL_DestroySurface(s1);
 }
 
 void createNewline()
@@ -379,9 +387,11 @@ void createNewline()
         currentActiveTag->currentWord->len = currentActiveTag->startIndex;
 
         // Re-render old token
-        SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, (SDL_Color){255, 255, 255, 255});
+        SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
         currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_FreeSurface(s1);
+        SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+
+        SDL_DestroySurface(s1);
 
         // Insert new token after current
         newToken->next = currentActiveTag->currentWord->next;
@@ -449,7 +459,8 @@ void insertChar(char c)
         char str[1];
         str[0] = c;
         FileLine *line1 = parseText(str);
-        if(!currentActiveTag->currentLine) currentActiveTag->currentLine = line1;
+        if (!currentActiveTag->currentLine)
+            currentActiveTag->currentLine = line1;
         currentActiveTag->currentLine->word = line1->word;
         if (line1->word)
             currentActiveTag->startIndex = 0;
@@ -531,20 +542,23 @@ void insertChar(char c)
     // Render as plain text
     else
     {
-        SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, (SDL_Color){255, 255, 255, 255});
+        SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
         currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_FreeSurface(s1);
-    }
+        SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
+        SDL_DestroySurface(s1);
+    }
 }
 
-void insertString(char* s)
+void insertString(const char *str)
 {
     if (!currentActiveTag || !currentActiveTag->currentLine)
         return;
-    
-    if(strlen(s) == 0) return;
 
+    if (strlen(str) == 0)
+        return;
+    char* s = malloc(strlen(str) + 1);
+    strcpy(s, str);
     IS_SELECTING = 0;
 
     if (!currentActiveTag->currentWord)
@@ -565,7 +579,7 @@ void insertString(char* s)
 
     currentActiveTag->currentWord->len = size + size2;
 
-    char* tempStr = malloc(size + size2 + 1);
+    char *tempStr = malloc(size + size2 + 1);
     tempStr[0] = '\0';
     strncat(tempStr, currentActiveTag->currentWord->content, currentActiveTag->startIndex);
     strcat(tempStr, s);
@@ -581,43 +595,45 @@ void insertString(char* s)
     if (line1)
     {
         Token *old = currentActiveTag->currentWord;
-        if(line1->word){
+        if (line1->word)
+        {
             if (old->prev)
                 old->prev->next = line1->word;
             else
                 currentActiveTag->currentLine->word = line1->word;
-    
+
             line1->word->prev = old->prev;
         }
 
-        int startInd = 0;
         int len = 0;
 
-        
-        FileLine* line = line1;
+        FileLine *line = line1;
         while (line->next)
         {
             line = line->next;
         }
 
-        line->next =  currentActiveTag->currentLine->next;
-        if(line->next) line->next->prev = line;
+        line->next = currentActiveTag->currentLine->next;
+        if (line->next)
+            line->next->prev = line;
         currentActiveTag->currentLine->next = line1->next;
-        
-        Token* word = line->word;
+
+        Token *word = line->word;
         while (word->next)
         {
             word = word->next;
         }
-        
 
         word->next = currentActiveTag->currentWord->next;
-        if(currentActiveTag->currentWord->next) currentActiveTag->currentWord->next->prev = word;
+        if (currentActiveTag->currentWord->next)
+            currentActiveTag->currentWord->next->prev = word;
         currentActiveTag->currentWord = word;
         currentActiveTag->startIndex = word->len - offRight;
 
-        if(currentActiveTag->startIndex<0) currentActiveTag->startIndex = 0;
-        if(currentActiveTag->startIndex>currentActiveTag->currentWord->len) currentActiveTag->currentWord->len;
+        if (currentActiveTag->startIndex < 0)
+            currentActiveTag->startIndex = 0;
+        if (currentActiveTag->startIndex > currentActiveTag->currentWord->len)
+            currentActiveTag->currentWord->len;
 
         free(old->content);
         SDL_DestroyTexture(old->t1);
@@ -626,9 +642,56 @@ void insertString(char* s)
     // Render as plain text
     else
     {
-        SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, (SDL_Color){255, 255, 255, 255});
+        SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
         currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_FreeSurface(s1);
+        SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+
+        SDL_DestroySurface(s1);
     }
 }
 
+void replaceWord(char *s)
+{
+    if (!(currentActiveTag && currentActiveTag->currentLine && currentActiveTag->currentWord))
+    {
+        return;
+    }
+    int len = (int)strlen(s);
+    if (len)
+    {
+        currentActiveTag->currentWord->content = s;
+        currentActiveTag->currentWord->len = len;
+        currentActiveTag->startIndex = len;
+
+        // Convert edited text to tokens
+        FileLine *line1 = parseText(currentActiveTag->currentWord->content);
+
+        if (line1)
+        {
+            Token *old = currentActiveTag->currentWord;
+            if (line1->word)
+            {
+                if (old->prev)
+                    old->prev->next = line1->word;
+                else
+                    currentActiveTag->currentLine->word = line1->word;
+
+                line1->word->prev = old->prev;
+            }
+            
+            currentActiveTag->currentWord = line1->word;
+
+            SDL_DestroyTexture(old->t1);
+            free(old);
+        }
+        // Render as plain text
+        else
+        {
+            SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
+            currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+            SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+
+            SDL_DestroySurface(s1);
+        }
+    }
+}

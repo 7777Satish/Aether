@@ -265,7 +265,7 @@ freeResource(resource);
 // Texture lifecycle
 SDL_Surface* surface = createSurface();
 SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-SDL_FreeSurface(surface);  // Free surface immediately
+SDL_DestroySurface(surface);  // Free surface immediately
 // ... use texture ...
 SDL_DestroyTexture(texture);  // Free texture when done
 ```

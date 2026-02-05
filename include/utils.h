@@ -27,8 +27,8 @@ typedef struct FileNode
     FileType type;
     int isDirOpened;
     SDL_Texture *t1;
-    SDL_Rect r1;
-    SDL_Rect r2;
+    SDL_FRect r1;
+    SDL_FRect r2;
     struct FileNode *next;
     struct FileNode *child;
     struct FileNode *prev;
@@ -45,8 +45,8 @@ typedef struct FileBarItem{
     int active;
     SDL_Texture *t1;
     SDL_Texture *t2;
-    SDL_Rect r1;
-    SDL_Rect r2;
+    SDL_FRect r1;
+    SDL_FRect r2;
     FileType type;
     FileLine *lines;
     int EDITOR_SCROLL_X;

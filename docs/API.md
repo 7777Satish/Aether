@@ -23,7 +23,7 @@ typedef struct FileNode {
     int type;                // 0 = file, 1 = directory
     int opened;              // Whether file is currently open
     int isDirOpened;         // Whether directory is expanded
-    SDL_Rect r1;            // Rectangle for rendering
+    SDL_FRect r1;            // Rectangle for rendering
     struct FileNode* next;   // Next sibling
     struct FileNode* prev;   // Previous sibling
     struct FileNode* child;  // First child (for directories)
@@ -53,8 +53,8 @@ typedef struct MENU_BAR_NODE {
     SDL_Texture* icon;       // Inactive icon texture
     SDL_Texture* icon_active; // Active icon texture
     SDL_Surface* surface;    // Text surface
-    SDL_Rect rect;           // Position and size
-    SDL_Rect icon_rect;      // Icon position and size
+    SDL_FRect rect;           // Position and size
+    SDL_FRect icon_rect;      // Icon position and size
 } MENU_BAR_NODE;
 ```
 
@@ -68,7 +68,7 @@ typedef struct TOPNAV_MENU_NODE {
     int active;              // Whether menu is active
     int clicked;             // Whether menu is clicked
     SDL_Surface* surface;    // Text surface
-    SDL_Rect rect;           // Position and size
+    SDL_FRect rect;           // Position and size
 } TOPNAV_MENU_NODE;
 ```
 

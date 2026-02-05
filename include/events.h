@@ -14,7 +14,8 @@ void moveCursorLeft();
 void moveCursorRight();
 void leftDeleteChar();
 void insertChar(char c);
-void insertString(char* s);
+void insertString(const char* s);
+void replaceWord(char* s);
 void createNewline();
 
 #endif

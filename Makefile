@@ -14,8 +14,8 @@ OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 TARGET = $(BUILD_DIR)/main
 
 # Compiler flags
-CFLAGS = -I$(INC_DIR) -Wall -Wextra -g `sdl2-config --cflags`
-LDFLAGS = `sdl2-config --libs` -lSDL2_image -lSDL2_ttf -lm
+CFLAGS = -I$(INC_DIR) -Wall -Wextra -g `pkg-config --cflags sdl3 sdl3-image sdl3-ttf`
+LDFLAGS = `pkg-config --libs sdl3 sdl3-image sdl3-ttf` -lm
 
 # Default target
 all: $(TARGET)

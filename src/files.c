@@ -138,9 +138,9 @@ void initExplorer(){
             fprintf(stderr, "Error: poppins_regular font not loaded\n");
             continue;
         }
-        SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
+        SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, node->name, strlen(node->name), color);
         if (!s1) {
-            fprintf(stderr, "Error creating text surface for %s: %s\n", node->name, TTF_GetError());
+            fprintf(stderr, "Error creating text surface for %s: %s\n", node->name, SDL_GetError());
             continue;
         }
         
@@ -150,7 +150,7 @@ void initExplorer(){
         node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h*i + MENU_PAD_Y/2*i;
         node->r1.h = s1->h;
 
-        SDL_FreeSurface(s1);
+        SDL_DestroySurface(s1);
         
         i+=1;
         Folder = node;
@@ -167,9 +167,9 @@ void initExplorer(){
         fprintf(stderr, "Error: poppins_regular font not loaded\n");
         return;
     }
-    SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, parent->name, color);
+    SDL_Surface* s1 = TTF_RenderText_Blended(poppins_regular, parent->name, strlen(parent->name), color);
     if (!s1) {
-        fprintf(stderr, "Error creating text surface for parent: %s\n", TTF_GetError());
+        fprintf(stderr, "Error creating text surface for parent: %s\n", SDL_GetError());
         return;
     }
 
@@ -178,7 +178,7 @@ void initExplorer(){
     parent->r1.y = LEFT_MENU[0].rect.y + MENU_BAR_H - MENU_PAD_Y;
     parent->r1.h = s1->h;
 
-    SDL_FreeSurface(s1);
+    SDL_DestroySurface(s1);
 
     closedir(dir);
 }

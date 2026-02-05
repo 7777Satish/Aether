@@ -235,9 +235,11 @@ Token *createToken(char *word, int custom, SDL_Color color)
             clr = (SDL_Color){220, 220, 240, 255}; // Pale hologram glow (neutral text)
     }
 
-    SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, word, clr);
+    SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, word, strlen(word), clr);
     t->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-    SDL_FreeSurface(s1);
+    SDL_SetTextureScaleMode(t->t1, SDL_SCALEMODE_NEAREST);
+
+    SDL_DestroySurface(s1);
     t->color = clr;
     t->next = NULL;
     t->prev = NULL;

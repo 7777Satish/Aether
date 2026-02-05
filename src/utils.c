@@ -135,10 +135,11 @@ void addFileBarNode(char *name, char *path)
     if (!node->t1)
     {
         SDL_Color color = {239, 239, 239, 255};
-        SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, color);
+        SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, strlen(node->name), color);
         TotalFileBarLength += s1->w + 40;
         node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_FreeSurface(s1);
+        SDL_SetTextureScaleMode(node->t1, SDL_SCALEMODE_NEAREST);
+        SDL_DestroySurface(s1);
     }
 
     if (!FileBar)

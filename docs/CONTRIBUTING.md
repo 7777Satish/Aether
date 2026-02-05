@@ -215,7 +215,7 @@ void function_prototype(void);
       fprintf(stderr, "Surface creation failed: %s\n", SDL_GetError());
       return;
   }
-  SDL_FreeSurface(surface);
+  SDL_DestroySurface(surface);
   ```
 
 ### Error Handling
