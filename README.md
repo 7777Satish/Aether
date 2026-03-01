@@ -1,6 +1,6 @@
 # Aether
 
-A modern, lightweight code editor built from scratch in C using SDL2. This project provides a fast, efficient, and customizable text editing experience with a graphical user interface.
+A modern, lightweight code editor built from scratch in C using SDL3. This project provides a fast, efficient, and customizable text editing experience with a graphical user interface.
 
 ## Table of Contents
 - [Features](#features)
@@ -17,7 +17,7 @@ A modern, lightweight code editor built from scratch in C using SDL2. This proje
 
 ## Features
 
-- **Modern GUI**: Clean, responsive interface built with SDL2
+- **Modern GUI**: Clean, responsive interface built with SDL3
 - **File Explorer**: Built-in file browser with folder navigation
 - **Syntax Highlighting**: Support for multiple programming languages
 - **Multi-tab Interface**: Work with multiple files simultaneously
@@ -41,7 +41,7 @@ A modern, lightweight code editor built from scratch in C using SDL2. This proje
 
 The editor follows a modular architecture with clear separation of concerns:
 
-- **Renderer Module**: Handles all SDL2 graphics operations
+- **Renderer Module**: Handles all SDL3 graphics operations
 - **Events Module**: Manages user input and event handling
 - **Files Module**: File I/O operations and folder management
 - **Parser Module**: Text parsing and syntax highlighting
@@ -50,14 +50,14 @@ The editor follows a modular architecture with clear separation of concerns:
 ## Requirements
 
 ### Runtime Dependencies
-- SDL2 (>= 2.0.0)
-- SDL2_image
-- SDL2_ttf
-- GTK3 (for file dialogs)
+- SDL3
+- SDL3_image
+- SDL3_ttf
+- GTK3 (for file dialogs, if used)
 
 ### Build Dependencies
 - GCC or Clang compiler
-- Make
+- CMake (>= 3.16)
 - pkg-config
 
 ### Fonts Included
@@ -69,23 +69,26 @@ The editor follows a modular architecture with clear separation of concerns:
 
 ### Ubuntu/Debian
 ```bash
+# Note: SDL3 packages might not be in the default repositories yet.
+# You may need to compile SDL3 from source.
 sudo apt update
-sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libgtk-3-dev build-essential
+sudo apt install build-essential cmake pkg-config
 ```
 
 ### Fedora/RHEL
 ```bash
-sudo dnf install SDL2-devel SDL2_image-devel SDL2_ttf-devel gtk3-devel gcc make
+sudo dnf install cmake gcc make
 ```
 
 ### Arch Linux
 ```bash
-sudo pacman -S sdl2 sdl2_image sdl2_ttf gtk3 gcc make
+# SDL3 is available in AUR or some repos
+sudo pacman -S cmake gcc make
 ```
 
 ### macOS
 ```bash
-brew install sdl2 sdl2_image sdl2_ttf gtk+3
+brew install cmake sdl3 sdl3_image sdl3_ttf
 ```
 
 ## Building from Source
@@ -96,33 +99,44 @@ brew install sdl2 sdl2_image sdl2_ttf gtk+3
    cd Aether
    ```
 
-2. **Build the project**:
+2. **Create build directory**:
+   ```bash
+   mkdir build
+   cd build
+   ```
+
+3. **Configure the project**:
+   ```bash
+   cmake ..
+   ```
+
+4. **Build the project**:
    ```bash
    make
    ```
 
-3. **Run the editor**:
+5. **Run the editor**:
    ```bash
-   ./build/main
+   ./editor
    ```
 
 ### Build Options
-- `make clean`: Remove build artifacts
-- `make debug`: Build with debug symbols
-- `make install`: Install to system (requires root)
+- `cmake -DCMAKE_BUILD_TYPE=Debug ..`: Build with debug symbols
+- `make clean`: Remove build artifacts (or just delete build folder)
+- `sudo make install`: Install to system (if configured in CMake)
 
 ## Usage
 
 ### Starting the Editor
 ```bash
 # Start with empty workspace
-./build/main
+./build/editor
 
 # Open a specific file
-./build/main filename.c
+./build/editor filename.c
 
 # Open a project folder
-./build/main /path/to/project
+./build/editor /path/to/project
 ```
 
 ### Key Features

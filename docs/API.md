@@ -1,6 +1,6 @@
 # API Documentation
 
-This document provides detailed information about the Aether API, including functions, structures, and their usage.
+This document provides detailed information about the Aether (CodeEditor) API, including functions, structures, and their usage.
 
 ## Table of Contents
 
@@ -10,413 +10,199 @@ This document provides detailed information about the Aether API, including func
 - [Events Module](#events-module)
 - [Parser Module](#parser-module)
 - [Utils Module](#utils-module)
+- [Completion Module](#completion-module)
 
 ## Core Structures
 
 ### FileNode
-Represents a file or directory in the file explorer.
+Represents a file or directory in the explorer. Defined in `utils.h`.
 
 ```c
 typedef struct FileNode {
-    char* name;              // File/directory name
-    char* path;              // Full path
-    int type;                // 0 = file, 1 = directory
-    int opened;              // Whether file is currently open
-    int isDirOpened;         // Whether directory is expanded
-    SDL_FRect r1;            // Rectangle for rendering
-    struct FileNode* next;   // Next sibling
-    struct FileNode* prev;   // Previous sibling
-    struct FileNode* child;  // First child (for directories)
+    char *name;             // Name of file/directory
+    char *path;             // Full path
+    int isDir;              // 1 if directory, 0 if file
+    int active;             // Selection state
+    int hovered;            // Hover state
+    int opened;             // Open state
+    FileType type;          // File type enum
+    int isDirOpened;        // Directory expansion state
+    SDL_Texture *t1;        // Name texture
+    SDL_FRect r1;           // Main rectangle
+    SDL_FRect r2;           // Secondary rectangle
+    struct FileNode *next;  // Sibling
+    struct FileNode *child; // First child
+    struct FileNode *prev;  // Sibling
 } FileNode;
 ```
 
-### Cursor
-Represents the text cursor in the editor.
+### FileLine
+Represents a line of text in the editor. Defined in `parser.h`.
 
 ```c
-typedef struct Cursor {
-    int w;                   // Width of cursor
-    int h;                   // Height of cursor
-} Cursor;
+typedef struct FileLine {
+    Token* word;            // Linked list of tokens
+    SDL_Texture *t1;        // Cached texture (if used)
+    struct FileLine *next;  // Next line
+    struct FileLine *prev;  // Previous line
+} FileLine;
 ```
 
-### MENU_BAR_NODE
-Represents a menu item in the left sidebar.
+### Token
+Represents a syntax token. Defined in `parser.h`.
 
 ```c
-typedef struct MENU_BAR_NODE {
-    char* title;             // Menu title
-    char* icon_path;         // Path to inactive icon
-    char* icon_path_active;  // Path to active icon
-    int active;              // Whether menu is active
-    int clicked;             // Whether menu is clicked
-    SDL_Texture* icon;       // Inactive icon texture
-    SDL_Texture* icon_active; // Active icon texture
-    SDL_Surface* surface;    // Text surface
-    SDL_FRect rect;           // Position and size
-    SDL_FRect icon_rect;      // Icon position and size
-} MENU_BAR_NODE;
+typedef struct Token {
+    char* content;          // Token text
+    SDL_Texture* t1;        // Rendered texture
+    TokenType type;         // Token type enum
+    SDL_Color color;        // Syntax color
+    struct Token* next;     // Next token
+    struct Token* prev;     // Previous token
+    int len;                // Length
+} Token;
 ```
 
 ### TOPNAV_MENU_NODE
-Represents a top navigation menu item.
+Represents a top navigation menu item. Defined in `renderer.h`.
 
 ```c
-typedef struct TOPNAV_MENU_NODE {
-    char* title;             // Menu title
-    char* items[5];          // Menu items array
-    int active;              // Whether menu is active
-    int clicked;             // Whether menu is clicked
-    SDL_Surface* surface;    // Text surface
-    SDL_FRect rect;           // Position and size
+typedef struct {
+    char name[10];          // Menu name
+    char list[10][20];      // Dropdown items
+    int isActive;           // Active state
+    int clicked;            // Clicked state
+    SDL_Texture *texture;   // Rendered texture
+    SDL_FRect rect;         // Position and size
 } TOPNAV_MENU_NODE;
 ```
 
 ## Renderer Module
 
-### Global Variables
+This module handles graphics using SDL3.
 
-```c
-extern SDL_Window* window;           // Main window
-extern SDL_Renderer* renderer;       // SDL renderer
-extern TTF_Font* poppins_regular;    // Regular Poppins font
-extern TTF_Font* poppins_bold;       // Bold Poppins font
-extern TTF_Font* jetbrains_regular;  // JetBrains Mono font
-extern TTF_Font* font2;              // Montserrat font
-extern Cursor* cursor;               // Text cursor
-```
-
-### Constants
-
-```c
-#define WINDOW_W 1200            // Window width
-#define WINDOW_H 800             // Window height
-#define MENU_W 250               // Left menu width
-#define TOPNAV_H 30              // Top navigation height
-#define FOOTER_H 25              // Footer height
-#define MINIMAP_W 150            // Minimap width
-```
+### Constants & Globals
+Defined in `renderer.h` and `renderer.c`.
+- `WINDOW_W`, `WINDOW_H`: Default window dimensions.
+- `TOPNAV_H`: Height of top navigation bar.
+- `MENU_W`: Width of sidebar.
 
 ### Functions
 
-#### `void init()`
-Initializes SDL2, creates window and renderer, loads fonts and assets.
-
-**Usage:**
-```c
-init(); // Call once at program start
-```
-
-**Details:**
-- Initializes SDL2 video, TTF, and image subsystems
-- Creates main window and renderer
-- Loads all required fonts with error checking
-- Sets up cursor and logo textures
-- Configures menu positions and layouts
-
-#### `void render()`
-Main rendering function that draws all UI elements.
-
-**Usage:**
-```c
-render(); // Call every frame in main loop
-```
-
-**Details:**
-- Clears the screen
-- Renders background, menus, file explorer
-- Draws text editor content and cursor
-- Handles syntax highlighting
-- Updates minimap and status bar
-
-#### `void renderText(char* text, int x, int y, SDL_Color color, TTF_Font* font)`
-Renders text at specified position with given color and font.
-
-**Parameters:**
-- `text`: String to render
-- `x`: X coordinate
-- `y`: Y coordinate  
-- `color`: Text color (SDL_Color)
-- `font`: Font to use
-
-**Usage:**
-```c
-SDL_Color white = {255, 255, 255, 255};
-renderText("Hello World", 100, 100, white, poppins_regular);
-```
-
-#### `void renderFileExplorer()`
-Renders the file explorer panel with folder tree.
-
-**Usage:**
-```c
-renderFileExplorer(); // Called automatically by render()
-```
+*Note: Most rendering logic is internal to `renderer.c` or embedded in `main.c` loop.*
 
 ## Files Module
 
-### Global Variables
-
-```c
-extern char selected_folder[1024];   // Currently selected folder path
-extern FileNode* Folder;             // Root folder node
-```
+Defined in `files.h`.
 
 ### Functions
 
-#### `char* open_folder_dialog()`
-Opens a system folder selection dialog using Zenity.
-
-**Returns:** Path to selected folder or NULL if cancelled
-
-**Usage:**
-```c
-char* folder_path = open_folder_dialog();
-if (folder_path) {
-    printf("Selected: %s\n", folder_path);
-}
-```
-
-#### `void* open_folder_thread(void* arg)`
-Thread function for opening folder dialog without blocking UI.
-
-**Parameters:**
-- `arg`: Thread argument (unused)
-
-**Returns:** NULL
-
-**Usage:**
-```c
-pthread_t folder_thread;
-pthread_create(&folder_thread, NULL, open_folder_thread, NULL);
-pthread_detach(folder_thread);
-```
-
 #### `void initExplorer()`
-Initializes the file explorer by reading the selected folder.
-
-**Usage:**
-```c
-initExplorer(); // Called after folder selection
-```
-
-**Details:**
-- Scans selected folder for files and directories
-- Creates FileNode structure for each item
-- Sets up rendering rectangles
-- Handles file type detection
+Initializes the file explorer, scanning the selected directory.
 
 #### `void clearExplorer()`
-Clears the current file explorer and frees memory.
-
-**Usage:**
-```c
-clearExplorer(); // Call before loading new folder
-```
+Frees memory used by the file explorer nodes.
 
 #### `char* readFile(char* path)`
-Reads entire file content into memory.
+Reads the content of a file into a string.
+- **path**: Absolute path to file.
+- **Returns**: Malloc'd string containing file content (caller must free).
 
-**Parameters:**
-- `path`: File path to read
+#### `void writeFile(const char* path, const char* content)`
+Writes content to a file.
+- **path**: Absolute path.
+- **content**: String content to write.
 
-**Returns:** File content as string or NULL on error
+#### `char* open_folder_dialog()`
+Opens a native folder selection dialog (using Zenity or other tools).
+- **Returns**: Path to selected folder.
 
-**Usage:**
-```c
-char* content = readFile("/path/to/file.txt");
-if (content) {
-    // Use content
-    free(content); // Remember to free
-}
-```
-
-#### `FileNode* createFileNode(char* name, char* path, int type)`
-Creates a new FileNode structure.
-
-**Parameters:**
-- `name`: File/directory name
-- `path`: Full path
-- `type`: 0 for file, 1 for directory
-
-**Returns:** Pointer to new FileNode
-
-**Usage:**
-```c
-FileNode* node = createFileNode("example.c", "/full/path/example.c", 0);
-```
+#### `void* open_folder_thread()`
+Thread function to handle folder opening asynchronously.
 
 ## Events Module
 
+Defined in `events.h`. Handles cursor movement and text modification.
+
 ### Functions
 
-#### `void handleEvents(SDL_Event* event)`
-Main event handler for all user input.
+#### `void handleMouseScroll(int x, int y)`
+Handles mouse wheel scrolling.
+- **x**: Horizontal scroll amount.
+- **y**: Vertical scroll amount.
 
-**Parameters:**
-- `event`: SDL event structure
+#### `void moveCursorUp()`
+Moves the text cursor up one line.
 
-**Usage:**
-```c
-SDL_Event event;
-while (SDL_PollEvent(&event)) {
-    handleEvents(&event);
-}
-```
+#### `void moveCursorDown()`
+Moves the text cursor down one line.
 
-#### `void handleMouseClick(int x, int y)`
-Handles mouse click events at specified coordinates.
+#### `void moveCursorLeft()`
+Moves the text cursor left one character.
 
-**Parameters:**
-- `x`: Mouse X coordinate
-- `y`: Mouse Y coordinate
+#### `void moveCursorRight()`
+Moves the text cursor right one character.
 
-**Usage:**
-```c
-handleMouseClick(event.button.x, event.button.y);
-```
+#### `void leftDeleteChar()`
+Deletes the character before the cursor (Backspace).
 
-#### `void handleKeyPress(SDL_Keycode key)`
-Handles keyboard input events.
+#### `void insertChar(char c)`
+Inserts a single character at the cursor position.
 
-**Parameters:**
-- `key`: SDL keycode
+#### `void insertString(const char* s)`
+Inserts a string at the cursor position.
 
-**Usage:**
-```c
-handleKeyPress(event.key.keysym.sym);
-```
+#### `void replaceWord(char* s)`
+Replaces the current word/selection with string `s` (used for completion).
 
-#### `void handleExplorerItemsClick(FileNode** folder, int x, int y)`
-Handles clicks on file explorer items.
-
-**Parameters:**
-- `folder`: Pointer to folder node
-- `x`: Mouse X coordinate
-- `y`: Mouse Y coordinate
-
-**Usage:**
-```c
-handleExplorerItemsClick(&Folder, mouse_x, mouse_y);
-```
+#### `void createNewline()`
+Inserts a newline character and splits the current line (Enter).
 
 ## Parser Module
 
-### Functions
+Defined in `parser.h`.
 
-#### `void parseFile(char* content, char* filename)`
-Parses file content for syntax highlighting.
+### Enums
 
-**Parameters:**
-- `content`: File content string
-- `filename`: Name of file (for type detection)
-
-**Usage:**
-```c
-char* content = readFile("example.c");
-parseFile(content, "example.c");
-```
-
-#### `int getFileType(char* filename)`
-Determines file type based on extension.
-
-**Parameters:**
-- `filename`: Name of file
-
-**Returns:** File type constant
-
-**Usage:**
-```c
-int type = getFileType("example.c"); // Returns C_FILE type
-```
-
-#### `void highlightSyntax(char* line, int line_number)`
-Applies syntax highlighting to a line of text.
-
-**Parameters:**
-- `line`: Line of text to highlight
-- `line_number`: Line number in file
-
-**Usage:**
-```c
-highlightSyntax("int main() {", 1);
-```
+#### `TokenType`
+- `TOKEN_UNKNOWN`
+- `TOKEN_IDENTIFIER`
+- `TOKEN_KEYWORD`
+- `TOKEN_TYPE`
+- ... (see header for full list)
 
 ## Utils Module
 
+Defined in `utils.h`.
+
+### Enums
+
+#### `FileType`
+- `AETHER_CLANG`
+- `AETHER_CHEADER`
+- `AETHER_HTML`
+- ...
+
+## Completion Module
+
+Defined in `completion.h`.
+
+### Structures
+
+#### `CompletionListItem`
+```c
+typedef struct CompletionListItem {
+    char* text;
+    SDL_Texture* t1;
+    struct CompletionListItem* next;
+    struct CompletionListItem* prev;
+} CompletionListItem;
+```
+
 ### Functions
 
-#### `char* getFileExtension(char* filename)`
-Extracts file extension from filename.
-
-**Parameters:**
-- `filename`: Name of file
-
-**Returns:** Pointer to extension string
-
-**Usage:**
-```c
-char* ext = getFileExtension("example.c"); // Returns "c"
-```
-
-#### `void trimWhitespace(char* str)`
-Removes leading and trailing whitespace from string.
-
-**Parameters:**
-- `str`: String to trim (modified in place)
-
-**Usage:**
-```c
-char text[] = "  hello world  ";
-trimWhitespace(text); // text becomes "hello world"
-```
-
-#### `int isWhitespace(char c)`
-Checks if character is whitespace.
-
-**Parameters:**
-- `c`: Character to check
-
-**Returns:** 1 if whitespace, 0 otherwise
-
-**Usage:**
-```c
-if (isWhitespace(' ')) {
-    // Handle whitespace
-}
-```
-
-#### `void copyString(char* dest, const char* src, int max_len)`
-Safely copies string with length limit.
-
-**Parameters:**
-- `dest`: Destination buffer
-- `src`: Source string
-- `max_len`: Maximum characters to copy
-
-**Usage:**
-```c
-char buffer[100];
-copyString(buffer, "Hello World", sizeof(buffer));
-```
-
-## Error Handling
-
-All functions include proper error handling:
-
-- Font loading functions exit with error messages if fonts cannot be loaded
-- File operations return NULL on failure with error logging
-- Surface creation is checked for NULL before use
-- Memory allocation is verified before proceeding
-
-## Thread Safety
-
-- File operations use pthread for non-blocking UI
-- Shared variables should be protected with mutexes in multi-threaded contexts
-- SDL operations should be performed on the main thread
-
-## Memory Management
-
-- All dynamically allocated memory must be freed
-- SDL surfaces and textures are properly cleaned up
-- FileNode structures use linked lists with proper cleanup functions
+#### `int getCompletion(char* word, int n)`
+Populates the completion list based on input word.
+- **word**: The word prefix to match.
+- **n**: Max number of suggestions (?).
+- **Returns**: Number of matches found.

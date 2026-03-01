@@ -17,7 +17,7 @@ This document describes the overall architecture, design patterns, and module re
 
 ## Overview
 
-Aether follows a modular, layered architecture designed for maintainability, performance, and extensibility. The system is built around SDL2 for cross-platform graphics and uses a component-based approach for UI elements.
+Aether follows a modular, layered architecture designed for maintainability, performance, and extensibility. The system is built around SDL3 for cross-platform graphics and uses a component-based approach for UI elements.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -27,7 +27,7 @@ Aether follows a modular, layered architecture designed for maintainability, per
 ├─────────────────────────────────────────────────────────────┤
 │     Renderer    │    Events    │    Files    │   Parser     │
 ├─────────────────────────────────────────────────────────────┤
-│                    Platform Layer (SDL2)                    │
+│                    Platform Layer (SDL3)                    │
 ├─────────────────────────────────────────────────────────────┤
 │                    Operating System                         │
 └─────────────────────────────────────────────────────────────┘
@@ -70,7 +70,7 @@ Critical paths are optimized for real-time rendering and responsive user interac
 #### Renderer Module (`renderer.c/h`)
 - **Role**: Graphics rendering and UI management
 - **Responsibilities**:
-  - SDL2 rendering operations
+  - SDL3 rendering operations
   - UI component rendering
   - Font management
   - Texture management
@@ -122,9 +122,9 @@ main.c
 └── utils.h    (Utilities)
 
 renderer.h
-├── SDL2
-├── SDL2_ttf
-├── SDL2_image
+├── SDL3
+├── SDL3_ttf
+├── SDL3_image
 └── utils.h
 
 files.h
@@ -136,7 +136,7 @@ files.h
 events.h
 ├── renderer.h (for UI state)
 ├── files.h    (for file operations)
-└── SDL2       (for event handling)
+└── SDL3       (for event handling)
 
 parser.h
 ├── renderer.h (for syntax highlighting)

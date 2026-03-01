@@ -29,10 +29,11 @@ This project adheres to a code of conduct that we expect all contributors to fol
 Before contributing, ensure you have:
 
 - C compiler (GCC 7+ or Clang 6+)
-- SDL2 development libraries
+- SDL3 development libraries
+- CMake (version 3.16 or later)
 - Git for version control
 - Basic knowledge of C programming
-- Familiarity with SDL2 (helpful but not required)
+- Familiarity with SDL3 (helpful but not required)
 
 ### First Time Setup
 
@@ -48,6 +49,12 @@ Before contributing, ensure you have:
    ```
 4. **Install dependencies** (see [BUILD.md](BUILD.md))
 5. **Build the project**:
+   ```bash
+   mkdir build
+   cd build
+   cmake ..
+   make
+   ```
    ```bash
    make
    ```

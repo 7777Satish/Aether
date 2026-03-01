@@ -1,297 +1,159 @@
 # Build Documentation
 
-This document describes the build system, dependencies, and compilation process for Aether.
+This document describes the build system, dependencies, and compilation process for Aether (CodeEditor).
 
 ## Build System Overview
 
-Aether uses a traditional Makefile-based build system. The build process compiles C source files into object files and links them with required libraries.
+Aether uses CMake as its build system. The build process configures the project, finds dependencies, compiles C source files into object files, and links them with required libraries.
 
-## Makefile Structure
+## CMake Structure
 
-```makefile
-# Compiler and flags
-CC = gcc
-CFLAGS = -Iinclude -Wall -Wextra -g `sdl2-config --cflags`
-LDFLAGS = `sdl2-config --libs` -lSDL2_image -lSDL2_ttf
+The project root contains a `CMakeLists.txt` file which defines the build process:
 
-# Directories
-SRCDIR = src
-INCDIR = include
-BUILDDIR = build
+```cmake
+cmake_minimum_required(VERSION 3.16)
 
-# Source files
-SOURCES = $(wildcard $(SRCDIR)/*.c)
-OBJECTS = $(SOURCES:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
-TARGET = $(BUILDDIR)/main
+project(CodeEditor C)
 
-# Build targets
-all: $(TARGET)
-clean: 
-	rm -rf $(BUILDDIR)/*
-install: $(TARGET)
-	cp $(TARGET) /usr/local/bin/codeeditor
+# Use modern C
+set(CMAKE_C_STANDARD 11)
+
+# Find SDL3 packages installed via pkg-config
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(SDL3 REQUIRED sdl3)
+pkg_check_modules(SDL3_IMAGE REQUIRED sdl3-image)
+pkg_check_modules(SDL3_TTF REQUIRED sdl3-ttf)
+
+# Include directories
+include_directories(
+    include
+    ${SDL3_INCLUDE_DIRS}
+    ${SDL3_IMAGE_INCLUDE_DIRS}
+    ${SDL3_TTF_INCLUDE_DIRS}
+)
+
+# Collect source files
+file(GLOB SRC_FILES src/*.c)
+
+# Create executable
+add_executable(editor ${SRC_FILES})
+
+# Link libraries
+target_link_libraries(editor
+    ${SDL3_LIBRARIES}
+    ${SDL3_IMAGE_LIBRARIES}
+    ${SDL3_TTF_LIBRARIES}
+    m
+)
 ```
 
 ## Dependencies
 
 ### Required Libraries
 
-#### SDL2 (Simple DirectMedia Layer)
+#### SDL3 (Simple DirectMedia Layer)
 - **Purpose**: Graphics rendering, window management, event handling
-- **Version**: 2.0.0 or later
-- **Ubuntu/Debian**: `libsdl2-dev`
-- **Fedora/RHEL**: `SDL2-devel`
-- **Arch**: `sdl2`
-- **macOS**: `brew install sdl2`
+- **Version**: 3.0.0 or later
+- **Installation**: Use package manager or build from source (see below).
 
-#### SDL2_image
+#### SDL3_image
 - **Purpose**: Image loading (PNG, JPG support)
-- **Ubuntu/Debian**: `libsdl2-image-dev`
-- **Fedora/RHEL**: `SDL2_image-devel`
-- **Arch**: `sdl2_image`
-- **macOS**: `brew install sdl2_image`
+- **Extension**: A separate library that works with SDL3.
 
-#### SDL2_ttf
-- **Purpose**: TrueType font rendering
-- **Ubuntu/Debian**: `libsdl2-ttf-dev`
-- **Fedora/RHEL**: `SDL2_ttf-devel`
-- **Arch**: `sdl2_ttf`
-- **macOS**: `brew install sdl2_ttf`
-
-#### GTK3
-- **Purpose**: Native file dialogs
-- **Ubuntu/Debian**: `libgtk-3-dev`
-- **Fedora/RHEL**: `gtk3-devel`
-- **Arch**: `gtk3`
-- **macOS**: `brew install gtk+3`
-
-#### pthread
-- **Purpose**: Threading support for non-blocking file operations
-- **Note**: Usually included with system libc
+#### SDL3_ttf
+- **Purpose**: TrueType font rendering.
+- **Extension**: A separate library that works with SDL3.
 
 ### Build Tools
+- **CMake**: Cross-platform build system generator.
+- **Make** (or generic build tool like Ninja): To run the generated build files.
+- **GCC/Clang/MSVC**: C compiler supporting C11 standard.
+- **pkg-config**: Helper tool used to find installed libraries.
 
-#### GCC or Clang
-- **Purpose**: C compiler
-- **Ubuntu/Debian**: `gcc` or `clang`
-- **Fedora/RHEL**: `gcc` or `clang`
-- **Arch**: `gcc` or `clang`
-- **macOS**: Xcode command line tools
-
-#### Make
-- **Purpose**: Build automation
-- **Ubuntu/Debian**: `make`
-- **Fedora/RHEL**: `make`
-- **Arch**: `make`
-- **macOS**: Included with Xcode tools
-
-#### pkg-config
-- **Purpose**: Library configuration management
-- **Ubuntu/Debian**: `pkg-config`
-- **Fedora/RHEL**: `pkgconfig`
-- **Arch**: `pkgconf`
-- **macOS**: `brew install pkg-config`
-
-## Compilation Process
-
-### Step 1: Object File Generation
-Each C source file is compiled to an object file:
-```bash
-gcc -Iinclude -Wall -Wextra -g `sdl2-config --cflags` -c src/main.c -o build/main.o
-gcc -Iinclude -Wall -Wextra -g `sdl2-config --cflags` -c src/renderer.c -o build/renderer.o
-# ... and so on for each source file
-```
-
-### Step 2: Linking
-All object files are linked together with libraries:
-```bash
-gcc build/*.o -o build/main `sdl2-config --libs` -lSDL2_image -lSDL2_ttf
-```
-
-## Build Targets
-
-### `make` or `make all`
-Builds the complete project:
-```bash
-make
-```
-- Creates build directory if it doesn't exist
-- Compiles all source files to object files
-- Links object files to create executable
-- Places executable at `build/main`
-
-### `make clean`
-Removes all build artifacts:
-```bash
-make clean
-```
-- Deletes all object files
-- Removes executable
-- Keeps source files and assets
-
-### `make debug`
-Builds with additional debug information:
-```bash
-make debug
-```
-- Includes debug symbols (-g flag)
-- Disables optimizations
-- Enables additional warnings
-
-### `make install`
-Installs the editor system-wide:
-```bash
-sudo make install
-```
-- Copies executable to `/usr/local/bin/`
-- Creates desktop entry
-- Sets up file associations
-
-### `make uninstall`
-Removes system-wide installation:
-```bash
-sudo make uninstall
-```
-
-## Cross-Platform Build Notes
+## Building Instructions
 
 ### Linux
-- Standard build process works on all major distributions
-- May need to install development packages (`-dev` or `-devel`)
-- Some distributions require `libpthread` explicitly
+
+1.  **Install CMake & Build Tools**:
+    ```bash
+    sudo apt update
+    sudo apt install build-essential cmake pkg-config
+    ```
+
+2.  **Install SDL3 Dependencies**:
+    Since SDL3 is relatively new, it might not be in all distribution repositories yet. Check your package manager or build from source.
+
+    *Example (if available via package manager):*
+    ```bash
+    sudo apt install libsdl3-dev libsdl3-image-dev libsdl3-ttf-dev
+    ```
+
+    *Building SDL3 from source (recommended if not in repos):*
+    Clone the SDL3 repository, create a build directory, run cmake, and install. Repeat for SDL3_image and SDL3_ttf.
+
+3.  **Build Project**:
+    ```bash
+    mkdir build
+    cd build
+    cmake ..
+    make
+    ```
+
+4.  **Run**:
+    ```bash
+    ./editor
+    ```
+
+### Windows
+
+1.  Ensure you have a C compiler installed (MinGW or Visual Studio).
+2.  Install CMake.
+3.  Download the SDL3 development libraries for Windows (VC or MinGW versions).
+4.  Configure the project using CMake GUI or CLI, pointing `CMAKE_PREFIX_PATH` to your SDL3 installation if necessary.
+5.  Open the generated project (e.g., Visual Studio Solution) and build.
 
 ### macOS
-- Requires Xcode command line tools
-- Use Homebrew for dependency management
-- May need to set `CPATH` and `LIBRARY_PATH` environment variables
 
-### Windows (MinGW/MSYS2)
-- Use MSYS2 for Unix-like build environment
-- Install dependencies via pacman:
-  ```bash
-  pacman -S mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_ttf
-  ```
-- May need to adjust Makefile for Windows paths
+1.  Install dependencies via Homebrew:
+    ```bash
+    brew install cmake sdl3 sdl3_image sdl3_ttf
+    ```
+2.  Build:
+    ```bash
+    mkdir build
+    cd build
+    cmake ..
+    make
+    ```
 
-## Environment Variables
+## Build Optimization and Types
 
-### SDL2_CONFIG
-Path to sdl2-config script:
+### Release Build
+To build for performance (optimized):
 ```bash
-export SDL2_CONFIG=/usr/local/bin/sdl2-config
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
 ```
 
-### CC
-Specify different compiler:
+### Debug Build
+To build for debugging (symbols enabled):
 ```bash
-CC=clang make
-```
-
-### CFLAGS
-Additional compiler flags:
-```bash
-CFLAGS="-O3 -DNDEBUG" make
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+make
 ```
 
 ## Troubleshooting
 
-### Common Build Errors
+### "Could not find PkgConfig"
+Ensure `pkg-config` is installed.
 
-#### "SDL.h: No such file or directory"
-- **Cause**: SDL2 development headers not installed
-- **Solution**: Install `libsdl2-dev` package
+### "Could not find ... (missing: ...)"
+CMake couldn't locate the SDL3 libraries.
+- Ensure they are installed.
+- On Windows, ensure `CMAKE_PREFIX_PATH` includes the path to SDL3.
+- On Linux, ensure `.pc` files are in `PKG_CONFIG_PATH`.
 
-#### "undefined reference to SDL_Init"
-- **Cause**: SDL2 library not linked properly
-- **Solution**: Check `sdl2-config --libs` output
+### Permission issues
+If `make install` fails, run with `sudo`.
 
-#### "zenity: command not found"
-- **Cause**: Zenity not installed (for file dialogs)
-- **Solution**: Install zenity package or modify file dialog code
-
-#### "make: command not found"
-- **Cause**: Make not installed
-- **Solution**: Install build-essential package
-
-#### Permission denied errors
-- **Cause**: No write permission to build directory
-- **Solution**: Ensure proper directory permissions
-
-### Debug Build
-For debugging, compile with additional flags:
-```bash
-CFLAGS="-g -O0 -DDEBUG" make
-```
-
-### Performance Build
-For optimized release build:
-```bash
-CFLAGS="-O3 -DNDEBUG" make
-```
-
-## Build Optimization
-
-### Parallel Builds
-Use multiple CPU cores:
-```bash
-make -j$(nproc)
-```
-
-### Link-Time Optimization (LTO)
-Enable LTO for better performance:
-```bash
-CFLAGS="-flto" LDFLAGS="-flto" make
-```
-
-### Static Linking
-Create self-contained executable:
-```bash
-LDFLAGS="-static" make
-```
-Note: May require static versions of libraries
-
-## Continuous Integration
-
-### GitHub Actions Example
-```yaml
-name: Build
-on: [push, pull_request]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libgtk-3-dev
-    - name: Build
-      run: make
-    - name: Test
-      run: ./build/main --version
-```
-
-## Advanced Build Configuration
-
-### Custom Install Prefix
-```bash
-PREFIX=/opt/codeeditor make install
-```
-
-### Separate Debug and Release Builds
-```bash
-# Debug build
-make BUILD_TYPE=debug
-
-# Release build  
-make BUILD_TYPE=release
-```
-
-### Cross-Compilation
-```bash
-# For ARM64
-CC=aarch64-linux-gnu-gcc make
-
-# For Windows (from Linux)
-CC=x86_64-w64-mingw32-gcc make
-```
