@@ -1,4 +1,5 @@
 #include "completion.h"
+#include "renderer.h"
 
 int showCompletion = 1;
 
@@ -216,7 +217,7 @@ int getCompletion(char *word, int n)
 {
     if(n==0){
         showCompletion = 0;
-        return;
+        return 0;
     };
     int i = 0;
 

@@ -20,8 +20,6 @@
 
 // Function prototypes
 void renderFile();
-char *open_folder_dialog();
-void *open_folder_thread();
 
 // ======== GLOBAL STATE VARIABLES ========
 
@@ -137,11 +135,9 @@ int main()
                     // Open Folder button in Exploror
                     if (!IS_TOPNAV_MENU_DOWN && !Folder && menu_state == 0 && Explorer.t3 && x > Explorer.r3.x && x < Explorer.r3.x + Explorer.r3.w && y > Explorer.r3.y && y < Explorer.r3.y + Explorer.r3.h)
                     {
-                        printf("Opening folder dialog...\n");
-                        printf("%d\n", IS_TOPNAV_MENU_DOWN);
-                        pthread_t folder_thread;
-                        pthread_create(&folder_thread, NULL, open_folder_thread, NULL);
-                        pthread_detach(folder_thread); // optional: auto-clean thread
+                        // printf("Opening folder dialog...\n");
+                        // printf("%d\n", IS_TOPNAV_MENU_DOWN);
+                        open_folder_dialog();
                     }
 
                     // Files and Folders in Exploror

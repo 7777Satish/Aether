@@ -170,7 +170,7 @@ int WINDOW_FONT_SIZE = 0;
 
 // Initialising Right Panel
 int RIGHTPANEL_W = 400;
-int RIGHTPANEL_X = 1400 - 400;
+int RIGHTPANEL_X = 1400;
 
 SDL_Color white = {255, 255, 255, 255};
 
@@ -290,8 +290,8 @@ void init()
     cursor = (Cursor *)malloc(sizeof(Cursor));
     cursor->w = space->w;
     cursor->h = space->h;
-    cursor->x = NULL;
-    cursor->y = NULL;
+    cursor->x = -1;
+    cursor->y = -1;
     EDITOR_FONT_HEIGHT = space->h;
     SDL_DestroySurface(space);
 
@@ -372,6 +372,8 @@ void init()
     for (int i = 0; i < (int)(sizeof(TOPNAV_RIGHT) / sizeof(TOPNAV_RIGHT[0])); i++)
     {
         MENU_BAR_NODE *node = &TOPNAV_RIGHT[i];
+        node->clicked = 0;
+        node->isActive = 0;
         SDL_Color color = {155, 155, 155, 255};
 
         SDL_Surface *node_surface = IMG_Load(node->icon);
@@ -422,7 +424,7 @@ void init()
         SDL_DestroySurface(node_surface);
     }
 
-    RIGHTPANEL_X = WINDOW_W - RIGHTPANEL_W;
+    RIGHTPANEL_X = WINDOW_W;
 
     // Menu Bar Buttons
     prevX = 0;
@@ -1080,7 +1082,7 @@ void renderSuggestionBox()
     if (!currentActiveTag || !currentActiveTag->currentWord || !currentActiveTag->active)
         return;
 
-    if (showCompletion && cursor && cursor->x && cursor->y)
+    if (showCompletion && cursor && cursor->x != -1 && cursor->y != -1)
     {
         CompletionListItem *node = CompletionBox.list;
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
@@ -1261,58 +1263,7 @@ void renderFolder(FileNode **folder, int *i, int padX)
         if (!(*folder)->isDirOpened)
         {
 
-            DIR *dir = opendir((*folder)->path);
-            if (!dir)
-            {
-                perror("opendir");
-                return;
-            }
-
-            struct dirent *entry;
-            char fullpath[2048];
-            struct stat st;
-
-            FileNode *head = NULL;
-            while ((entry = readdir(dir)) != NULL)
-            {
-                if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-                    continue;
-                // printf("%s,", entry->d_name);
-                int type = 0;
-                snprintf(fullpath, sizeof(fullpath), "%s/%s", (*folder)->path, entry->d_name);
-
-                if (stat(fullpath, &st) == 0)
-                {
-                    if (S_ISDIR(st.st_mode))
-                    {
-                        type = 1;
-                    }
-                    else if (S_ISREG(st.st_mode))
-                    {
-                        type = 0;
-                    }
-                    else
-                    {
-                        type = 0;
-                    }
-                }
-                else
-                {
-                    perror("stat");
-                }
-
-                FileNode *node = createFileNode(entry->d_name, fullpath, type);
-
-                node->opened = 0;
-                node->next = head;
-                if (head)
-                    head->prev = node;
-
-                head = node;
-            }
-
-            (*folder)->child = head;
-            (*folder)->isDirOpened = 1;
+            populateFolder(*folder);
         }
         else
         {

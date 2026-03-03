@@ -39,30 +39,32 @@ void handleMouseScroll(int x, int y)
 
         if (x > 0)
         {
-            currentActiveTag->EDITOR_SCROLL_X -= dx;
+            currentActiveTag->EDITOR_SCROLL_X += dx;
+
+            if (currentActiveTag->EDITOR_SCROLL_X > 0)
+                currentActiveTag->EDITOR_SCROLL_X = 0;
             // if(currentActiveTag->EDITOR_SCROLL_X<-TotalFileBarLength + WINDOW_W-MENU_BAR_W-MENU_W) currentActiveTag->EDITOR_SCROLL_X=-TotalFileBarLength + WINDOW_W-MENU_BAR_W-MENU_W;
         }
         else if (x < 0)
         {
-            currentActiveTag->EDITOR_SCROLL_X += dx;
-            if (currentActiveTag->EDITOR_SCROLL_X > 0)
-                currentActiveTag->EDITOR_SCROLL_X = 0;
+            currentActiveTag->EDITOR_SCROLL_X -= dx;
         }
+        
     }
     else if (currentActiveTag != NULL && MOUSE_X > MENU_W && MOUSE_Y > TOPNAV_H && MOUSE_Y < TOPNAV_H * 2)
     {
 
         if (x > 0)
         {
-            FILEMENU_SCROLL_X -= dx;
-            if (FILEMENU_SCROLL_X < -TotalFileBarLength + WINDOW_W - MENU_W)
-                FILEMENU_SCROLL_X = -TotalFileBarLength + WINDOW_W - MENU_W;
-        }
-        else if (x < 0)
-        {
             FILEMENU_SCROLL_X += dx;
             if (FILEMENU_SCROLL_X > 0)
                 FILEMENU_SCROLL_X = 0;
+        }
+        else if (x < 0)
+        {
+            FILEMENU_SCROLL_X -= dx;
+            if (FILEMENU_SCROLL_X < -TotalFileBarLength + WINDOW_W - MENU_W)
+                FILEMENU_SCROLL_X = -TotalFileBarLength + WINDOW_W - MENU_W;
         }
     }
 }

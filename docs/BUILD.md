@@ -44,8 +44,13 @@ target_link_libraries(editor
     ${SDL3_LIBRARIES}
     ${SDL3_IMAGE_LIBRARIES}
     ${SDL3_TTF_LIBRARIES}
-    m
 )
+
+if(WIN32)
+    # Windows doesn't need explicit linking to math library
+else()
+    target_link_libraries(editor m)
+endif()
 ```
 
 ## Dependencies

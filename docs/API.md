@@ -113,12 +113,9 @@ Writes content to a file.
 - **path**: Absolute path.
 - **content**: String content to write.
 
-#### `char* open_folder_dialog()`
-Opens a native folder selection dialog (using Zenity or other tools).
-- **Returns**: Path to selected folder.
-
-#### `void* open_folder_thread()`
-Thread function to handle folder opening asynchronously.
+#### `void open_folder_dialog()`
+Opens a native folder selection dialog managed by the SDL3 library.
+- **Returns**: void (Async callback)
 
 ## Events Module
 

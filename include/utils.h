@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "renderer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include "parser.h"
 
 typedef enum {
@@ -72,7 +74,7 @@ extern int TotalFileBarLength;
 // Forward declarations
 char* readFile(char* path);
 
-FileNode *createFileNode(char *name, char *path, int isDir);
+FileNode *createFileNode(const char *name, char *path, int isDir);
 FileBarItem *createFileBarNode(char *name, char *path);
 
 void inActiveAllFileNodes();

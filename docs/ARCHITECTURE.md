@@ -130,8 +130,7 @@ renderer.h
 files.h
 ├── renderer.h (for UI elements)
 ├── utils.h    (for string operations)
-├── pthread    (for threading)
-└── dirent.h   (for directory operations)
+└── SDL3       (for directory operations)
 
 events.h
 ├── renderer.h (for UI state)

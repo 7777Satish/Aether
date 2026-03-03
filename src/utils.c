@@ -4,9 +4,9 @@ FileBarItem *FileBar = NULL;
 FileBarItem *currentActiveTag = NULL;
 int TotalFileBarLength = 0;
 
-FileType getFileType(char *filename)
+FileType getFileType(const char *filename)
 {
-    char *lastDot = NULL;
+    const char *lastDot = NULL;
     while (*filename)
     {
         if (*filename == '.')
@@ -35,7 +35,7 @@ FileType getFileType(char *filename)
     return AETHER_TXT;
 }
 
-FileNode *createFileNode(char *name, char *path, int isDir)
+FileNode *createFileNode(const char *name, char *path, int isDir)
 {
     FileNode *node = (FileNode *)malloc(sizeof(FileNode));
     node->name = strdup(name);
@@ -278,7 +278,7 @@ void removeTab(FileBarItem* tab){
 
 char* convertToText(FileBarItem *tab)
 {
-    if(!tab) return;
+    if(!tab) return NULL;
 
     int size = 1;
     char *content = malloc(size);
@@ -316,7 +316,7 @@ char* convertToText(FileBarItem *tab)
 
 char* getSelection(FileBarItem *tab){
 
-    if(!tab) return;
+    if(!tab) return NULL;
 
     int size = 1;
     char *content = malloc(size);

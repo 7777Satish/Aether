@@ -53,7 +53,6 @@ The editor follows a modular architecture with clear separation of concerns:
 - SDL3
 - SDL3_image
 - SDL3_ttf
-- GTK3 (for file dialogs, if used)
 
 ### Build Dependencies
 - GCC or Clang compiler
