@@ -180,6 +180,10 @@ TTF_Font *poppins_bold = NULL;
 TTF_Font *font2 = NULL;
 TTF_Font *jetbrains_regular = NULL;
 
+SDL_Texture *DIGIT_TEXTURES[10] = {NULL};
+int DIGIT_W = 0;
+int DIGIT_H = 0;
+
 // Creating Top Nav and Left Menu
 SDL_FRect TOPNAV_bg_rect = {};
 SDL_FRect MENUBAR_bg_rect = {};
@@ -216,51 +220,51 @@ int FILEMENU_SCROLL_X = 0;
 void init()
 {
     // ======== SDL2 INITIALIZATION ========
-
-    // Initialize SDL2 video subsystem
     SDL_Init(SDL_INIT_VIDEO);
-    // Initialize TrueType font rendering subsystem
     TTF_Init();
 
-    // Enable high-quality scaling for textures
-    SDL_SetRenderLogicalPresentation(
-        renderer,
+    /* Create window FIRST */
+    window = SDL_CreateWindow(
+        "Aether",
         WINDOW_W,
         WINDOW_H,
-        SDL_LOGICAL_PRESENTATION_DISABLED
-    );
+        SDL_WINDOW_RESIZABLE);
 
-    // SDL_SetRenderScaleMode(renderer, SDL_SCALEMODE_NEAREST);
-
-    // SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
-    SDL_SetRenderVSync(renderer, 1); // optional smoothness
-    // SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
-
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND); // This is called after renderer creation
-
-    // Create main application window
-    window = SDL_CreateWindow("Aether", WINDOW_W, WINDOW_H, SDL_WINDOW_RESIZABLE);
-    SDL_StartTextInput(window);
-
-    // Set hit test callback for borderless window (drag and resize)
-    // SDL_SetWindowHitTest(window, HitTestCallback, NULL);
-
-    // Create hardware-accelerated renderer
+    /* Create renderer SECOND */
     renderer = SDL_CreateRenderer(window, NULL);
-
+    if (!renderer)
+    {
+        printf("Renderer error: %s\n", SDL_GetError());
+        return;
+    }
+    
+    /* Now configure renderer */
+    SDL_SetRenderVSync(renderer, 1); // keep this OFF for editor
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+    // SDL_SetRenderLogicalPresentation(
+    //     renderer,
+    //     WINDOW_W,
+    //     WINDOW_H,
+    //     SDL_LOGICAL_PRESENTATION_DISABLED);
+
+    SDL_StartTextInput(window);
 
     EDITOR_FONT_SIZE = TOP_NAV_LOGO_H / 1.5;
     // EDITOR_FONT_SIZE = TOP_NAV_LOGO_H / 1.5;
     WINDOW_FONT_SIZE = TOP_NAV_LOGO_H / 1.7;
 
-    /* ===== Initialising Fonts ===== */
+    printf("Renderer: %s\n", SDL_GetRendererName(renderer));
+
     poppins_regular = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", WINDOW_FONT_SIZE);
     if (!poppins_regular)
     {
         fprintf(stderr, "Failed to load Poppins-Regular.ttf: %s\n", SDL_GetError());
         exit(1);
     }
+    
+    // Initialize completion textures with the loaded font and current renderer
+    initCompletion(renderer, poppins_regular);
 
     poppins_bold = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", WINDOW_FONT_SIZE);
     if (!poppins_bold)
@@ -283,6 +287,22 @@ void init()
         exit(1);
     }
 
+    /* ===== Digit Cache Initialization ===== */
+    for (int i = 0; i < 10; i++)
+    {
+        char digit[2];
+        sprintf(digit, "%d", i);
+        SDL_Surface *surface = TTF_RenderText_Blended(jetbrains_regular, digit, 1, (SDL_Color){155, 155, 155, 255});
+        if (surface) {
+            DIGIT_TEXTURES[i] = SDL_CreateTextureFromSurface(renderer, surface);
+            if (i == 0) {
+                DIGIT_W = surface->w;
+                DIGIT_H = surface->h;
+            }
+            SDL_DestroySurface(surface);
+        }
+    }
+
     /* ===== Initialising Cursor ===== */
 
     SDL_Surface *space = TTF_RenderText_Blended(jetbrains_regular, " ", 1, (SDL_Color){0, 0, 0, 255});
@@ -299,7 +319,7 @@ void init()
 
     logoSurface2 = IMG_Load("assets/logo_grayscale.png");
     logoTexture2 = SDL_CreateTextureFromSurface(renderer, logoSurface2);
-    SDL_SetTextureScaleMode(logoTexture2, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(logoTexture2, SDL_SCALEMODE_NEAREST);
 
     SDL_DestroySurface(logoSurface2);
     SDL_GetTextureSize(logoTexture2, &logo2AW, &logo2AH);
@@ -315,7 +335,7 @@ void init()
     /* NavBar Logo Start */
     logoSurface = IMG_Load("assets/logo.png");
     logoTexture = SDL_CreateTextureFromSurface(renderer, logoSurface);
-    SDL_SetTextureScaleMode(logoTexture, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(logoTexture, SDL_SCALEMODE_NEAREST);
 
     int logoAW = logoSurface->w, logoAH = logoSurface->h;
     SDL_DestroySurface(logoSurface);
@@ -344,9 +364,9 @@ void init()
         }
 
         node->texture = SDL_CreateTextureFromSurface(renderer, node_surface);
-        SDL_SetTextureScaleMode(node->texture, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(node->texture, SDL_SCALEMODE_NEAREST);
 
-        SDL_SetTextureScaleMode(node->texture, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(node->texture, SDL_SCALEMODE_NEAREST);
 
         if (!node->texture)
         {
@@ -386,13 +406,13 @@ void init()
         }
 
         node->texture = SDL_CreateTextureFromSurface(renderer, node_surface);
-        SDL_SetTextureScaleMode(node->texture, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(node->texture, SDL_SCALEMODE_NEAREST);
 
         node->active_texture = SDL_CreateTextureFromSurface(renderer, node_active_surface);
-        SDL_SetTextureScaleMode(node->active_texture, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(node->active_texture, SDL_SCALEMODE_NEAREST);
 
         node->text_texture = SDL_CreateTextureFromSurface(renderer, node_text_surface);
-        SDL_SetTextureScaleMode(node->text_texture, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(node->text_texture, SDL_SCALEMODE_NEAREST);
 
         if (!node->texture || !node->active_texture || !node->text_texture)
         {
@@ -443,13 +463,13 @@ void init()
         }
 
         node->texture = SDL_CreateTextureFromSurface(renderer, node_surface);
-        SDL_SetTextureScaleMode(node->texture, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(node->texture, SDL_SCALEMODE_NEAREST);
 
         node->active_texture = SDL_CreateTextureFromSurface(renderer, node_active_surface);
-        SDL_SetTextureScaleMode(node->active_texture, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(node->active_texture, SDL_SCALEMODE_NEAREST);
 
         node->text_texture = SDL_CreateTextureFromSurface(renderer, node_text_surface);
-        SDL_SetTextureScaleMode(node->text_texture, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(node->text_texture, SDL_SCALEMODE_NEAREST);
 
         if (!node->texture || !node->active_texture || !node->text_texture)
         {
@@ -484,7 +504,7 @@ void init()
     // Initializing FileIcons
     SDL_Surface *fi_s1 = IMG_Load("assets/file_icon2.png");
     FileIcons.t1 = SDL_CreateTextureFromSurface(renderer, fi_s1);
-    SDL_SetTextureScaleMode(FileIcons.t1, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(FileIcons.t1, SDL_SCALEMODE_NEAREST);
 
     FileIcons.r1.w = fi_s1->w;
     FileIcons.r1.h = fi_s1->h;
@@ -492,42 +512,42 @@ void init()
 
     SDL_Surface *fi_s2 = IMG_Load("assets/chevron_right.png");
     FileIcons.t2 = SDL_CreateTextureFromSurface(renderer, fi_s2);
-    SDL_SetTextureScaleMode(FileIcons.t2, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(FileIcons.t2, SDL_SCALEMODE_NEAREST);
     FileIcons.r2.w = fi_s2->w;
     FileIcons.r2.h = fi_s2->h;
     SDL_DestroySurface(fi_s2);
 
     SDL_Surface *fi_s3 = IMG_Load("assets/chevron_down.png");
     FileIcons.t3 = SDL_CreateTextureFromSurface(renderer, fi_s3);
-    SDL_SetTextureScaleMode(FileIcons.t3, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(FileIcons.t3, SDL_SCALEMODE_NEAREST);
     FileIcons.r3.w = fi_s3->w;
     FileIcons.r3.h = fi_s3->h;
     SDL_DestroySurface(fi_s3);
 
     SDL_Surface *fi_s4 = IMG_Load("assets/file_icons/icon_clang.png");
     FileIcons.t4 = SDL_CreateTextureFromSurface(renderer, fi_s4);
-    SDL_SetTextureScaleMode(FileIcons.t4, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(FileIcons.t4, SDL_SCALEMODE_NEAREST);
     FileIcons.r4.w = fi_s4->w;
     FileIcons.r4.h = fi_s4->h;
     SDL_DestroySurface(fi_s4);
 
     SDL_Surface *fi_s5 = IMG_Load("assets/file_icons/icon_html.png");
     FileIcons.t5 = SDL_CreateTextureFromSurface(renderer, fi_s5);
-    SDL_SetTextureScaleMode(FileIcons.t5, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(FileIcons.t5, SDL_SCALEMODE_NEAREST);
     FileIcons.r5.w = fi_s5->w;
     FileIcons.r5.h = fi_s5->h;
     SDL_DestroySurface(fi_s5);
 
     SDL_Surface *fi2_s1 = IMG_Load("assets/file_icons/icon_css.png");
     FileIcons2.t1 = SDL_CreateTextureFromSurface(renderer, fi2_s1);
-    SDL_SetTextureScaleMode(FileIcons2.t1, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(FileIcons2.t1, SDL_SCALEMODE_NEAREST);
     FileIcons2.r1.w = fi2_s1->w;
     FileIcons2.r1.h = fi2_s1->h;
     SDL_DestroySurface(fi2_s1);
 
     SDL_Surface *fi2_s2 = IMG_Load("assets/file_icons/icon_img.png");
     FileIcons2.t2 = SDL_CreateTextureFromSurface(renderer, fi2_s2);
-    SDL_SetTextureScaleMode(FileIcons2.t2, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(FileIcons2.t2, SDL_SCALEMODE_NEAREST);
     FileIcons2.r2.w = fi2_s2->w;
     FileIcons2.r2.h = fi2_s2->h;
     SDL_DestroySurface(fi2_s2);
@@ -635,7 +655,7 @@ void renderTopNavBarMenu()
 
                 SDL_Surface *s1 = TTF_RenderText_Blended(font2, item, strlen(item), (SDL_Color){180, 180, 180, 255});
                 SDL_Texture *t1 = SDL_CreateTextureFromSurface(renderer, s1);
-                SDL_SetTextureScaleMode(t1, SDL_SCALEMODE_NEAREST);
+                // SDL_SetTextureScaleMode(t1, SDL_SCALEMODE_NEAREST);
 
                 r.x = r.x + 10;
                 r.y = r.y + 5;
@@ -750,38 +770,45 @@ void renderFileBar()
 
     while (node != NULL)
     {
-        SDL_Color color = {239, 239, 239, 255};
-        SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, strlen(node->name), color);
+        float w, h;
         if (!node->t1)
         {
-            node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-            SDL_SetTextureScaleMode(node->t1, SDL_SCALEMODE_NEAREST);
+             SDL_Color color = {239, 239, 239, 255};
+             SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, strlen(node->name), color);
+             if (s1) {
+                 node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+                 // SDL_SetTextureScaleMode(node->t1, SDL_SCALEMODE_NEAREST);
+                 SDL_DestroySurface(s1);
+             }
         }
 
-        node->r1.x = x + FILEMENU_SCROLL_X;
-        node->r1.y = FILEBAR_bg_rect.y;
-        node->r1.w = s1->w + 40;
-        node->r1.h = FILEBAR_bg_rect.h;
+        if (node->t1) {
+             SDL_GetTextureSize(node->t1, &w, &h);
 
-        node->r2.x = x + node->r1.w / 2 - s1->w / 2 + FILEMENU_SCROLL_X;
-        node->r2.y = FILEBAR_bg_rect.y + FILEBAR_bg_rect.h / 2 - s1->h / 2;
-        node->r2.w = s1->w;
-        node->r2.h = s1->h;
+            node->r1.x = x + FILEMENU_SCROLL_X;
+            node->r1.y = FILEBAR_bg_rect.y;
+            node->r1.w = w + 40;
+            node->r1.h = FILEBAR_bg_rect.h;
 
-        x += node->r1.w;
+            node->r2.x = x + node->r1.w / 2 - w / 2 + FILEMENU_SCROLL_X;
+            node->r2.y = FILEBAR_bg_rect.y + FILEBAR_bg_rect.h / 2 - h / 2;
+            node->r2.w = w;
+            node->r2.h = h;
 
-        if (node == currentActiveTag)
-        {
-            SDL_SetRenderDrawColor(renderer, 66, 66, 66, 100);
-            SDL_RenderFillRect(renderer, &node->r1);
+            x += node->r1.w;
+
+            if (node == currentActiveTag)
+            {
+                SDL_SetRenderDrawColor(renderer, 66, 66, 66, 100);
+                SDL_RenderFillRect(renderer, &node->r1);
+            }
+
+            SDL_SetRenderDrawColor(renderer, 56, 56, 56, 100);
+            SDL_RenderLine(renderer, node->r1.x + node->r1.w, FILEBAR_bg_rect.y, node->r1.x + node->r1.w, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h);
+
+            SDL_RenderTexture(renderer, node->t1, NULL, &node->r2);
         }
 
-        SDL_SetRenderDrawColor(renderer, 56, 56, 56, 100);
-        SDL_RenderLine(renderer, node->r1.x + node->r1.w, FILEBAR_bg_rect.y, node->r1.x + node->r1.w, FILEBAR_bg_rect.y + FILEBAR_bg_rect.h);
-
-        SDL_RenderTexture(renderer, node->t1, NULL, &node->r2);
-
-        SDL_DestroySurface(s1);
         node = node->next;
         i += 1;
     }
@@ -806,7 +833,7 @@ void renderTextEditor()
             if (s1)
             {
                 node->t2 = SDL_CreateTextureFromSurface(renderer, s1);
-                SDL_SetTextureScaleMode(node->t2, SDL_SCALEMODE_NEAREST);
+                // SDL_SetTextureScaleMode(node->t2, SDL_SCALEMODE_NEAREST);
                 SDL_DestroySurface(s1);
             }
         }
@@ -970,28 +997,32 @@ void renderTextEditor()
         /*===== Draw Line Number =====*/
         char text[12];
         sprintf(text, "%d", y + 1);
-        SDL_Surface *lineNoSurface = TTF_RenderText_Blended(jetbrains_regular, text, strlen(text), (SDL_Color){155, 155, 155, 255});
-        SDL_Texture *lineNoTexture = SDL_CreateTextureFromSurface(renderer, lineNoSurface);
-        SDL_SetTextureScaleMode(lineNoTexture, SDL_SCALEMODE_NEAREST);
-
-        SDL_FRect lineNoRect = {
-            FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH / 2 - lineNoSurface->w / 2,
-            FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * lineNoSurface->h,
-            lineNoSurface->w,
-            lineNoSurface->h};
+        int len = strlen(text);
+        int startX = FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH / 2 - (len * DIGIT_W) / 2;
+        int startY = FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT;
 
         SDL_FRect lineNoBgRect = {
             MENU_W,
-            FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * lineNoSurface->h,
+            startY,
             LINE_NUMBER_WIDTH,
-            lineNoSurface->h};
+            EDITOR_FONT_HEIGHT};
 
         SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);
         SDL_RenderFillRect(renderer, &lineNoBgRect);
-        SDL_RenderTexture(renderer, lineNoTexture, NULL, &lineNoRect);
 
-        SDL_DestroySurface(lineNoSurface);
-        SDL_DestroyTexture(lineNoTexture);
+        for (int k = 0; k < len; k++)
+        {
+            int digit = text[k] - '0';
+            if (digit >= 0 && digit <= 9 && DIGIT_TEXTURES[digit])
+            {
+                SDL_FRect digitRect = {
+                    startX + k * DIGIT_W,
+                    startY,
+                    DIGIT_W,
+                    DIGIT_H};
+                SDL_RenderTexture(renderer, DIGIT_TEXTURES[digit], NULL, &digitRect);
+            }
+        }
 
         y++;
         line = line->next;
@@ -1002,45 +1033,96 @@ void renderTextEditor()
     {
         if (TOPNAV_RIGHT[0].clicked)
             minimapBgRect.x = RIGHTPANEL_X - minimapBgRect.w;
-        SDL_SetRenderDrawColor(renderer, 17, 17, 17, 250);
-        SDL_RenderFillRect(renderer, &minimapBgRect);
 
-        line = node->lines;
-        y = 0;
-        int highlightStartY = 0;
-        while (line)
+        // Count lines for texture height
+        int totalLines = 0;
+        FileLine *tempLine = node->lines;
+        while (tempLine)
         {
-            if (line == currentActiveTag->visibleLine)
+            totalLines++;
+            tempLine = tempLine->next;
+        }
+
+        int textureH = totalLines * 2;
+        if (textureH > 8192) textureH = 8192; // Limit max height
+        if (textureH < 2) textureH = 2;
+
+        if (currentActiveTag->minimapDirty || !currentActiveTag->minimapTexture)
+        {
+            if (currentActiveTag->minimapTexture)
             {
-                highlightStartY = FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + y * 2;
-            }
-            Token *wrd = line->word;
-            int i = 0;
-            while (wrd)
-            {
-                if (strcmp(wrd->content, " ") == 0)
-                {
-                    i++;
-                    wrd = wrd->next;
-                    continue;
-                }
-                SDL_FRect minimapRect = {
-                    minimapBgRect.x + 4 + i * 1,
-                    FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + y * 2,
-                    (int)strlen(wrd->content) * 1,
-                    1.5};
-                if (wrd->color.r >= 200 && wrd->color.g >= 200 && wrd->color.b >= 200)
-                    SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255);
-                else
-                    SDL_SetRenderDrawColor(renderer, wrd->color.r, wrd->color.g, wrd->color.b, wrd->color.a);
-                SDL_RenderFillRect(renderer, &minimapRect);
-                i += (int)strlen(wrd->content);
-                wrd = wrd->next;
+                SDL_DestroyTexture(currentActiveTag->minimapTexture);
+                currentActiveTag->minimapTexture = NULL;
             }
 
-            y++;
-            line = line->next;
+            currentActiveTag->minimapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, MINIMAP_W, textureH);
+            if (currentActiveTag->minimapTexture)
+            {
+                SDL_SetTextureBlendMode(currentActiveTag->minimapTexture, SDL_BLENDMODE_BLEND);
+                SDL_SetRenderTarget(renderer, currentActiveTag->minimapTexture);
+
+                SDL_SetRenderDrawColor(renderer, 17, 17, 17, 250);
+                SDL_RenderClear(renderer);
+
+                FileLine *mLine = node->lines;
+                int mY = 0;
+                while (mLine && mY * 2 < textureH)
+                {
+                    Token *wrd = mLine->word;
+                    int i = 0;
+                    while (wrd)
+                    {
+                        if (strcmp(wrd->content, " ") == 0)
+                        {
+                            i++;
+                            wrd = wrd->next;
+                            continue;
+                        }
+                        SDL_FRect minimapRect = {
+                            4.0f + i,
+                            mY * 2.0f,
+                            (float)strlen(wrd->content),
+                            1.5f};
+                        
+                        if (wrd->color.r >= 200 && wrd->color.g >= 200 && wrd->color.b >= 200)
+                            SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255);
+                        else
+                            SDL_SetRenderDrawColor(renderer, wrd->color.r, wrd->color.g, wrd->color.b, wrd->color.a);
+                        
+                        SDL_RenderFillRect(renderer, &minimapRect);
+                        
+                        i += (int)strlen(wrd->content);
+                        wrd = wrd->next;
+                    }
+                    mY++;
+                    mLine = mLine->next;
+                }
+                SDL_SetRenderTarget(renderer, NULL);
+                currentActiveTag->minimapDirty = 0;
+            }
         }
+
+        if (currentActiveTag->minimapTexture)
+        {
+             SDL_FRect dstRect = {
+                minimapBgRect.x,
+                FILEBAR_bg_rect.y + FILEBAR_bg_rect.h,
+                MINIMAP_W,
+                (float)textureH
+            };
+            SDL_RenderTexture(renderer, currentActiveTag->minimapTexture, NULL, &dstRect);
+        }
+
+        // Calculate visible index for highlight
+        int visibleIndex = 0;
+        FileLine* vLine = node->lines;
+        while(vLine) {
+            if(vLine == currentActiveTag->visibleLine) break;
+            visibleIndex++;
+            vLine = vLine->next;
+        }
+
+        int highlightStartY = FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + visibleIndex * 2; 
 
         /* ===== Draw Highlight Rect ===== */
         SDL_FRect highlightRect = {
@@ -1138,14 +1220,14 @@ void renderExplorer()
     {
         SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, "You have not opened", strlen("You have not opened"), color);
         Explorer.t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_SetTextureScaleMode(Explorer.t1, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Explorer.t1, SDL_SCALEMODE_NEAREST);
     }
 
     if (!Explorer.t2)
     {
         SDL_Surface *s2 = TTF_RenderText_Blended(poppins_regular, "any folder yet", strlen("any folder yet"), color);
         Explorer.t2 = SDL_CreateTextureFromSurface(renderer, s2);
-        SDL_SetTextureScaleMode(Explorer.t2, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Explorer.t2, SDL_SCALEMODE_NEAREST);
     }
 
     if (!Explorer.t3)
@@ -1153,13 +1235,14 @@ void renderExplorer()
         SDL_Color color = {233, 233, 233, 255};
         SDL_Surface *s3 = TTF_RenderText_Blended(font2, "Open Folder", strlen("Open Folder"), color);
         Explorer.t3 = SDL_CreateTextureFromSurface(renderer, s3);
-        SDL_SetTextureScaleMode(Explorer.t3, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Explorer.t3, SDL_SCALEMODE_NEAREST);
     }
 
-    if(!Explorer.t4){
-        SDL_Surface* s4 = TTF_RenderText_Blended(poppins_regular, "Open Recent", strlen("Open Recent"), color);
+    if (!Explorer.t4)
+    {
+        SDL_Surface *s4 = TTF_RenderText_Blended(poppins_regular, "Open Recent", strlen("Open Recent"), color);
         Explorer.t4 = SDL_CreateTextureFromSurface(renderer, s4);
-        SDL_SetTextureScaleMode(Explorer.t4, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Explorer.t4, SDL_SCALEMODE_NEAREST);
     }
 
     // Rects
@@ -1238,7 +1321,7 @@ void renderExplorer()
             SDL_Color color = {155, 155, 155, 255};
             SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, Folder->name, strlen(Folder->name), color);
             Folder->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-            SDL_SetTextureScaleMode(Folder->t1, SDL_SCALEMODE_NEAREST);
+            // SDL_SetTextureScaleMode(Folder->t1, SDL_SCALEMODE_NEAREST);
             SDL_DestroySurface(s1);
         }
 
@@ -1279,23 +1362,27 @@ void renderFolder(FileNode **folder, int *i, int padX)
         SDL_SetRenderDrawColor(renderer, 206, 206, 206, 255);
         // SDL_RenderFillRect(renderer, &node->r1);
 
+        float w, h;
         if (!node->t1)
         {
             // SDL_Color color = {239, 239, 239, 255};
             SDL_Color color = {200, 200, 200, 255};
             SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, strlen(node->name), color);
-            node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-            SDL_SetTextureScaleMode(node->t1, SDL_SCALEMODE_NEAREST);
-            SDL_DestroySurface(s1);
+            if (s1) {
+                node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+                // SDL_SetTextureScaleMode(node->t1, SDL_SCALEMODE_NEAREST);
+                SDL_DestroySurface(s1);
+            }
         }
 
-        SDL_Color color = {239, 239, 239, 255};
-        SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, strlen(node->name), color);
-        node->r1.x = padX * 10 + LEFT_MENU[0].rect.x + s1->h + 2;
-        node->r1.w = s1->w;
-        node->r1.y = MENU_BAR_H + LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h * (*i) + MENU_PAD_Y / 2 * (*i) + EXPLORER_SCROLL_Y;
-        node->r1.h = s1->h;
-        SDL_DestroySurface(s1);
+        if (node->t1) {
+            SDL_GetTextureSize(node->t1, &w, &h);
+
+            node->r1.x = padX * 10 + LEFT_MENU[0].rect.x + h + 2;
+            node->r1.w = w;
+            node->r1.y = MENU_BAR_H + LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + h * (*i) + MENU_PAD_Y / 2 * (*i) + EXPLORER_SCROLL_Y;
+            node->r1.h = h;
+        }
 
         if (node->hovered)
         {
@@ -1376,14 +1463,14 @@ void renderSearch()
     {
         SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, SearchMenu.txt1, strlen(SearchMenu.txt1), color);
         Search.t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_SetTextureScaleMode(Search.t1, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Search.t1, SDL_SCALEMODE_NEAREST);
     }
 
     if (!Search.t2)
     {
         SDL_Surface *s2 = TTF_RenderText_Blended(poppins_regular, SearchMenu.txt2, strlen(SearchMenu.txt2), color);
         Search.t2 = SDL_CreateTextureFromSurface(renderer, s2);
-        SDL_SetTextureScaleMode(Search.t2, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Search.t2, SDL_SCALEMODE_NEAREST);
     }
 
     // Rects
@@ -1455,14 +1542,14 @@ void renderGithub()
     {
         SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, "Import From a GitHub", strlen("Import From a GitHub"), color);
         Github.t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_SetTextureScaleMode(Github.t1, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Github.t1, SDL_SCALEMODE_NEAREST);
     }
 
     if (!Github.t2)
     {
         SDL_Surface *s2 = TTF_RenderText_Blended(poppins_regular, "Repository", strlen("Repository"), color);
         Github.t2 = SDL_CreateTextureFromSurface(renderer, s2);
-        SDL_SetTextureScaleMode(Github.t2, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Github.t2, SDL_SCALEMODE_NEAREST);
     }
 
     if (!Github.t3)
@@ -1470,13 +1557,13 @@ void renderGithub()
         SDL_Color color = {233, 233, 233, 255};
         SDL_Surface *s3 = TTF_RenderText_Blended(font2, "Connect Github", strlen("Connect Github"), color);
         Github.t3 = SDL_CreateTextureFromSurface(renderer, s3);
-        SDL_SetTextureScaleMode(Github.t3, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Github.t3, SDL_SCALEMODE_NEAREST);
     }
 
     // if(!Github.t4){
     //     SDL_Surface* s4 = TTF_RenderText_Blended(poppins_regular, "Open Recent", color);
     //     Github.t4 = SDL_CreateTextureFromSurface(renderer, s4);
-    //     SDL_SetTextureScaleMode(Github.t4, SDL_SCALEMODE_NEAREST);
+    //     //SDL_SetTextureScaleMode(Github.t4, SDL_SCALEMODE_NEAREST);
     // }
 
     // Rects
@@ -1547,7 +1634,7 @@ void renderExtentions()
     {
         SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, "Feature Coming Soon", strlen("Feature Coming Soon"), color);
         Extentions.t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_SetTextureScaleMode(Extentions.t1, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Extentions.t1, SDL_SCALEMODE_NEAREST);
     }
 
     // Rects
@@ -1583,7 +1670,7 @@ void renderFooter()
         // SDL_Surface* s1 = TTF_RenderText_Blended(jetbrains_regular, "open source @ github.com/7777satish/aether", (SDL_Color){100, 100, 100, 255});
         SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, "/7777Satish/Aether", strlen("/7777Satish/Aether"), (SDL_Color){140, 140, 140, 255});
         Footer.t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_SetTextureScaleMode(Footer.t1, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(Footer.t1, SDL_SCALEMODE_NEAREST);
         SDL_DestroySurface(s1);
     }
 

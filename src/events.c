@@ -359,10 +359,11 @@ void leftDeleteChar()
     SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
     SDL_DestroyTexture(currentActiveTag->currentWord->t1);
     currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-    SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+    //SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
 
     SDL_DestroySurface(s1);
+    currentActiveTag->minimapDirty = 1;
 }
 
 void createNewline()
@@ -391,7 +392,7 @@ void createNewline()
         // Re-render old token
         SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
         currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+        //SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
         SDL_DestroySurface(s1);
 
@@ -449,6 +450,7 @@ void createNewline()
 
     currentActiveTag->currentWord->prev = NULL;
     currentActiveTag->currentLine = newLine;
+    currentActiveTag->minimapDirty = 1;
 }
 
 void insertChar(char c)
@@ -546,9 +548,10 @@ void insertChar(char c)
     {
         SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
         currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+        //SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
         SDL_DestroySurface(s1);
+    currentActiveTag->minimapDirty = 1;
     }
 }
 
@@ -593,7 +596,7 @@ void insertString(const char *str)
 
     // Convert edited text to tokens
     FileLine *line1 = parseText(currentActiveTag->currentWord->content);
-
+    
     if (line1)
     {
         Token *old = currentActiveTag->currentWord;
@@ -646,9 +649,10 @@ void insertString(const char *str)
     {
         SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
         currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+        //SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
         SDL_DestroySurface(s1);
+    currentActiveTag->minimapDirty = 1;
     }
 }
 
@@ -691,9 +695,10 @@ void replaceWord(char *s)
         {
             SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
             currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-            SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+            //SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
             SDL_DestroySurface(s1);
         }
     }
+    currentActiveTag->minimapDirty = 1;
 }

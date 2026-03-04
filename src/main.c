@@ -68,7 +68,7 @@ int main()
     }
 
     SDL_Texture *bgImage = SDL_CreateTextureFromSurface(renderer, bgImageSurface);
-    SDL_SetTextureScaleMode(bgImage, SDL_SCALEMODE_LINEAR);
+    //SDL_SetTextureScaleMode(bgImage, SDL_SCALEMODE_LINEAR);
 
     if (!bgImage)
     {
@@ -92,7 +92,7 @@ int main()
     /* ===== Props ===== */
     SDL_Surface *propS1 = IMG_Load("assets/prop1.png");
     SDL_Texture *prop1 = SDL_CreateTextureFromSurface(renderer, propS1);
-    SDL_SetTextureScaleMode(prop1, SDL_SCALEMODE_NEAREST);
+    //SDL_SetTextureScaleMode(prop1, SDL_SCALEMODE_NEAREST);
 
     SDL_FRect propRect1 = {
         100, 0, 100, 100};
@@ -110,6 +110,7 @@ int main()
     int running = 1;
     int time = 0;
     SDL_Event event;
+
     while (running)
     {
         while (SDL_PollEvent(&event))
@@ -754,6 +755,7 @@ int main()
                 if (currentActiveTag)
                 {
                     // insertChar(event.text.text[0]);
+                    printf("2.%s\n", event.text.text);
                     insertString(event.text.text);
                     currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                     currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
@@ -835,7 +837,7 @@ int main()
 
         time++;
         SDL_RenderPresent(renderer);
-        SDL_Delay(1000 / 60);
+        // SDL_Delay(1000 / 60);
     }
 
     SDL_DestroySurface(bgImageSurface);

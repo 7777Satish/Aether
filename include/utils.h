@@ -62,6 +62,9 @@ typedef struct FileBarItem{
     int cursorX;
     int cursorY;
 
+    SDL_Texture* minimapTexture;
+    int minimapDirty;
+
     int startIndex;
     struct FileBarItem *next;
     struct FileBarItem *prev;

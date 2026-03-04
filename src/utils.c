@@ -78,6 +78,8 @@ FileBarItem *createFileBarNode(char *name, char *path)
     node->currentWord = NULL;
     node->visibleLine = NULL;
     node->startIndex = 0;
+    node->minimapTexture = NULL;
+    node->minimapDirty = 1;
     return node;
 }
 
@@ -138,7 +140,7 @@ void addFileBarNode(char *name, char *path)
         SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, strlen(node->name), color);
         TotalFileBarLength += s1->w + 40;
         node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        SDL_SetTextureScaleMode(node->t1, SDL_SCALEMODE_NEAREST);
+        //SDL_SetTextureScaleMode(node->t1, SDL_SCALEMODE_NEAREST);
         SDL_DestroySurface(s1);
     }
 

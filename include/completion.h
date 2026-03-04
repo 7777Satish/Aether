@@ -27,6 +27,7 @@ typedef struct CompletionBoxNode
 
 extern int showCompletion;
 extern CompletionBoxNode CompletionBox;
+void initCompletion(SDL_Renderer *renderer, TTF_Font *font);
 int getCompletion(char* word, int n);
 
 #endif

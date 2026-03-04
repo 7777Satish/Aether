@@ -179,6 +179,21 @@ char *C_SUGGESTIONS[] = {
     NULL
 };
 
+SDL_Texture* C_SUGGESTIONS_TEXTURES[256] = {NULL}; // Should be large enough for suggestions count
+int C_SUGGESTIONS_COUNT = 0;
+
+void initCompletion(SDL_Renderer *renderer, TTF_Font *font) {
+    int i = 0;
+    while (C_SUGGESTIONS[i] && i < 256) {
+        SDL_Surface *s = TTF_RenderText_Blended(font, C_SUGGESTIONS[i], strlen(C_SUGGESTIONS[i]), (SDL_Color){230, 230, 230, 255});
+        if (s) {
+            C_SUGGESTIONS_TEXTURES[i] = SDL_CreateTextureFromSurface(renderer, s);
+            SDL_DestroySurface(s);
+        }
+        i++;
+    }
+    C_SUGGESTIONS_COUNT = i;
+}
 
 int startsWith(char *string, char *sub, int b)
 {
@@ -206,7 +221,8 @@ void freeCompletionList()
     CompletionListItem *item = CompletionBox.list;
     while (item)
     {
-        SDL_DestroyTexture(item->t1);
+        // Don't destroy texture as it's cached in C_SUGGESTIONS_TEXTURES
+        // SDL_DestroyTexture(item->t1);
         CompletionListItem *temp = item;
         item = item->next;
         free(temp);
@@ -219,24 +235,28 @@ int getCompletion(char *word, int n)
         showCompletion = 0;
         return 0;
     };
+    int count = 0;
+
     int i = 0;
 
     freeCompletionList();
 
     CompletionListItem *head = NULL;
     CompletionListItem *item = NULL;
-
+    
     while (C_SUGGESTIONS[i])
     {
         if (startsWith(C_SUGGESTIONS[i], word, n))
         {
             CompletionListItem *node = (CompletionListItem *)malloc(sizeof(CompletionListItem));
-            node->text = C_SUGGESTIONS[i];
-            SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->text, strlen(node->text), (SDL_Color){230, 230, 230, 255});
-            node->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-            SDL_SetTextureScaleMode(node->t1, SDL_SCALEMODE_NEAREST);
+            node->text = C_SUGGESTIONS[i]; 
+            
+            if (C_SUGGESTIONS_TEXTURES[i]) {
+                node->t1 = C_SUGGESTIONS_TEXTURES[i];
+            } else {
+                 node->t1 = NULL;
+            }
 
-            SDL_DestroySurface(s1);
             node->next = NULL;
             node->prev = item;
 
@@ -255,11 +275,12 @@ int getCompletion(char *word, int n)
             }
 
             item = node;
+            count++;
         }
         i++;
     }
 
-    if (i > 0)
+    if (count > 0)
         showCompletion = 1;
     else
         showCompletion = 0;
