@@ -49,7 +49,6 @@ void handleMouseScroll(int x, int y)
         {
             currentActiveTag->EDITOR_SCROLL_X -= dx;
         }
-        
     }
     else if (currentActiveTag != NULL && MOUSE_X > MENU_W && MOUSE_Y > TOPNAV_H && MOUSE_Y < TOPNAV_H * 2)
     {
@@ -89,7 +88,31 @@ void moveCursorUp()
     }
     currentX += currentActiveTag->startIndex;
 
-    currentActiveTag->currentLine = currentActiveTag->currentLine->prev;
+    FileLine *newLine = currentActiveTag->currentLine->prev;
+    if (newLine->collapsed == 2)
+    {
+        int n = 1;
+        int exit = 0;
+        while (!exit && newLine->prev)
+        {
+            newLine = newLine->prev;
+            if (newLine->collapsed == 2)
+            {
+                n += 1;
+            }
+            if (newLine->collapsed == 1)
+            {
+                n -= 1;
+            }
+            if (n == 0)
+            {
+                exit = 1;
+                break;
+            }
+        }
+    }
+
+    currentActiveTag->currentLine = newLine;
     currentActiveTag->currentWord = currentActiveTag->currentLine->word;
 
     int newX = 0;
@@ -134,7 +157,26 @@ void moveCursorDown()
     }
     currentX += currentActiveTag->startIndex;
 
-    currentActiveTag->currentLine = currentActiveTag->currentLine->next;
+    FileLine *newLine = currentActiveTag->currentLine->next;
+    if (newLine->prev->collapsed == 1)
+    {
+        int n = 1;
+        int exit = 0;
+        while (n != 0 && newLine)
+        {
+            if (newLine->collapsed == 1)
+            {
+                n += 1;
+            }
+            if (newLine->collapsed == 2)
+            {
+                n -= 1;
+            }
+            newLine = newLine->next;
+        }
+    }
+
+    currentActiveTag->currentLine = newLine;
     currentActiveTag->currentWord = currentActiveTag->currentLine->word;
 
     int newX = 0;
@@ -167,13 +209,31 @@ void moveCursorLeft()
         }
         else if (currentActiveTag->currentLine->prev)
         {
-            Token *word = currentActiveTag->currentLine->prev->word;
+            FileLine *prevLine = currentActiveTag->currentLine->prev;
+            if (prevLine->collapsed == 2)
+            {
+                int n = 1;
+                int exit = 0;
+                while (n != 0 && prevLine->prev)
+                {
+                    prevLine = prevLine->prev;
+                    if (prevLine->collapsed == 2)
+                    {
+                        n += 1;
+                    }
+                    if (prevLine->collapsed == 1)
+                    {
+                        n -= 1;
+                    }
+                }
+            }
+            Token *word = prevLine->word;
             while (word->next)
             {
                 word = word->next;
             }
             currentActiveTag->currentWord = word;
-            currentActiveTag->currentLine = currentActiveTag->currentLine->prev;
+            currentActiveTag->currentLine = prevLine;
             currentActiveTag->startIndex = word->len;
         }
         return;
@@ -196,8 +256,27 @@ void moveCursorRight()
         }
         else if (currentActiveTag->currentLine->next)
         {
-            currentActiveTag->currentWord = currentActiveTag->currentLine->next->word;
-            currentActiveTag->currentLine = currentActiveTag->currentLine->next;
+
+            FileLine *newLine = currentActiveTag->currentLine->next;
+            if (newLine->prev->collapsed == 1)
+            {
+                int n = 1;
+                while (n != 0 && newLine->next)
+                {
+                    if (newLine->collapsed == 1)
+                    {
+                        n += 1;
+                    }
+                    if (newLine->collapsed == 2)
+                    {
+                        n -= 1;
+                    }
+                    newLine = newLine->next;
+                }
+            }
+
+            currentActiveTag->currentLine = newLine;
+            currentActiveTag->currentWord = newLine->word;
 
             currentActiveTag->startIndex = 0;
         }
@@ -359,8 +438,7 @@ void leftDeleteChar()
     SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
     SDL_DestroyTexture(currentActiveTag->currentWord->t1);
     currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-    //SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
-
+    // SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
     SDL_DestroySurface(s1);
     currentActiveTag->minimapDirty = 1;
@@ -392,7 +470,7 @@ void createNewline()
         // Re-render old token
         SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
         currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        //SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
         SDL_DestroySurface(s1);
 
@@ -548,10 +626,10 @@ void insertChar(char c)
     {
         SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
         currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        //SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
         SDL_DestroySurface(s1);
-    currentActiveTag->minimapDirty = 1;
+        currentActiveTag->minimapDirty = 1;
     }
 }
 
@@ -560,9 +638,15 @@ void insertString(const char *str)
     if (!currentActiveTag || !currentActiveTag->currentLine)
         return;
 
+    if (!str)
+    {
+        printf("No string given\n");
+        return;
+    }
+
     if (strlen(str) == 0)
         return;
-    char* s = malloc(strlen(str) + 1);
+    char *s = malloc(strlen(str) + 1);
     strcpy(s, str);
     IS_SELECTING = 0;
 
@@ -572,7 +656,10 @@ void insertString(const char *str)
         currentActiveTag->currentLine->word = line1 ? line1->word : NULL;
 
         if (line1->word)
-            currentActiveTag->startIndex = 1;
+        {
+            int l = 1;
+            currentActiveTag->startIndex = l;
+        }
         return;
     }
 
@@ -596,7 +683,7 @@ void insertString(const char *str)
 
     // Convert edited text to tokens
     FileLine *line1 = parseText(currentActiveTag->currentWord->content);
-    
+
     if (line1)
     {
         Token *old = currentActiveTag->currentWord;
@@ -613,15 +700,18 @@ void insertString(const char *str)
         int len = 0;
 
         FileLine *line = line1;
-        while (line->next)
-        {
-            line = line->next;
-        }
-
-        line->next = currentActiveTag->currentLine->next;
         if (line->next)
-            line->next->prev = line;
-        currentActiveTag->currentLine->next = line1->next;
+        {
+            while (line->next)
+            {
+                line = line->next;
+            }
+
+            line->next = currentActiveTag->currentLine->next;
+            if (line->next)
+                line->next->prev = line;
+            currentActiveTag->currentLine->next = line1->next;
+        }
 
         Token *word = line->word;
         while (word->next)
@@ -649,10 +739,10 @@ void insertString(const char *str)
     {
         SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
         currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-        //SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+        // SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
         SDL_DestroySurface(s1);
-    currentActiveTag->minimapDirty = 1;
+        currentActiveTag->minimapDirty = 1;
     }
 }
 
@@ -684,7 +774,7 @@ void replaceWord(char *s)
 
                 line1->word->prev = old->prev;
             }
-            
+
             currentActiveTag->currentWord = line1->word;
 
             SDL_DestroyTexture(old->t1);
@@ -695,7 +785,7 @@ void replaceWord(char *s)
         {
             SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, currentActiveTag->currentWord->content, strlen(currentActiveTag->currentWord->content), (SDL_Color){255, 255, 255, 255});
             currentActiveTag->currentWord->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-            //SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
+            // SDL_SetTextureScaleMode(currentActiveTag->currentWord->t1, SDL_SCALEMODE_NEAREST);
 
             SDL_DestroySurface(s1);
         }

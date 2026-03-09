@@ -879,6 +879,7 @@ void renderTextEditor()
         return;
 
     int y = 0;
+    int lineNo = 0;
 
     SDL_FRect minimapBgRect = {
         WINDOW_W - 100,
@@ -893,6 +894,7 @@ void renderTextEditor()
     while (line)
     {
         Token *word = line->word;
+        int isCollapsed = line->collapsed;
 
         if (!word)
         {
@@ -901,6 +903,29 @@ void renderTextEditor()
             t->prev = NULL;
             line->word = t;
             word = t;
+        }
+
+        if(isCollapsed == 1){
+            int n = 1;
+            int exit = 0;
+            while (!exit)
+            {
+                line = line->next;
+                lineNo++;
+                if(line->collapsed == 1){
+                    n+=1;
+                }
+
+                if(line->collapsed == 2){
+                    n-=1;
+                }
+
+                if(n == 0){
+                    exit = 1;
+                    break;
+                }
+            }
+            
         }
 
         int x = 0;
@@ -918,12 +943,18 @@ void renderTextEditor()
         if ((y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT < 0 || y * EDITOR_FONT_SIZE > -currentActiveTag->EDITOR_SCROLL_Y + WINDOW_H)
         {
             y++;
+            lineNo++;
             line = line->next;
             continue;
         }
 
         while (word)
         {
+            if(!word) break;
+            if(!word->content){
+                word = word->next;
+                continue;
+            }
             word->len = strlen(word->content);
             // printf("%s",word->content);
 
@@ -981,6 +1012,18 @@ void renderTextEditor()
             word = word->next;
         }
 
+
+        if(isCollapsed){
+            SDL_FRect highlightRect = {
+                MENU_W + LINE_NUMBER_WIDTH,
+                FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT,
+                WINDOW_W,
+                EDITOR_FONT_HEIGHT};
+                
+            SDL_SetRenderDrawColor(renderer, 200, 40, 200, 30);
+            SDL_RenderFillRect(renderer, &highlightRect);
+        }
+
         if (hasSelectionStarted)
         {
             SDL_FRect selectionRect = {
@@ -996,7 +1039,7 @@ void renderTextEditor()
         // printf("\n");
         /*===== Draw Line Number =====*/
         char text[12];
-        sprintf(text, "%d", y + 1);
+        sprintf(text, "%d", lineNo + 1);
         int len = strlen(text);
         int startX = FILEBAR_bg_rect.x + LINE_NUMBER_WIDTH / 2 - (len * DIGIT_W) / 2;
         int startY = FILEBAR_bg_rect.y + FILEBAR_bg_rect.h + 4 + (y + currentActiveTag->EDITOR_SCROLL_Y / EDITOR_FONT_SIZE) * EDITOR_FONT_HEIGHT;
@@ -1008,6 +1051,7 @@ void renderTextEditor()
             EDITOR_FONT_HEIGHT};
 
         SDL_SetRenderDrawColor(renderer, 17, 17, 17, 255);
+        if(isCollapsed) SDL_SetRenderDrawColor(renderer, 200, 40, 200, 30);
         SDL_RenderFillRect(renderer, &lineNoBgRect);
 
         for (int k = 0; k < len; k++)
@@ -1025,6 +1069,7 @@ void renderTextEditor()
         }
 
         y++;
+        lineNo++;
         line = line->next;
     }
 

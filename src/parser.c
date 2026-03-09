@@ -329,7 +329,7 @@ FileLine *parseText(char *content)
             FileLine *line = (FileLine *)malloc(sizeof(FileLine));
 
             line->word = firstToken;
-
+            line->collapsed = 0;
             line->next = NULL;
             line->prev = prevLine;
 
@@ -559,7 +559,7 @@ FileLine *parseText(char *content)
             FileLine *line = (FileLine *)malloc(sizeof(FileLine));
 
             line->word = firstToken;
-
+            line->collapsed = 0;
             line->next = NULL;
             line->prev = prevLine;
 

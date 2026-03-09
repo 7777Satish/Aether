@@ -41,6 +41,7 @@ typedef struct FileLine
     // char *content;
     Token* word;
     SDL_Texture *t1;
+    int collapsed;
     struct FileLine *next;
     struct FileLine *prev;
 } FileLine;

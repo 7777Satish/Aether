@@ -68,7 +68,7 @@ int main()
     }
 
     SDL_Texture *bgImage = SDL_CreateTextureFromSurface(renderer, bgImageSurface);
-    //SDL_SetTextureScaleMode(bgImage, SDL_SCALEMODE_LINEAR);
+    // SDL_SetTextureScaleMode(bgImage, SDL_SCALEMODE_LINEAR);
 
     if (!bgImage)
     {
@@ -92,7 +92,7 @@ int main()
     /* ===== Props ===== */
     SDL_Surface *propS1 = IMG_Load("assets/prop1.png");
     SDL_Texture *prop1 = SDL_CreateTextureFromSurface(renderer, propS1);
-    //SDL_SetTextureScaleMode(prop1, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(prop1, SDL_SCALEMODE_NEAREST);
 
     SDL_FRect propRect1 = {
         100, 0, 100, 100};
@@ -271,6 +271,105 @@ int main()
                     }
                 }
 
+                // Text Editor Lines
+                if (currentActiveTag && x > MENU_W && x < MENU_W + 70 && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
+                {
+                    // int ty = 0;
+                    int cy = y - 2 * TOPNAV_H;
+
+                    FileLine *node = currentActiveTag->visibleLine;
+                    if (node)
+                    {
+                        int offset = cy / EDITOR_FONT_HEIGHT;
+                        // printf("%d\n", offset);
+                        while (offset > 0 && node->next)
+                        {
+                            if (node->collapsed == 1)
+                            {
+                                int n = 1;
+                                int exit = 0;
+                                while (!exit)
+                                {
+                                    node = node->next;
+                                    Token *w = node->word;
+                                    while (w)
+                                    {
+                                        if (strcmp(w->content, "{") == 0)
+                                        {
+                                            n += 1;
+                                        }
+
+                                        if (strcmp(w->content, "}") == 0)
+                                        {
+                                            n -= 1;
+                                        }
+
+                                        if (n == 0)
+                                        {
+                                            exit = 1;
+                                            break;
+                                        }
+                                        w = w->next;
+                                    }
+                                }
+                            }
+                            node = node->next;
+                            offset--;
+                        }
+
+                        Token *word = node->word;
+                        int cond = 0;
+                        int cond2 = 0;
+                        while (word)
+                        {
+                            if (strcmp(word->content, "{") == 0)
+                            {
+                                cond++;
+                                cond2 = 1;
+                            }
+                            if (strcmp(word->content, "}") == 0)
+                            {
+                                if (cond2)
+                                    cond--;
+                            }
+                            word = word->next;
+                        }
+
+                        if (cond > 0)
+                        {
+                            node->collapsed = !node->collapsed;
+                            int a = node->collapsed;
+                            int n = 1;
+                            int exit = 0;
+                            while (!exit && node->next)
+                            {
+                                node = node->next;
+                                Token *w = node->word;
+                                while (w)
+                                {
+                                    if (strcmp(w->content, "{") == 0)
+                                    {
+                                        n += 1;
+                                    }
+
+                                    if (strcmp(w->content, "}") == 0)
+                                    {
+                                        n -= 1;
+                                    }
+
+                                    if (n == 0)
+                                    {
+                                        exit = 1;
+                                        break;
+                                    }
+                                    w = w->next;
+                                }
+                            }
+                            node->collapsed = a ? 2 : 0;
+                        }
+                    }
+                }
+
                 // Text Editor
                 if (currentActiveTag && x > MENU_W + 70 && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
                 {
@@ -291,6 +390,36 @@ int main()
                         // printf("%d\n", offset);
                         while (offset > 0 && node->next)
                         {
+
+                            if (node->collapsed == 1)
+                            {
+                                int n = 1;
+                                int exit = 0;
+                                while (!exit)
+                                {
+                                    node = node->next;
+                                    Token *w = node->word;
+                                    while (w)
+                                    {
+                                        if (strcmp(w->content, "{") == 0)
+                                        {
+                                            n += 1;
+                                        }
+
+                                        if (strcmp(w->content, "}") == 0)
+                                        {
+                                            n -= 1;
+                                        }
+
+                                        if (n == 0)
+                                        {
+                                            exit = 1;
+                                            break;
+                                        }
+                                        w = w->next;
+                                    }
+                                }
+                            }
                             node = node->next;
                             offset--;
                         }
@@ -512,7 +641,7 @@ int main()
                 }
 
                 // Text Editor
-                if (currentActiveTag && currentActiveTag->type != AETHER_IMG && x > MENU_W && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
+                if (currentActiveTag && currentActiveTag->type != AETHER_IMG && x > MENU_W + 70 && x < WINDOW_W - MINIMAP_W && y > 2 * TOPNAV_H && y < WINDOW_H - FOOTER_H)
                 {
                     SDL_SetCursor(ibeam);
                 }
@@ -650,7 +779,17 @@ int main()
                     }
                     if (key == SDLK_LEFT)
                     {
-                        moveCursorLeft();
+                        if ((mod & SDL_KMOD_CTRL))
+                        {
+                            if (currentActiveTag->startIndex == 0)
+                            {
+                                if (currentActiveTag->currentWord && currentActiveTag->currentWord->prev)
+                                    currentActiveTag->currentWord = currentActiveTag->currentWord->prev;
+                            }
+                            currentActiveTag->startIndex = 0;
+                        }
+                        else
+                            moveCursorLeft();
 
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
@@ -662,7 +801,17 @@ int main()
 
                     if (key == SDLK_RIGHT)
                     {
-                        moveCursorRight();
+                        if ((mod & SDL_KMOD_CTRL))
+                        {
+                            if (currentActiveTag->startIndex == currentActiveTag->currentWord->len)
+                            {
+                                if (currentActiveTag->currentWord && currentActiveTag->currentWord->next)
+                                    currentActiveTag->currentWord = currentActiveTag->currentWord->next;
+                            }
+                            currentActiveTag->startIndex = currentActiveTag->currentWord->len;
+                        }
+                        else
+                            moveCursorRight();
 
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
@@ -671,6 +820,57 @@ int main()
                         if (showCompletion)
                             getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
                     }
+
+                    if (key == SDLK_HOME)
+                    {
+                        if(mod & SDL_KMOD_CTRL){
+                            currentActiveTag->currentLine = currentActiveTag->lines;
+                            currentActiveTag->currentWord = currentActiveTag->currentLine->word;
+                            currentActiveTag->EDITOR_SCROLL_Y = 0;
+                        }
+                        if(currentActiveTag->currentLine->word) currentActiveTag->currentWord = currentActiveTag->currentLine->word;
+                        currentActiveTag->startIndex = 0;
+                        
+                        currentActiveTag->EDITOR_SCROLL_X = 0;
+
+                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                    }
+
+                    if (key == SDLK_END)
+                    {
+
+
+                        if(mod & SDL_KMOD_CTRL){
+                            FileLine* line = currentActiveTag->currentLine;
+                            int y = 0;
+                            while (line->next)
+                            {
+                                y++;
+                                currentActiveTag->EDITOR_SCROLL_Y -= cursor->h;
+                                line = line->next;
+                            }
+                            if(y*cursor->h>WINDOW_H) currentActiveTag->EDITOR_SCROLL_Y += WINDOW_H;
+
+                            currentActiveTag->currentLine = line;
+                            currentActiveTag->currentWord = line->word;
+                        }
+
+                        Token* word = currentActiveTag->currentWord;
+                        while (word->next)
+                        {
+                            word = word->next;
+                        }
+                        
+                        currentActiveTag->currentWord = word;
+                        currentActiveTag->startIndex = word->len;
+
+                        currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
+                        currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
+                        currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
+                    }
+
                     if (key == SDLK_RETURN)
                     {
                         if (showCompletion)
@@ -755,8 +955,38 @@ int main()
                 if (currentActiveTag)
                 {
                     // insertChar(event.text.text[0]);
-                    printf("2.%s\n", event.text.text);
+                    if (currentActiveTag->currentLine->collapsed == 1)
+                    {
+                        currentActiveTag->currentLine->collapsed = 0;
+
+                        FileLine *line = currentActiveTag->currentLine;
+                        int n = 1;
+                        while (n != 0)
+                        {
+                            line = line->next;
+                            if (line->collapsed == 1)
+                            {
+                                n += 1;
+                            }
+                            if (line->collapsed == 2)
+                            {
+                                n -= 1;
+                            }
+                        }
+                        line->collapsed = 0;
+                    }
+
                     insertString(event.text.text);
+                    if(strcmp(event.text.text, "{")==0){
+                        insertString("}");
+                        currentActiveTag->currentWord = currentActiveTag->currentWord->prev;
+                    }
+
+                    if(strcmp(event.text.text, "(")==0){
+                        insertString(")");
+                        currentActiveTag->currentWord = currentActiveTag->currentWord->prev;
+                    }
+
                     currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                     currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                     currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
