@@ -59,7 +59,8 @@ int main()
     SDL_SetRenderDrawColor(renderer, 57, 57, 57, 255);
     SDL_RenderFillRect(renderer, &loadingFooterRect);
 
-    SDL_Surface *bgImageSurface = IMG_Load("assets/nature.png");
+    // SDL_Surface *bgImageSurface = IMG_Load("assets/nature.png");
+    SDL_Surface *bgImageSurface = IMG_Load("assets/bg1.jpg");
     // SDL_Surface *bgImageSurface = IMG_Load("assets/landscape2.jpg");
     if (!bgImageSurface)
     {
@@ -111,10 +112,13 @@ int main()
     int time = 0;
     SDL_Event event;
 
+    int dirty = 0;
+
     while (running)
     {
         while (SDL_PollEvent(&event))
         {
+            dirty = 1;
             if (event.type == SDL_EVENT_QUIT)
             {
                 running = 0;
@@ -735,6 +739,25 @@ int main()
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
 
                         showCompletion = 0;
+
+                        if (currentActiveTag->currentLine->collapsed == 2)
+                        {
+                            currentActiveTag->currentLine->collapsed = 0;
+
+                            int cond = 1;
+                            FileLine *line = currentActiveTag->currentLine;
+                            while (cond != 0)
+                            {
+
+                                line = line->prev;
+                                if (line->collapsed == 2)
+                                    cond++;
+                                if (line->collapsed == 1)
+                                    cond--;
+                            }
+
+                            line->collapsed = 0;
+                        }
                     }
 
                     if (key == SDLK_UP)
@@ -823,14 +846,16 @@ int main()
 
                     if (key == SDLK_HOME)
                     {
-                        if(mod & SDL_KMOD_CTRL){
+                        if (mod & SDL_KMOD_CTRL)
+                        {
                             currentActiveTag->currentLine = currentActiveTag->lines;
                             currentActiveTag->currentWord = currentActiveTag->currentLine->word;
                             currentActiveTag->EDITOR_SCROLL_Y = 0;
                         }
-                        if(currentActiveTag->currentLine->word) currentActiveTag->currentWord = currentActiveTag->currentLine->word;
+                        if (currentActiveTag->currentLine->word)
+                            currentActiveTag->currentWord = currentActiveTag->currentLine->word;
                         currentActiveTag->startIndex = 0;
-                        
+
                         currentActiveTag->EDITOR_SCROLL_X = 0;
 
                         currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
@@ -841,9 +866,9 @@ int main()
                     if (key == SDLK_END)
                     {
 
-
-                        if(mod & SDL_KMOD_CTRL){
-                            FileLine* line = currentActiveTag->currentLine;
+                        if (mod & SDL_KMOD_CTRL)
+                        {
+                            FileLine *line = currentActiveTag->currentLine;
                             int y = 0;
                             while (line->next)
                             {
@@ -851,18 +876,19 @@ int main()
                                 currentActiveTag->EDITOR_SCROLL_Y -= cursor->h;
                                 line = line->next;
                             }
-                            if(y*cursor->h>WINDOW_H) currentActiveTag->EDITOR_SCROLL_Y += WINDOW_H;
+                            if (y * cursor->h > WINDOW_H)
+                                currentActiveTag->EDITOR_SCROLL_Y += WINDOW_H;
 
                             currentActiveTag->currentLine = line;
                             currentActiveTag->currentWord = line->word;
                         }
 
-                        Token* word = currentActiveTag->currentWord;
+                        Token *word = currentActiveTag->currentWord;
                         while (word->next)
                         {
                             word = word->next;
                         }
-                        
+
                         currentActiveTag->currentWord = word;
                         currentActiveTag->startIndex = word->len;
 
@@ -976,22 +1002,71 @@ int main()
                         line->collapsed = 0;
                     }
 
-                    insertString(event.text.text);
-                    if(strcmp(event.text.text, "{")==0){
-                        insertString("}");
-                        currentActiveTag->currentWord = currentActiveTag->currentWord->prev;
-                    }
+                    int disableCompletion = 0;
 
-                    if(strcmp(event.text.text, "(")==0){
-                        insertString(")");
-                        currentActiveTag->currentWord = currentActiveTag->currentWord->prev;
-                    }
+                    if (strcmp(event.text.text, "}") == 0 && currentActiveTag->currentWord->next && strcmp(currentActiveTag->currentWord->next->content, "}") == 0)
+                    {
+                        currentActiveTag->currentWord = currentActiveTag->currentWord->next;
+                        currentActiveTag->startIndex = 1;
 
+                        disableCompletion = 1;
+                    }
+                    else if (strcmp(event.text.text, ")") == 0 && currentActiveTag->currentWord->next && strcmp(currentActiveTag->currentWord->next->content, ")") == 0)
+                    {
+                        currentActiveTag->currentWord = currentActiveTag->currentWord->next;
+                        currentActiveTag->startIndex = 1;
+
+                        disableCompletion = 1;
+                    }
+                    else
+                    {
+                        insertString(event.text.text);
+                        if (strcmp(event.text.text, "{") == 0)
+                        {
+                            insertString("}");
+                            if (currentActiveTag->currentWord && currentActiveTag->currentWord->prev)
+                            {
+                                currentActiveTag->currentWord = currentActiveTag->currentWord->prev;
+                                currentActiveTag->startIndex = 1;
+                            }
+                            disableCompletion = 1;
+                            showCompletion = 0;
+                        }
+
+                        if (strcmp(event.text.text, "(") == 0)
+                        {
+                            insertString(")");
+                            if (currentActiveTag->currentWord && currentActiveTag->currentWord->prev)
+                            {
+                                currentActiveTag->currentWord = currentActiveTag->currentWord->prev;
+                                currentActiveTag->startIndex = 1;
+                            }
+                            disableCompletion = 1;
+                            showCompletion = 0;
+                        }
+
+                        if ((currentActiveTag->startIndex == 0 || currentActiveTag->startIndex == currentActiveTag->currentWord->len) && strcmp(event.text.text, "'") == 0)
+                        {
+                            insertString("'");
+                            currentActiveTag->startIndex -= 1;
+                            disableCompletion = 1;
+                            showCompletion = 0;
+                        }
+
+                        if ((currentActiveTag->startIndex == 0 || currentActiveTag->startIndex == currentActiveTag->currentWord->len) && strcmp(event.text.text, "\"") == 0)
+                        {
+                            insertString("\"");
+                            currentActiveTag->startIndex -= 1;
+                            disableCompletion = 1;
+                            showCompletion = 0;
+                        }
+                    }
                     currentActiveTag->SELECTION_START_LINE = currentActiveTag->currentLine;
                     currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                     currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
 
-                    getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
+                    if (!disableCompletion)
+                        getCompletion(currentActiveTag->currentWord->content, currentActiveTag->startIndex);
                 }
             }
         }
@@ -1026,7 +1101,6 @@ int main()
         }
 
         /* ===== Draw Home Screen ===== */
-
         renderTextEditor();
         renderSuggestionBox();
         renderFileBar();
@@ -1044,7 +1118,6 @@ int main()
 
         SDL_SetRenderDrawColor(renderer, 155, 20, 127, 15);
         SDL_RenderFillRect(renderer, &fullScreenRect);
-
         // Render Props
 
         SDL_RenderTextureRotated(

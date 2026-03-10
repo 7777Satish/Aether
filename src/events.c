@@ -448,7 +448,16 @@ void createNewline()
 {
     if (!currentActiveTag || !currentActiveTag->currentWord)
         return;
-
+    int tabSize = 4;
+    int spaces = 0;
+    Token* t = currentActiveTag->currentLine->word;
+    while (t && strcmp(t->content, " ") == 0)
+    {
+        spaces+=1;
+        t = t->next;
+    }
+    // spaces = (spaces/tabSize)*tabSize;
+    
     // Split the word into 2 if cursor is in middle
     if (currentActiveTag->startIndex > 0 && currentActiveTag->startIndex < currentActiveTag->currentWord->len)
     {
@@ -525,9 +534,23 @@ void createNewline()
         currentActiveTag->currentWord->prev->next = NULL;
     else
         currentLine->word = NULL;
+    
+    Token* tabsHead = NULL;
+    Token* tabsTail = NULL;
+    for(int i=0; i<spaces; i++){
+        Token* t = createToken(" ", 1, (SDL_Color){255, 255, 255, 255});
+        if(tabsHead){
+            t->next = tabsHead;
+            tabsHead->prev = t;
+        }
+        if(!tabsTail) tabsTail = t;
+        tabsHead = t;
+    }
 
-    currentActiveTag->currentWord->prev = NULL;
+    currentActiveTag->currentWord->prev = tabsTail;
     currentActiveTag->currentLine = newLine;
+    if(tabsTail) tabsTail->next = currentActiveTag->currentWord;
+    if(tabsHead) currentActiveTag->currentLine->word = tabsHead;
     currentActiveTag->minimapDirty = 1;
 }
 
@@ -771,7 +794,7 @@ void replaceWord(char *s)
                     old->prev->next = line1->word;
                 else
                     currentActiveTag->currentLine->word = line1->word;
-
+                line1->word->next = old->next;
                 line1->word->prev = old->prev;
             }
 

@@ -254,7 +254,7 @@ void init()
     // EDITOR_FONT_SIZE = TOP_NAV_LOGO_H / 1.5;
     WINDOW_FONT_SIZE = TOP_NAV_LOGO_H / 1.7;
 
-    printf("Renderer: %s\n", SDL_GetRendererName(renderer));
+    // printf("Renderer: %s\n", SDL_GetRendererName(renderer));
 
     poppins_regular = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", WINDOW_FONT_SIZE);
     if (!poppins_regular)
