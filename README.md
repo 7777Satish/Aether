@@ -239,4 +239,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+No AI was used to write code, except for the project's documentation
+
 **Made with ❤️ by [7777Satish](https://github.com/7777Satish)**
