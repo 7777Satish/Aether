@@ -780,6 +780,7 @@ int main()
                             showCompletion = 0;
                         }
                     }
+                    
                     if (key == SDLK_DOWN)
                     {
                         if (showCompletion && CompletionBox.active)
@@ -800,6 +801,7 @@ int main()
                             showCompletion = 0;
                         }
                     }
+                    
                     if (key == SDLK_LEFT)
                     {
                         if ((mod & SDL_KMOD_CTRL))
@@ -912,6 +914,11 @@ int main()
                         currentActiveTag->SELECTION_START_WORD = currentActiveTag->currentWord;
                         currentActiveTag->SELECTION_START_INDEX = currentActiveTag->startIndex;
                         showCompletion = 0;
+                    }
+
+                    if ((mod & SDL_KMOD_CTRL) && key == SDLK_W)
+                    {
+                        removeTab(currentActiveTag);
                     }
 
                     if ((mod & SDL_KMOD_CTRL) && key == SDLK_TAB)

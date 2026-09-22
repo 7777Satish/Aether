@@ -248,8 +248,8 @@ void removeTab(FileBarItem* tab){
         tab->next->prev = tab->prev;
     }
 
-    if(tab->prev) currentActiveTag = tab->prev;
-    else currentActiveTag = tab->next;
+    if(tab->next) currentActiveTag = tab->next;
+    else currentActiveTag = tab->prev;
 
     SDL_DestroyTexture(tab->t1);
     SDL_DestroyTexture(tab->t2);
@@ -276,7 +276,6 @@ void removeTab(FileBarItem* tab){
     
     free(temp);
 }
-
 
 char* convertToText(FileBarItem *tab)
 {
