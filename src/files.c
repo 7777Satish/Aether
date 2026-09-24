@@ -65,6 +65,8 @@ void clearExplorer()
     {
         FileNode *ptr = temp;
         temp = temp->next;
+        SDL_free(ptr->name);
+        SDL_free(ptr->path);
         free(ptr);
     }
     Folder = NULL;
@@ -72,7 +74,7 @@ void clearExplorer()
 
 SDL_EnumerationResult explorer_callback(void *userdata, const char *dirname, const char *fname)
 {
-    
+
     if (!fname)
         return SDL_ENUM_CONTINUE;
 
@@ -87,7 +89,8 @@ SDL_EnumerationResult explorer_callback(void *userdata, const char *dirname, con
 
     SDL_PathInfo info;
 
-    if (!SDL_GetPathInfo(fullpath, &info)) {
+    if (!SDL_GetPathInfo(fullpath, &info))
+    {
         printf("PathInfo failed for: %s\n", fullpath);
         printf("SDL Error: %s\n", SDL_GetError());
         return SDL_ENUM_CONTINUE;
@@ -95,33 +98,41 @@ SDL_EnumerationResult explorer_callback(void *userdata, const char *dirname, con
 
     int type = (info.type == SDL_PATHTYPE_DIRECTORY) ? 1 : 0;
 
+    if (!poppins_regular)
+    {
+        fprintf(stderr, "Error: poppins_regular font not loaded\n");
+        return SDL_ENUM_CONTINUE;
+    }
+
+    int text_w = 0, text_h = 0;
+    if (!TTF_GetStringSize(poppins_regular, fname, strlen(fname),
+                           &text_w, &text_h))
+    {
+        fprintf(stderr, "Failed to measure text for %s: %s\n",
+                fname, SDL_GetError());
+        return SDL_ENUM_CONTINUE;
+    }
+
     FileNode *node = createFileNode(fname, fullpath, type);
-    
+    if (!node)
+    {
+        fprintf(stderr, "Failed to create FileNode for %s\n", fname);
+        return SDL_ENUM_CONTINUE;
+    }
+
     node->opened = 0;
     node->next = Folder;
     if (Folder)
         Folder->prev = node;
 
-    SDL_Color color = {255, 255, 255, 255};
-    if (!poppins_regular)
-    {
-        fprintf(stderr, "Error: poppins_regular font not loaded\n");
-    }
-    SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, node->name, strlen(node->name), color);
-    if (!s1)
-    {
-        fprintf(stderr, "Error creating text surface for %s: %s\n", node->name, SDL_GetError());
-    }
-
-    node->r1.x = LEFT_MENU[0].rect.x + s1->h + 2;
-    node->r1.w = s1->w;
-    // node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + s1->h * i + MENU_PAD_Y / 2 * i;
-    if(Folder) node->r1.y = Folder->r1.y + s1->h + MENU_PAD_Y / 2;
-    else node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h;
-    node->r1.h = s1->h;
-
-    SDL_DestroySurface(s1);
-
+    node->r1.x = LEFT_MENU[0].rect.x + text_h + 2;
+    node->r1.w = text_w;
+    // node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h + text_h * i + MENU_PAD_Y / 2 * i;
+    if (Folder)
+        node->r1.y = Folder->r1.y + text_h + MENU_PAD_Y / 2;
+    else
+        node->r1.y = LEFT_MENU[0].rect.y + LEFT_MENU[0].rect.h;
+    node->r1.h = text_h;
 
     Folder = node;
     return SDL_ENUM_CONTINUE;
@@ -135,7 +146,6 @@ void initExplorer()
     Folder = NULL;
 
     SDL_EnumerateDirectory(selected_folder, explorer_callback, NULL);
-
 
     FileNode *parent = createFileNode("FOLDER", selected_folder, 1);
     parent->opened = 1;
