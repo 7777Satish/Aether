@@ -139,6 +139,21 @@ typedef struct Cursor{
 
 typedef struct FileNode FileNode;
 
+extern SDL_FRect loadingBgRect;
+extern SDL_FRect loadingFooterRect;
+extern SDL_Surface *bgImageSurface;
+extern SDL_Texture *bgImage;
+extern SDL_FRect bgRect;
+extern SDL_FRect fullScreenRect;
+extern SDL_Surface *propS1;
+extern SDL_Texture *prop1;
+extern SDL_FRect propRect1;
+extern SDL_FPoint propCenter1;
+extern int propangle1;
+extern SDL_Cursor *ibeam;
+extern SDL_Cursor *arrowCursor;
+
+
 extern TOPNAV_MENU_NODE TOPNAV_MENU[5];
 extern MENU_BAR_NODE TOPNAV_RIGHT[1];
 

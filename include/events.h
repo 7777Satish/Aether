@@ -17,5 +17,6 @@ void insertChar(char c);
 void insertString(const char* s);
 void replaceWord(char* s);
 void createNewline();
+void handleEvents(SDL_Event event, int* dirty, int* running);
 
 #endif

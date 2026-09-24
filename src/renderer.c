@@ -208,6 +208,22 @@ SDL_FRect logoRect = {};
 int EXPLORER_SCROLL_Y = 0;
 int FILEMENU_SCROLL_X = 0;
 
+
+
+SDL_FRect loadingBgRect;
+SDL_FRect loadingFooterRect;
+SDL_Surface *bgImageSurface;
+SDL_Texture *bgImage;
+SDL_FRect bgRect;
+SDL_FRect fullScreenRect;
+SDL_Surface *propS1;
+SDL_Texture *prop1;
+SDL_FRect propRect1;
+SDL_FPoint propCenter1;
+int propangle1 = 0;
+SDL_Cursor *ibeam;
+SDL_Cursor *arrowCursor;
+
 /**
  * @brief Initializes the entire application rendering system
  *
@@ -575,6 +591,56 @@ void init()
     FILEBAR_bg_rect.y = TOPNAV_H;
     FILEBAR_bg_rect.w = WINDOW_W;
     FILEBAR_bg_rect.h = TOPNAV_H;
+
+
+
+    loadingBgRect = (SDL_FRect){0, 0, WINDOW_W, WINDOW_H};
+    loadingFooterRect = (SDL_FRect){0, WINDOW_H - FOOTER_H, WINDOW_W, FOOTER_H};
+
+    // bgImageSurface = IMG_Load("assets/nature.png");
+    bgImageSurface = IMG_Load("assets/bg1.jpg");
+    // bgImageSurface = IMG_Load("assets/landscape2.jpg");
+    if (!bgImageSurface)
+    {
+        fprintf(stderr, "Error loading background image: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    bgImage = SDL_CreateTextureFromSurface(renderer, bgImageSurface);
+
+    if (!bgImage)
+    {
+        fprintf(stderr, "Error creating background texture: %s\n", SDL_GetError());
+        SDL_DestroySurface(bgImageSurface);
+        return 1;
+    }
+
+    bgRect = (SDL_FRect){
+        MENU_W,
+        0,
+        (bgImageSurface->w + 0.0) / bgImageSurface->h * WINDOW_H,
+        WINDOW_H};
+
+    fullScreenRect = (SDL_FRect){
+        0,
+        0,
+        WINDOW_W,
+        WINDOW_H};
+
+    /* ===== Props ===== */
+    propS1 = IMG_Load("assets/prop1.png");
+    prop1 = SDL_CreateTextureFromSurface(renderer, propS1);
+    
+    propRect1 = (SDL_FRect){
+        100, 0, 100, 100};
+    propCenter1 = (SDL_FPoint){(propRect1.x + propRect1.w) / 2, (propRect1.y + propRect1.h) / 2};
+    propangle1 = 0;
+
+    // Load the I-beam (text) cursor
+    ibeam = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT);
+    
+    // Load the Pointer cursor
+    arrowCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 }
 
 void renderTopNav()
