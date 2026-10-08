@@ -603,7 +603,7 @@ void init()
     if (!bgImageSurface)
     {
         fprintf(stderr, "Error loading background image: %s\n", SDL_GetError());
-        return 1;
+        return;
     }
 
     bgImage = SDL_CreateTextureFromSurface(renderer, bgImageSurface);
@@ -612,7 +612,7 @@ void init()
     {
         fprintf(stderr, "Error creating background texture: %s\n", SDL_GetError());
         SDL_DestroySurface(bgImageSurface);
-        return 1;
+        return;
     }
 
     bgRect = (SDL_FRect){

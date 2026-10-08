@@ -23,8 +23,8 @@ char *types[] = {
     "int", "float", "double", "char", "short", "enum",   // cyan
     "long", "unsigned", "signed", "void", "_Bool",       // cyan
     "_Complex", "_Imaginary", "char*", "int*", "float*", // cyan
-    "long*", "short*", "unsigned*", "signed*", "void*", "bool", "bool*", "double*"
-                                                                         "FILE*",
+    "long*", "short*", "unsigned*", "signed*", "void*", "bool", "bool*", "double*",
+    "FILE*",
     "FILE", "DIR", "DIR*", NULL};
 
 // Constants / Literals (orange or yellow)
@@ -237,7 +237,7 @@ Token *createToken(char *word, int custom, SDL_Color color)
 
     SDL_Surface *s1 = TTF_RenderText_Blended(jetbrains_regular, word, strlen(word), clr);
     t->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-    //SDL_SetTextureScaleMode(t->t1, SDL_SCALEMODE_NEAREST);
+    // SDL_SetTextureScaleMode(t->t1, SDL_SCALEMODE_NEAREST);
 
     SDL_DestroySurface(s1);
     t->color = clr;
@@ -253,8 +253,10 @@ FileLine *parseText(char *content)
     char c = content[0];
     int i = 0;
 
-    char *currentWord = malloc(1);
-    currentWord[0] = '\0';
+    size_t currentWordIndex = 0;
+    size_t currentWordLen = 256;
+    char *currentWord = malloc(currentWordLen);
+    currentWord[currentWordIndex] = '\0';
 
     FileLine *lines = NULL;
     FileLine *prevLine = NULL;
@@ -321,8 +323,9 @@ FileLine *parseText(char *content)
                 }
             }
             // Reset Word
-            free(currentWord);
-            currentWord = malloc(1);
+            // free(currentWord);
+            // currentWord = malloc(1);
+            currentWordIndex = 0;
             currentWord[0] = '\0';
 
             /* Create a line and for the current line */
@@ -354,10 +357,16 @@ FileLine *parseText(char *content)
         {
             isInComment = 1;
 
-            size_t len = strlen(currentWord);
-            currentWord = realloc(currentWord, len + 2);
-            currentWord[len] = c;
-            currentWord[len + 1] = '\0';
+            // size_t len = strlen(currentWord);
+            // currentWord = realloc(currentWord, len + 2);
+            if (currentWordIndex + 1 >= currentWordLen)
+            {
+                currentWordLen *= 2;
+                currentWord = realloc(currentWord, currentWordLen);
+            }
+            currentWord[currentWordIndex] = c;
+            currentWordIndex++;
+            currentWord[currentWordIndex] = '\0';
 
             i++;
             c = content[i];
@@ -383,10 +392,16 @@ FileLine *parseText(char *content)
                 if (backslashCount % 2 == 0)
                 {
 
-                    size_t len = strlen(currentWord);
-                    currentWord = realloc(currentWord, len + 2);
-                    currentWord[len] = c;
-                    currentWord[len + 1] = '\0';
+                    // size_t len = strlen(currentWord);
+                    // currentWord = realloc(currentWord, len + 2);
+                    if (currentWordIndex + 1 >= currentWordLen)
+                    {
+                        currentWordLen *= 2;
+                        currentWord = realloc(currentWord, currentWordLen);
+                    }
+                    currentWord[currentWordIndex] = c;
+                    currentWordIndex++;
+                    currentWord[currentWordIndex] = '\0';
 
                     Token *t = createToken(currentWord, 1, (SDL_Color){206, 145, 120, 255});
                     t->type = TOKEN_STRING;
@@ -398,8 +413,9 @@ FileLine *parseText(char *content)
                     if (!firstToken)
                         firstToken = lastToken;
 
-                    free(currentWord);
-                    currentWord = malloc(1);
+                    // free(currentWord);
+                    // currentWord = malloc(1);
+                    currentWordIndex = 0;
                     currentWord[0] = '\0';
 
                     isInString = 0;
@@ -455,8 +471,9 @@ FileLine *parseText(char *content)
                 }
 
                 // Reset currentWord
-                free(currentWord);
-                currentWord = malloc(1);
+                // free(currentWord);
+                // currentWord = malloc(1);
+                currentWordIndex = 0;
                 currentWord[0] = '\0';
             }
 
@@ -550,8 +567,9 @@ FileLine *parseText(char *content)
                 }
 
                 // Reset Word
-                free(currentWord);
-                currentWord = malloc(1);
+                // free(currentWord);
+                // currentWord = malloc(1);
+                currentWordIndex = 0;
                 currentWord[0] = '\0';
             }
 
@@ -581,14 +599,22 @@ FileLine *parseText(char *content)
             continue;
         }
 
-        size_t len = strlen(currentWord);
-        currentWord = realloc(currentWord, len + 2);
-        currentWord[len] = c;
-        currentWord[len + 1] = '\0';
+        // size_t len = strlen(currentWord);
+        // currentWord = realloc(currentWord, len + 2);
+        if (currentWordIndex + 1 >= currentWordLen)
+        {
+            currentWordLen *= 2;
+            currentWord = realloc(currentWord, currentWordLen);
+        }
+        currentWord[currentWordIndex] = c;
+        currentWordIndex++;
+        currentWord[currentWordIndex] = '\0';
 
         i++;
         c = content[i];
     }
+
+    free(currentWord);
 
     return lines;
 }
